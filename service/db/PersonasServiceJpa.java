@@ -60,4 +60,10 @@ public class PersonasServiceJpa implements IPersonaService{
 	public List<Persona> buscarProfesoresPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo) { 
 		return personasRepo.findProfesoresByCarreraAndPeriodo(idCarrera, idPeriodo);
 	}
+
+	@Override
+	public List<Persona> buscarCajeros() {
+		// TODO Auto-generated method stub
+		return personasRepo.findAllCajeros();
+	}
 }
