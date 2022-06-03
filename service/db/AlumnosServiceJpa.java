@@ -178,6 +178,12 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	public List<Alumno> buscarTodos() {
 		return (List<Alumno>) alumnosRepo.findAll();
 	}
+
+	@Override
+	public List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.getAllAlumnoAdeudoByCarreraAndPeriodo(idCarrera, idPeriodo);
+	}
 	
 
 }

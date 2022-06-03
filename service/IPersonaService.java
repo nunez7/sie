@@ -18,4 +18,6 @@ public interface IPersonaService {
 	List<Persona> buscarPorPersonaCarreraAndPeriodo(Integer persona, Integer periodo);
 	
 	List<Persona> buscarProfesoresPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo);
+	
+	List<Persona> buscarCajeros();
 }

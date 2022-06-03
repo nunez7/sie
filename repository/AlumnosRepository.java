@@ -83,6 +83,20 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true) 
 	List<AlumnoAdeudoDTO> getAllAlumnoAdeudoByPersonaCarreraAndPeriodo(@Param("persona") Integer idPersona, @Param("periodo") Integer idPeriodo);
 	
+	//para traer los adeudos de alumnos por carrera y periodo
+	@Query(value = "SELECT a.id as idAlumno, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as alumno, a.matricula, c.concepto, pg.monto as cantidad, pg.concepto as descripcion "
+			+ "FROM pagos_generales pg "
+			+ "INNER JOIN pago_alumno pa on pg.id=pa.id_pago "
+			+ "INNER JOIN alumnos a on pa.id_alumno=a.id "
+			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno = a.id "
+			+ "INNER JOIN grupos g ON g.id = ag.id_grupo "
+			+ "INNER JOIN personas p ON p.id = a.id_persona "
+			+ "INNER JOIN conceptos c ON c.id = pg.id_concepto "
+			+ "WHERE a.id_carrera=:carrera "
+			+ "AND pg.status=0 AND g.id_periodo = :periodo "
+			+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true) 
+	List<AlumnoAdeudoDTO> getAllAlumnoAdeudoByCarreraAndPeriodo(@Param("carrera") Integer idCarrera, @Param("periodo") Integer idPeriodo);
+	
 	@Query(value = "SELECT a.id AS idAlumno, a.matricula, p.primer_apellido AS primerApellido, p.segundo_apellido AS segundoApellido,  "
 			+ "p.nombre,  a.id_persona AS idPersona, g.nombre AS grupoAnterior, "
 			+ "(SELECT COALESCE(gg.nombre, '') "

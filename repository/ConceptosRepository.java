@@ -1,11 +1,12 @@
 package edu.mx.utdelacosta.repository;
 
-import java.util.Optional;
+import java.util.List;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import edu.mx.utdelacosta.model.Concepto;
 
-public interface ConceptosRepository extends CrudRepository<Concepto, Integer>{
-	Optional<Concepto> findById(Integer id);
+public interface ConceptosRepository extends JpaRepository<Concepto, Integer>{
+	
+	List<Concepto> findAllByOrderByIdDesc();
 }

@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.service.db;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -99,6 +100,19 @@ public class PagoGeneralServiceJpa implements IPagoGeneralService{
 	@Override
 	public Integer contarPorAlumnoYStatus(Integer idAlumno, Integer status) { 
 		return pagoRepo.countByAlumnoAndStatus(idAlumno, status);
+	}
+
+	@Override
+	public List<PagoGeneral> buscarPorFechaInicioYFechaFinYCajero(Date fechaInicio, Date fechaFin,
+			Integer idCajero) {
+		// TODO Auto-generated method stub
+		return pagoRepo.findByFechaInicioAndFechaFinAndCajero(fechaInicio, fechaFin, idCajero);
+	}
+
+	@Override
+	public List<PagoGeneral> buscarPorFechaInicioYFechaFinYTodosCajeros(Date fechaInicio, Date fechaFin) {
+		// TODO Auto-generated method stub
+		return pagoRepo.findByFechaInicioAndFechaFinAndAllCajeros(fechaInicio, fechaFin);
 	}	
 	
 

@@ -11,5 +11,7 @@ public interface AlumnoAdeudoDTO {
 	String getConcepto();
 	
 	Integer getCantidad();
+	
+	String getDescripcion();
 
 }

@@ -92,4 +92,24 @@ public class EntidadesController {
 		model.addAttribute("localidadesF", localidades);
 		return "perfil/datos :: lf-localidades";
    	}
+	
+	//metodo generico para regresar municipios por estado
+	@GetMapping("/list-municipios/{estado}")
+	public String cargarMunicipios(@PathVariable("estado") int estado, Model model) {
+		List<Municipio> municipios = new ArrayList<>();
+		estado = estado > 0 ? estado : 18;
+		municipios = municipiosService.buscarPorEstado(new Estado(estado));
+		model.addAttribute("municipios", municipios);
+		return "fragments/entidades :: municipios";
+	}
+	
+	//metodo generico para regresar municipios por estado
+	@GetMapping("/list-localidades/{municipio}")
+	public String cargarLocalidades(@PathVariable("municipio") int municipio, Model model) {
+		List<Localidad> localidades = new ArrayList<>();
+		municipio = municipio > 0 ? municipio : 2293;
+		localidades = localidadesService.buscarPorMunicipio(new Municipio(municipio));
+		model.addAttribute("localidades", localidades);
+		return "fragments/entidades :: localidades";
+	}
 }
