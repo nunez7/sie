@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.service.db;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ import edu.mx.utdelacosta.service.IConceptoService;
 public class ConceptosServiceJpa implements IConceptoService{
 	
 	@Autowired
-	ConceptosRepository conceptosRepo;
+	private ConceptosRepository conceptosRepo;
 	
 	@Override
 	public Concepto buscarPorId(Integer id) {
@@ -22,6 +23,17 @@ public class ConceptosServiceJpa implements IConceptoService{
 			return optional.get();
 		}
 		return null;
+	}
+
+	@Override
+	public List<Concepto> buscarTodos() {
+		// TODO Auto-generated method stub
+		return conceptosRepo.findAllByOrderByIdDesc();
+	}
+
+	@Override
+	public void guardar(Concepto concepto) {
+		conceptosRepo.save(concepto);
 	}
 
 }

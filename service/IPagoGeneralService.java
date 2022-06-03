@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.service;
 
+import java.util.Date;
 import java.util.List;
 
 import edu.mx.utdelacosta.model.Alumno;
@@ -34,4 +35,10 @@ public interface IPagoGeneralService {
 	*/
 	
 	Integer contarPorAlumnoYStatus(Integer idAlumno, Integer status);
+	
+	//lista de pagos para reporte detallado con fechas de inicio, fin y un cajero
+	List<PagoGeneral> buscarPorFechaInicioYFechaFinYCajero(Date fechaInicio, Date fechaFin, Integer idCajero);
+	
+	//lista de pagos para reporte detallado con fechas de inicio, fin y todos los cajeros
+	List<PagoGeneral> buscarPorFechaInicioYFechaFinYTodosCajeros(Date fechaInicio, Date fechaFin);
 }

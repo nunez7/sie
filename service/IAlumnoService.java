@@ -24,6 +24,8 @@ public interface IAlumnoService {
 	
 	List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo);
 	
+	List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo);
+	
 	Integer contarAlumnosInscritosPorGrupoYActivo(Integer idCargaHoraria);
 	
 	Integer contarAlumnosBajasPorGrupoYActivo(Integer idCargaHoraria);

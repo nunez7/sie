@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
@@ -76,6 +77,25 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 				 + "INNER JOIN pago_alumno pa ON pa.id_pago=pg.id "
 				 + "WHERE pa.id_alumno=:idAlumno AND pg.status=:status AND pg.activo=true", nativeQuery = true)
 		Integer countByAlumnoAndStatus(@Param("idAlumno") Integer idAlumno, @Param("status") Integer status);
+		
+	// prueba para reporte de caja detallado
+	@Query(value="SELECT * FROM pagos_generales WHERE status = 1 ORDER BY id DESC LIMIT 50", nativeQuery = true)
+	List<PagoGeneral> findByLast100();	
 	
+	//busca los pagos para reporte detallado con fechas de inicio, fin y un cajero
+	@Query(value="SELECT pg.* FROM pagos_generales pg "
+			+ "INNER JOIN pago_recibe pr ON pg.id = pr.id_pago "
+			+ "INNER JOIN personas p ON p.id = pr.id_cajero "
+			+ "WHERE pg.status = 1 AND p.id = :cajero "
+			+ "AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true)
+	List<PagoGeneral> findByFechaInicioAndFechaFinAndCajero(@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin, @Param("cajero") Integer idCajero);
+	
+	//busca los pagos para reporte detallado con fechas de inicio, fin y todos los cajeros
+	@Query(value="SELECT pg.* FROM pagos_generales pg "
+			+ "INNER JOIN pago_recibe pr ON pg.id = pr.id_pago "
+			+ "INNER JOIN personas p ON p.id = pr.id_cajero "
+			+ "WHERE pg.status = 1 "
+			+ "AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true)
+	List<PagoGeneral> findByFechaInicioAndFechaFinAndAllCajeros(@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
 	
 }
