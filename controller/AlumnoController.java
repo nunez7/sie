@@ -76,6 +76,7 @@ import edu.mx.utdelacosta.service.IHorarioService;
 import edu.mx.utdelacosta.service.IMecanismoAlumnoService;
 import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
+import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaDocumentoService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
@@ -149,6 +150,9 @@ public class AlumnoController {
 	
 	@Autowired
 	private IAlumnoGrupoService alumnoGrService;
+	
+	@Autowired
+	private IPeriodosService periodoService;
 	
 	@Value("${siestapp.ruta.docs}")
     private String ruta;
@@ -761,48 +765,51 @@ public class AlumnoController {
 			model.addAttribute("docsExp", docsExp);
 			
 			AlumnoGrupo alumnoGrupo = serviceAlumGrupo.buscarPorAlumnoYGrupo(alumno, ultimoGrupo);
-			boolean reincripsion = false;
+			Boolean reincripsion = null;
 			boolean FechaInscripcion = false;
-			//se valida que el alumno no este incrito en el grupo actual 
-			if(alumnoGrupo.getFechaInscripcion() == null) {									
-				if(grupos.size()>1) {
-					
-					//lista de adeudos 										
-					int cantidadAdeudos = servicePagoGeneral.contarPorAlumnoYStatus(alumno.getId(), 0);
-					System.out.println(cantidadAdeudos);
-					//promedio del grupo anterior
-					Grupo penultimoGrupo = serviceGrupo.buscarPorAlumnoPenultimoGrupo(alumno.getId());
-					double promedio = serviceGrupo.obtenerPromedioAlumn(alumno.getId(), penultimoGrupo.getId());				
-					int promedioRed = (int) Math.round(promedio);
-					
-					//Se valida si ahi un convenio para alguno que extiende el palso de entrega de documetos
-					boolean convenio = false; 
-					for(DocumentoDTO doc :docsExp) {	
-						if (doc.getConvenio()!=null) {
-							
-						if(doc.getConvenio() == true) {
-							convenio = true;
-						}
-						}
-					}	
-					
-					//Validacion de los requisitos de reinscripcion
-					if(ultimoGrupo.getPeriodo().getId() >= 10 || convenio == true) {											
-						if((alumnoGrupo.getFechaInscripcion() == null) && (cantidadAdeudos == 0) && (promedioRed >= 8)) {							
-							reincripsion = true;
-						}						
-					}else{						
-						//Validasion de los requisitos para la reincripsion
-						if((alumnoGrupo.getFechaInscripcion() == null) && (estadoDocs == true) && (cantidadAdeudos == 0) && (promedioRed >= 8)) {							
-							reincripsion = true;
-						}													
-					}	
-					
-				}																
-			}else{									
-				FechaInscripcion = true;
-			}
-			
+			Date fechaHoy = new Date();	
+			//se valida que el alumno no este incrito en el grupo actual			
+			if(ultimoGrupo.getPeriodo().getFinInscripcion()!=null && ultimoGrupo.getPeriodo().getFinInscripcion().after(fechaHoy)) {
+				reincripsion = false;
+				if(alumnoGrupo!=null && alumnoGrupo.getFechaInscripcion() == null) {									
+					if(grupos.size()>1) {
+						
+						//lista de adeudos 										
+						int cantidadAdeudos = servicePagoGeneral.contarPorAlumnoYStatus(alumno.getId(), 0);
+						System.out.println(cantidadAdeudos);
+						//promedio del grupo anterior
+						Grupo penultimoGrupo = serviceGrupo.buscarPorAlumnoPenultimoGrupo(alumno.getId());
+						double promedio = serviceGrupo.obtenerPromedioAlumn(alumno.getId(), penultimoGrupo.getId());				
+						int promedioRed = (int) Math.round(promedio);
+						
+						//Se valida si ahi un convenio para alguno que extiende el palso de entrega de documetos
+						boolean convenio = false; 
+						for(DocumentoDTO doc :docsExp) {	
+							if (doc.getConvenio()!=null) {
+								
+							if(doc.getConvenio() == true) {
+								convenio = true;
+							}
+							}
+						}	
+						
+						//Validacion de los requisitos de reinscripcion
+						if(ultimoGrupo.getPeriodo().getId() >= 10 || convenio == true) {											
+							if((alumnoGrupo.getFechaInscripcion() == null) && (cantidadAdeudos == 0) && (promedioRed >= 8)) {							
+								reincripsion = true;
+							}						
+						}else{						
+							//Validasion de los requisitos para la reincripsion
+							if((alumnoGrupo.getFechaInscripcion() == null) && (estadoDocs == true) && (cantidadAdeudos == 0) && (promedioRed >= 8)) {							
+								reincripsion = true;
+							}													
+						}	
+						
+					}																
+				}else{									
+					FechaInscripcion = true;
+				}
+			}			
 			model.addAttribute("FechaInscripcion", FechaInscripcion);
 			model.addAttribute("reincripsion", reincripsion);
 			model.addAttribute("grupos", gruposDTO);			
@@ -822,7 +829,7 @@ public class AlumnoController {
 		} catch (Exception e) {
 			cvePersona = usuario.getPersona().getId();
 		}
-
+		
 		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
 		
 		if (alumno != null) {
@@ -833,9 +840,17 @@ public class AlumnoController {
 			for (PagoGeneral pagoGeneral : adeudos) {
 				suma = suma + pagoGeneral.getMonto();
 			}
-	
+			
+			Boolean periodoAct = false;
+			Date fechaHoy = new Date();	
+			Grupo ultimoGrupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());
+			
+			if(ultimoGrupo.getPeriodo().getFinInscripcion()!=null && ultimoGrupo.getPeriodo().getFinInscripcion().after(fechaHoy)) {
+				periodoAct = true;
+			}			
 			model.addAttribute("totalAdeudo", suma);
 			model.addAttribute("adeudos", adeudos);
+			model.addAttribute("periodoAct", periodoAct);
 		}
 		
 		model.addAttribute("alumno", alumno);
@@ -920,7 +935,7 @@ public class AlumnoController {
 			Date dt = new Date();		        		        
 	        Calendar c = Calendar.getInstance();
 	        c.setTime(dt);
-	        c.add(Calendar.DATE, 7);		        
+	        c.add(Calendar.DATE, 3);		        
 	        String fechaLimite = format.format(c.getTime());
 	        Date fechaLimiteP = c.getTime();
 	        		        		      		   
@@ -943,7 +958,7 @@ public class AlumnoController {
 				Date dt = new Date();		        		        
 		        Calendar c = Calendar.getInstance();
 		        c.setTime(dt);
-		        c.add(Calendar.DATE, 7);		        
+		        c.add(Calendar.DATE, 3);		        
 		        String fechaLimite = format.format(c.getTime());
 		        Date fechaL = c.getTime();
 		        		        		      		   
@@ -1063,7 +1078,7 @@ public class AlumnoController {
 					Date dt = new Date();		        		        
 			        Calendar c = Calendar.getInstance();
 			        c.setTime(dt);
-			        c.add(Calendar.DATE, 7);		        
+			        c.add(Calendar.DATE, 3);		        
 			        String fechaLimite = format.format(c.getTime());
 			        Date fechaLimiteP = c.getTime();
 			        		        		      		   
@@ -1094,7 +1109,7 @@ public class AlumnoController {
 				Date dt = new Date();		        		        
 		        Calendar c = Calendar.getInstance();
 		        c.setTime(dt);
-		        c.add(Calendar.DATE, 7);		        
+		        c.add(Calendar.DATE, 3);		        
 		        String fechaLimite = format.format(c.getTime());
 		        Date fechaLimiteP = c.getTime();
 		        		        		      		   
