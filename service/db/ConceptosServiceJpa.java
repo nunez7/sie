@@ -31,9 +31,15 @@ public class ConceptosServiceJpa implements IConceptoService{
 		return conceptosRepo.findAllByOrderByIdDesc();
 	}
 
+	//metodo de gestion de pagos
 	@Override
 	public void guardar(Concepto concepto) {
 		conceptosRepo.save(concepto);
+	}
+
+	@Override
+	public List<Concepto> buscarOpcionales() {
+		return conceptosRepo.findAllOptionals();
 	}
 
 }

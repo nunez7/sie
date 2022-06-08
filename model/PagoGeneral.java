@@ -73,7 +73,7 @@ public class PagoGeneral {
 	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
 	private PagoAlumno pagoAlumno;
 	
-	@OneToOne(fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
 	private PagoRecibe pagoRecibe;
 	
 	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "pagoGeneral")

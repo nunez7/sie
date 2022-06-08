@@ -5,6 +5,7 @@ import java.util.List;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.PagoGeneral;
+import edu.mx.utdelacosta.model.dto.FolioDTO;
 
 public interface IPagoGeneralService {
 	List<PagoGeneral> buscarPorAlumno (Integer idAlumno, Integer status);
@@ -41,4 +42,16 @@ public interface IPagoGeneralService {
 	
 	//lista de pagos para reporte detallado con fechas de inicio, fin y todos los cajeros
 	List<PagoGeneral> buscarPorFechaInicioYFechaFinYTodosCajeros(Date fechaInicio, Date fechaFin);
+
+	//Service de modulo gestion de pagos - submodulo folios
+
+	List<FolioDTO> buscarFolioPorFolioONombreOCliente (String folio);
+	
+	List<PagoGeneral> buscarTodosPorFolio(String folio);
+	
+	FolioDTO buscarPorFolio(String folio);
+	
+	FolioDTO buscarReciboPorFolio(String folio);
+	
+	PagoGeneral buscarUltimoPorFolio(String folio);
 }

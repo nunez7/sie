@@ -113,7 +113,32 @@ public class PagoGeneralServiceJpa implements IPagoGeneralService{
 	public List<PagoGeneral> buscarPorFechaInicioYFechaFinYTodosCajeros(Date fechaInicio, Date fechaFin) {
 		// TODO Auto-generated method stub
 		return pagoRepo.findByFechaInicioAndFechaFinAndAllCajeros(fechaInicio, fechaFin);
-	}	
+	}
+
+	@Override
+	public List<FolioDTO> buscarFolioPorFolioONombreOCliente(String folio) {
+		return pagoRepo.FindByFolioOrNombreOrCliente(folio);
+	}
+
+	@Override
+	public List<PagoGeneral> buscarTodosPorFolio(String folio) {
+		return pagoRepo.findByFolio(folio);
+	}
+
+	@Override
+	public FolioDTO buscarPorFolio(String folio) {
+		return pagoRepo.findFolio(folio);
+	}
+
+	@Override
+	public FolioDTO buscarReciboPorFolio(String folio) {
+		return pagoRepo.findFolioRecibo(folio);
+	}
+
+	@Override
+	public PagoGeneral buscarUltimoPorFolio(String folio) {
+		return pagoRepo.findLastByFolio(folio);
+	}		
 	
 
 }

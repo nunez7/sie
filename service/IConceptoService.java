@@ -9,4 +9,7 @@ public interface IConceptoService {
 	Concepto buscarPorId(Integer id);
 	List<Concepto> buscarTodos();
 	void guardar(Concepto concepto);
+
+	//metodo de gestion de pagos
+	List<Concepto> buscarOpcionales();
 }
