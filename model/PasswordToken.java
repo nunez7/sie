@@ -10,7 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -24,7 +24,7 @@ public class PasswordToken {
     @Column(nullable = false, unique = true)
     private String token;
 
-    @OneToOne(targetEntity = Usuario.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Usuario.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "id_usuario")
     private Usuario usuario;
 
