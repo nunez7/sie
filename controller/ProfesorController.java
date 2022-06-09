@@ -352,7 +352,6 @@ public class ProfesorController {
 	public String prorrogas(Model model, HttpSession session) {
 		Persona persona = personaService.buscarPorId((Integer)session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
-		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		CargaHoraria cargaActual = new CargaHoraria();
 		List<CorteEvaluativo> cortes = new ArrayList<>();
 		try {
@@ -362,9 +361,7 @@ public class ProfesorController {
 		}
 		if (cargaActual!=null) {
 			cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera() , cargaActual.getPeriodo());
-			System.out.println("numero de cortes: "+cortes.size());
 		}
-		System.out.println(cargaActual.getGrupo().getNombre());
 		List<CargaHoraria> cargas = cargaService.buscarPorProfesorYPeriodo(usuario.getPersona(), new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		List<Prorroga> prorrogas = prorrogaService.buscarPorProfesorYPeriodoYActivo(persona.getId(), usuario.getPreferencias().getIdPeriodo());
 		model.addAttribute("cargas", cargas);

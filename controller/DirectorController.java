@@ -164,8 +164,8 @@ public class DirectorController {
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
 		//buscamos las carreras de acuerdo a las preferencias y permisos del usuario
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(usuario.getPersona().getId());
-		List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(carreras.get(0).getId(), usuario.getPreferencias().getIdPeriodo());
-		if(cortes.size() > 0) {
+		List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(carreras.size() > 0 ? carreras.get(0).getId():0, usuario.getPreferencias().getIdPeriodo());
+		if(carreras.size() > 0 && cortes.size() > 0) {
 			model.addAttribute("corte1", cortes.get(0));
 			model.addAttribute("corte2", cortes.get(1));
 		}
