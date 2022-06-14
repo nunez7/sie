@@ -3,6 +3,7 @@ package edu.mx.utdelacosta.service;
 import java.util.List;
 
 import edu.mx.utdelacosta.model.Grupo;
+import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 
 public interface IGrupoService {
@@ -32,8 +33,10 @@ public interface IGrupoService {
 	Integer gruposPorProfesorYPeriodo(Integer idProfesor, Integer idPeriodo);
 	
 	List<Grupo> buscarPorCuatrimestreCarreraYPeriodo(Integer idCuatrimestre, Integer idCarrera, Integer idPeriodo);
-
-	List<Grupo> buscarPorIdProfesor(Persona profesor);
+	
+	//Modificada
+	//List<Grupo> buscarPorIdProfesor(Persona profesor);
+	List<Grupo> buscarPorProfesorYPeriodoAsc(Persona profesor, Periodo periodo);
 	
 	List<Grupo> buscarPorProfesorYPeriodo(Integer idProfesor, Integer idPersona);
 	

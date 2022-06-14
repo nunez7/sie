@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import edu.mx.utdelacosta.model.Actividad;
 import edu.mx.utdelacosta.model.Alumno;
+import edu.mx.utdelacosta.model.CargaEvaluacion;
 import edu.mx.utdelacosta.model.Asesoria;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
@@ -55,6 +56,7 @@ import edu.mx.utdelacosta.service.IEvaluacionComentarioService;
 import edu.mx.utdelacosta.service.IEvaluacionesService;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IHorarioService;
+import edu.mx.utdelacosta.service.ICargaEvaluacionService;
 import edu.mx.utdelacosta.service.IInstrumentoService;
 import edu.mx.utdelacosta.service.IMateriasService;
 import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
@@ -143,6 +145,9 @@ public class ProfesorController {
 	
 	@Autowired
 	private IEvaluacionComentarioService serviceEvaCom;
+
+	@Autowired
+	private ICargaEvaluacionService serviceCarEva;
 
 	@GetMapping("/dosificacion")
 	public String dosificacion(Model model, HttpSession session) {
@@ -517,6 +522,11 @@ public class ProfesorController {
 				//se obtiene el numero de alumnos que an relisado la encueta 				
 				for(CargaHoraria ch: ChGrupos) {
 					aluEncuestados = serviceResCarEva.contarPorGrupoYCargaHoraria(3, ch.getGrupo().getId(), ch.getId())+aluEncuestados;
+					CargaEvaluacion CaEva = serviceCarEva.buscarPorCargaHorariaYEvaluacion(ch, evaluacion);
+					if(CaEva!=null) {
+						CaEva.setVista(true);
+						serviceCarEva.guardar(CaEva);
+					}
 				}
 				
 				//se caulculan los promedios de cada una de las preguntas para cada uno de los grupos en lo que el profesor imparte dicha 

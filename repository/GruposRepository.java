@@ -9,6 +9,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Grupo;
+import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 
 public interface GruposRepository extends CrudRepository<Grupo, Integer> {
@@ -79,7 +80,9 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 	
 	Optional<Grupo> findById(Integer Id);
 	
-	List<Grupo> findByProfesorAndActivo(Persona profesor, Boolean Activo);
+	//Modificada
+	//List<Grupo> findByProfesorAndActivo(Persona profesor, Boolean Activo);
+	List<Grupo> findByProfesorAndPeriodoAndActivoTrueOrderByPeriodoAsc(Persona profesor, Periodo periodo);
 	
 	@Query(value = "SELECT DISTINCT(g.*) FROM grupos g "
 			+ "INNER JOIN alumnos_grupos ag on g.id=ag.id_grupo "

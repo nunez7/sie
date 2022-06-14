@@ -21,6 +21,7 @@ import edu.mx.utdelacosta.model.Actividad;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AreaConocimiento;
 import edu.mx.utdelacosta.model.Asistencia;
+import edu.mx.utdelacosta.model.CargaEvaluacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
@@ -57,6 +58,7 @@ import edu.mx.utdelacosta.service.IAsistenciaService;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
+import edu.mx.utdelacosta.service.ICargaEvaluacionService;
 import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.IComentarioEvaluacionTutorService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
@@ -163,6 +165,9 @@ public class AsistenteController {
 	
 	@Autowired
 	private IRespuestaEvaluacionTutorService serviceResEvaTutor;
+
+	@Autowired
+	private ICargaEvaluacionService serviceCarEva;
 	
 	@GetMapping("/carga")
 	public String carga(Model model, HttpSession session) {
@@ -788,9 +793,14 @@ public class AsistenteController {
 					//se extraen los cargas horararias (grupos) en las que que se imparte la meteria asociada al profesor y el perido  
 					List<CargaHoraria> ChGrupos = cargaHorariaService.buscarPorCarreraProfesorMateriaYPeriodo(cveCarrera, cveProfesor, cveMateria, usuario.getPreferencias().getIdPeriodo());
 					List<ComentarioDTO> comentarios = serviceEvaCom.buscarComentariosPorPersona(3, cveCarrera, cveProfesor, cveMateria, usuario.getPreferencias().getIdPeriodo());
-					//se obtiene el numero de alumnos que an relisado la encueta 				
+					//se obtiene el numero de alumnos que an relisado la encueta 
+					Boolean vista = false;				
 					for(CargaHoraria ch: ChGrupos) {
 						aluEncuestados = serviceResCarEva.contarPorGrupoYCargaHoraria(3, ch.getGrupo().getId(), ch.getId())+aluEncuestados;
+						CargaEvaluacion CaEva = serviceCarEva.buscarPorCargaHorariaYEvaluacion(ch, evaluacion);
+						if(CaEva!=null) {
+							vista = CaEva.getVista();
+						}
 					}
 					
 					//se caulculan los promedios de cada una de las preguntas para cada uno de los grupos en lo que el profesor imparte dicha 
@@ -854,7 +864,7 @@ public class AsistenteController {
 					model.addAttribute("numGrupos", ChGrupos.size());
 					//se carga el promedio total final 
 					model.addAttribute("promedioTotal", gruposDTOs.get(ChGrupos.size()).getPromedioPre());
-					
+					model.addAttribute("evaVista", vista);
 					model.addAttribute("comentarios", comentarios);
 					
 				}	
