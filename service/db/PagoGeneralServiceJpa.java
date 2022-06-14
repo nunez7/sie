@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.PagoGeneral;
+import edu.mx.utdelacosta.model.dto.FolioDTO;
 import edu.mx.utdelacosta.repository.PagoGeneralRepository;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
 
@@ -115,5 +116,48 @@ public class PagoGeneralServiceJpa implements IPagoGeneralService{
 		return pagoRepo.findByFechaInicioAndFechaFinAndAllCajeros(fechaInicio, fechaFin);
 	}	
 	
+	/*métodos donaji */
+	@Override
+	public List<FolioDTO> buscarFolioPorFolioONombreOCliente(String folio) {
+		return pagoRepo.FindByFolioOrNombreOrCliente(folio);
+	}
+
+	@Override
+	public List<PagoGeneral> buscarTodosPorFolio(String folio) {
+		return pagoRepo.findByFolio(folio);
+	}
+
+	@Override
+	public FolioDTO buscarPorFolio(String folio) {
+		return pagoRepo.findFolio(folio);
+	}
+
+	@Override
+	public FolioDTO buscarReciboPorFolio(String folio) {
+		return pagoRepo.findFolioRecibo(folio);
+	}
+
+	@Override
+	public PagoGeneral buscarUltimoPorFolio(String folio) {
+		return pagoRepo.findLastByFolio(folio);
+	}
+
+	@Override
+	public String generarFolio() {
+		// TODO Auto-generated method stub
+		return pagoRepo.generateFolio();
+	}
+
+	@Override
+	public List<PagoGeneral> buscarPorPersona(Integer idPersona, Integer status) {
+		// TODO Auto-generated method stub
+		return pagoRepo.findByPersonaAndStatusOrderByCreatedDesc(idPersona, status);
+	}
+
+	@Override
+	public List<PagoGeneral> buscarPorCliente(Integer idCliente, Integer status) {
+		// TODO Auto-generated method stub
+		return pagoRepo.findByClienteAndStatusOrderByCreatedDesc(idCliente, status);
+	}	
 
 }

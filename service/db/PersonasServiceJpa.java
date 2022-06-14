@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.AlumnoPersonalDTO;
 import edu.mx.utdelacosta.repository.PersonasRepository;
 import edu.mx.utdelacosta.service.IPersonaService;
 
@@ -65,5 +66,11 @@ public class PersonasServiceJpa implements IPersonaService{
 	public List<Persona> buscarCajeros() {
 		// TODO Auto-generated method stub
 		return personasRepo.findAllCajeros();
+	}
+
+	@Override
+	public List<AlumnoPersonalDTO> buscarPorMatriculaONoEmpledoONombre(String like) {
+		// TODO Auto-generated method stub
+		return personasRepo.findByNombreOrNoEmpleadoOrMatricula(like);
 	}
 }

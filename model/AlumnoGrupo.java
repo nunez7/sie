@@ -34,6 +34,8 @@ public class AlumnoGrupo {
 	
 	@Column(name="fecha_inscripcion")
 	private Date fechaInscripcion;
+	
+	private Boolean pagado;
 
 	public Integer getId() {
 		return id;
@@ -83,4 +85,11 @@ public class AlumnoGrupo {
 		this.fechaInscripcion = fechaInscripcion;
 	}
 	
+	public Boolean getPagado() {
+		return pagado;
+	}
+
+	public void setPagado(Boolean pagado) {
+		this.pagado = pagado;
+	}
 }

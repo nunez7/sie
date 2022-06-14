@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.PagoGeneral;
+import edu.mx.utdelacosta.model.dto.FolioDTO;
 
 public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integer>{
 	
@@ -77,11 +78,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 				 + "INNER JOIN pago_alumno pa ON pa.id_pago=pg.id "
 				 + "WHERE pa.id_alumno=:idAlumno AND pg.status=:status AND pg.activo=true", nativeQuery = true)
 		Integer countByAlumnoAndStatus(@Param("idAlumno") Integer idAlumno, @Param("status") Integer status);
-		
-	// prueba para reporte de caja detallado
-	@Query(value="SELECT * FROM pagos_generales WHERE status = 1 ORDER BY id DESC LIMIT 50", nativeQuery = true)
-	List<PagoGeneral> findByLast100();	
-	
+			
 	//busca los pagos para reporte detallado con fechas de inicio, fin y un cajero
 	@Query(value="SELECT pg.* FROM pagos_generales pg "
 			+ "INNER JOIN pago_recibe pr ON pg.id = pr.id_pago "
@@ -98,4 +95,90 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true)
 	List<PagoGeneral> findByFechaInicioAndFechaFinAndAllCajeros(@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
 	
+	/*métodos donaji */
+	@Query(value = "SELECT pg.folio AS Folio, MAX(COALESCE(a.id, c.id)) as idCliente, MAX(CONCAT(COALESCE(c.nombre_cliente,' '), "
+			+ "COALESCE(p.primer_apellido,''), ' ' , COALESCE(p.segundo_apellido, '') , ' ' , COALESCE(p.nombre,''))) AS nombre, "
+			+ "SUM((pg.cantidad  * pg.monto_unitario) - ((COALESCE(pg.descuento,0) * (pg.cantidad * pg.monto_unitario))/100) ) AS Monto, "
+			+ "MAX(CAST(pg.status AS INT)) AS Activo, MAX(pg.created) AS Fecha, MAX(pg.tipo)AS TipoPago "
+			+ "FROM pagos_generales pg "
+			+ "LEFT JOIN pago_cliente pc ON pc.id_pago = pg.id "
+			+ "LEFT JOIN clientes c  ON pc.id_cliente = c.id "
+			+ "LEFT JOIN pago_alumno pa ON pa.id_pago = pg.id "
+			+ "LEFT JOIN alumnos a ON pa.id_alumno = a.id "
+			+ "LEFT JOIN personas p  ON a.id_persona = p.id "
+			+ "WHERE (pg.folio iLIKE %:like% "
+//			+ "OR p.nombre iLIKE %:like% "
+			+ "OR CONCAT(p.nombre,' ',p.primer_apellido) iLIKE %:like% "
+//			+ "OR p.primer_apellido iLIKE %:like% "
+			+ "OR CONCAT(p.primer_apellido,' ',p.segundo_apellido) iLIKE %:like% "
+//			+ "OR p.segundo_apellido iLIKE %:like% "
+			+ "OR CONCAT(p.segundo_apellido, ' ',p.nombre) iLIKE %:like% "
+			+ "OR c.nombre_cliente iLIKE %:like% ) AND pg.folio NOT LIKE '' "
+			+ "GROUP BY pg.folio ORDER BY pg.folio DESC ", nativeQuery = true)
+	List<FolioDTO> FindByFolioOrNombreOrCliente(@Param("like") String like);
+	
+	@Query(value = "SELECT pg.folio AS Folio, MAX(CONCAT(COALESCE(c.nombre_cliente,' '), "
+			+ "COALESCE(p.primer_apellido,''), ' ' , COALESCE(p.segundo_apellido, '') , ' ' , COALESCE(p.nombre,''))) AS nombre, "
+			+ "SUM((pg.cantidad  * pg.monto_unitario) - ((COALESCE(pg.descuento,0) * (pg.cantidad * pg.monto_unitario))/100) ) AS Monto, "
+			+ "MAX(CAST(pg.activo AS INT)) AS Activo, MAX(pg.created) AS Fecha, MAX(pg.tipo)AS TipoPago "
+			+ "FROM pagos_generales pg "
+			+ "LEFT JOIN pago_cliente pc ON pc.id_pago = pg.id "
+			+ "LEFT JOIN clientes c  ON pc.id_cliente = c.id "
+			+ "LEFT JOIN pago_alumno pa ON pa.id_pago = pg.id "
+			+ "LEFT JOIN alumnos a ON pa.id_alumno = a.id "
+			+ "LEFT JOIN personas p  ON a.id_persona = p.id "
+			+ "WHERE pg.folio = :folio "
+			+ "GROUP BY pg.folio ORDER BY pg.folio DESC ", nativeQuery = true)
+	FolioDTO findFolio (@Param("folio") String folio);
+	
+	List<PagoGeneral> findByFolio(String folio);
+	
+	@Query(value = "SELECT * FROM pagos_generales pg "
+			+ "	WHERE pg.folio= :folio "
+			+ "	ORDER BY id  DESC LIMIT 1" ,nativeQuery = true)
+	PagoGeneral findLastByFolio(String folio);
+	
+	@Query(value = "SELECT pg.folio AS Folio, MAX((COALESCE(c.nombre_cliente,p.nombre))) AS nombre, MAX((COALESCE(p.primer_apellido ,''))) AS primerApellido, "
+			+ "MAX((COALESCE(p.segundo_apellido ,''))) AS segundoApellido, "
+			+ "MAX(COALESCE(c.rfc  ,a.matricula)) as matricula, MAX(COALESCE(c.clave, ca.nombre)) as carrera, "
+			+ "SUM(DISTINCT(pg.cantidad  * pg.monto_unitario) - ((COALESCE(pg.descuento,0) * (pg.cantidad * pg.monto_unitario))/100) ) AS Monto, "
+			+ "MAX(CAST(pg.activo AS INT)) AS Activo, MAX(pg.created) AS Fecha, MAX(pg.tipo)AS TipoPago, "
+			+ "MAX(COALESCE(c.sector, g.nombre)) as grupo, MAX(COALESCE(c.tipo, concat(cc.fecha_inicio,' - ',cc.fecha_fin))) as ciclos, MAX(COALESCE(c.tamano, CAST(cu.consecutivo AS VARCHAR))) as cuatrimestre,"
+			+ "MAX(COALESCE(pr.fecha_cobro, null)) as fechaPago, MAX(COALESCE(CONCAT(p2.primer_apellido, ' ', p2.segundo_apellido,' ',p2.nombre), '')) as pagoRecibe, MAX(COALESCE(a.id, 0)) as idAlumno "
+			+ "FROM pagos_generales pg "
+			+ "LEFT JOIN pago_recibe pr ON pr.id_pago = pg.id "
+			+ "LEFT JOIN personas p2 ON pr.id_cajero  = p2.id "
+			+ "LEFT JOIN pago_cliente pc ON pc.id_pago = pg.id "
+			+ "LEFT JOIN clientes c  ON pc.id_cliente = c.id "
+			+ "LEFT JOIN pago_alumno pa ON pa.id_pago = pg.id "
+			+ "LEFT JOIN alumnos a ON pa.id_alumno = a.id "
+			+ "LEFT JOIN alumnos_grupos ag ON ag.id_alumno  = a.id "
+			+ "LEFT JOIN grupos g ON ag.id_grupo  = g.id "
+			+ "LEFT JOIN cuatrimestres cu  ON g.id_cuatrimestre = cu.id "
+			+ "LEFT JOIN periodos pe ON g.id_periodo  = pe.id "
+			+ "LEFT JOIN ciclos cc  ON pe.id_ciclo  = cc.id "
+			+ "LEFT JOIN carreras ca  ON g.id_carrera  = ca.id "
+			+ "LEFT JOIN personas p  ON a.id_persona = p.id "
+			+ "WHERE pg.folio = :folio "
+			+ "GROUP BY pg.folio ORDER BY pg.folio DESC", nativeQuery = true)
+	FolioDTO findFolioRecibo(@Param("folio") String folio);
+	
+	//para generar el folio 
+	@Query(value = "SELECT CAST(CAST(folio AS INTEGER)+ 1 AS VARCHAR) as folio FROM pagos_generales "
+			+ "WHERE status = 1 ORDER BY id DESC LIMIT 1", nativeQuery = true)
+	String generateFolio();
+	
+	//busca adeudos o pagos de personal (pagoPersona)
+	@Query(value = "SELECT pg.* FROM pagos_generales pg "
+			+ "INNER JOIN pago_persona pp ON pg.id = pp.id_pago "
+			+ "WHERE pp.id_persona = :idPersona AND pg.status = :status AND pg.activo = 'True' "
+			+ "ORDER BY pg.created DESC", nativeQuery = true)
+	List<PagoGeneral> findByPersonaAndStatusOrderByCreatedDesc(@Param("idPersona") Integer idPersona, @Param("status") Integer status);
+	
+	//busca los pagos o adeduos de un cliente (pagoCliente)
+	@Query(value = "SELECT pg.* FROM pagos_generales pg "
+			+ "INNER JOIN pago_cliente pc ON pg.id = pc.id_pago "
+			+ "WHERE pc.id_cliente = :cliente AND pg.status = :status "
+			+ "AND pg.activo = 'True' ORDER BY pg.created DESC", nativeQuery = true)
+	List<PagoGeneral> findByClienteAndStatusOrderByCreatedDesc(@Param("cliente") Integer idCliente, @Param("status") Integer status);
 }
