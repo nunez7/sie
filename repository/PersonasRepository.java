@@ -7,6 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.AlumnoPersonalDTO;
 
 public interface PersonasRepository extends CrudRepository<Persona, Integer> {
 	Persona findByEmail(String email);
@@ -31,9 +32,22 @@ public interface PersonasRepository extends CrudRepository<Persona, Integer> {
 	List<Persona> findProfesoresByCarreraAndPeriodo(@Param("idCarrera") Integer idCarrera,@Param("idPeriodo") Integer idPeriodo);
 	
 	//para traerse todos los cajeros
-	@Query(value = "SELECT p.* FROM usuarios u "
-			+ "INNER JOIN usuario_rol ur ON ur.id_usuario = u.id "
-			+ "INNER JOIN personas p ON p.id = u.id_persona "
-			+ "WHERE ur.id_rol = 8", nativeQuery = true)
-	List<Persona> findAllCajeros();
+		@Query(value = "SELECT p.* FROM usuarios u "
+				+ "INNER JOIN usuario_rol ur ON ur.id_usuario = u.id "
+				+ "INNER JOIN personas p ON p.id = u.id_persona "
+				+ "WHERE ur.id_rol = 8", nativeQuery = true)
+		List<Persona> findAllCajeros();
+		
+		@Query(value = "SELECT COALESCE(a.id,0) as idAlumno, COALESCE(pr.id,0) as idEmpleado, p.id as idPersona,COALESCE(a.matricula,pr.no_empleado) as matricula, "
+				+ "CONCAT(p.primer_apellido, ' ' , p.segundo_apellido, ' ' , p.nombre) AS nombre, COALESCE(a.id,0) as tipo "
+				+ "FROM personas p "
+				+ "LEFT JOIN alumnos a ON a.id_persona = p.id "
+				+ "LEFT JOIN personal pr ON pr.id_persona = p.id "
+				+ "WHERE (a.matricula iLIKE %:like% "
+				+ "OR CONCAT(p.nombre, ' ',p.primer_apellido) iLIKE %:like% "
+				+ "OR CONCAT(p.primer_apellido, ' ', p.nombre) iLIKE %:like% "
+				+ "OR CONCAT(p.segundo_apellido, ' ',p.nombre) iLIKE %:like% "
+				+ "OR pr.no_empleado iLIKE %:like%) "
+				+ "ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
+		List<AlumnoPersonalDTO> findByNombreOrNoEmpleadoOrMatricula(@Param("like") String like);
 }

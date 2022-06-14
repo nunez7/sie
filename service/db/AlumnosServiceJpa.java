@@ -57,6 +57,12 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	}
 	
 	@Override
+	public List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.getAllAlumnoAdeudoByCarreraAndPeriodo(idCarrera, idPeriodo);
+	}
+	
+	@Override
 	public String buscarMatriculaSiguiente(String matricula) {
 		return alumnosRepo.findNextMatricula(matricula);
 	}
@@ -180,9 +186,13 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	}
 
 	@Override
-	public List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo) {
-		// TODO Auto-generated method stub
-		return alumnosRepo.getAllAlumnoAdeudoByCarreraAndPeriodo(idCarrera, idPeriodo);
+	public List<Alumno> buscarTodosPorPeriodo(Integer idPeriodo, Integer idCuatrimestre) {
+		return alumnosRepo.findAllByPeriodo(idPeriodo, idCuatrimestre);
+	}
+
+	@Override
+	public Integer contarAlumnosRegularesPorGrupo(Integer idGrupo) {
+		return alumnosRepo.countAlumnosRegularesByGrupo(idGrupo);
 	}
 	
 

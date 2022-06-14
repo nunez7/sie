@@ -279,5 +279,24 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre ", nativeQuery = true)
 	List<Alumno> findByNombreOrMatricula(@Param("nombre") String nombre);
 	
+	@Query(value = "SELECT a.* FROM alumnos a "
+			+ "	LEFT JOIN alumnos_grupos algr on algr.id_alumno = a.id "
+			+ "	LEFT JOIN grupos gr on gr.id = algr.id_grupo "
+			+ "	WHERE gr.id_periodo=:periodo and gr.id_cuatrimestre = :cuatrimestre "
+			+ "ORDER BY gr.id ASC LIMIT 5" , nativeQuery = true)
+	List<Alumno> findAllByPeriodo(@Param("periodo") Integer idPeriodo, @Param("cuatrimestre") Integer idCuatrimestre);
 	
+	@Query(value = "SELECT count(a.id) "
+			+ "FROM alumnos a "
+			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno=a.id "
+			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
+			+ "INNER JOIN cuatrimestres cu ON cu.id=g.id_cuatrimestre "
+			+ "INNER JOIN carreras c ON c.id=g.id_carrera "
+			+ "INNER JOIN personas p ON p.id=a.id_persona "
+			+ "WHERE a.estatus = 1 AND g.id=:grupo AND a.documentos_ingresos = 1 "
+			+ "AND a.id NOT IN ( "
+			+ "SELECT id_alumno FROM pago_alumno pa "
+			+ "INNER JOIN pagos_generales pg  ON pg.id=pa.id_pago "
+			+ "WHERE pa.id_alumno=a.id AND pg.status=0)", nativeQuery = true)
+	Integer countAlumnosRegularesByGrupo(@Param("grupo") Integer idGrupo);
 }

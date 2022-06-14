@@ -90,7 +90,7 @@ public class FolioController {
 	public String buscar(@PathVariable("dato") String dato, Model model) {
 		List<FolioDTO> folios = pagoGeneralService.buscarFolioPorFolioONombreOCliente(dato);
 		model.addAttribute("folios", folios);
-		return "fragments/buscar-folio :: lista-folios";
+		return "fragments/buscar-caja :: lista-folios";
 	}
 
 	@PostMapping(path = "/editar", consumes = MediaType.APPLICATION_JSON_VALUE)
