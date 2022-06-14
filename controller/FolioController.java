@@ -1,9 +1,7 @@
 package edu.mx.utdelacosta.controller;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -21,20 +19,27 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.mx.utdelacosta.model.Alumno;
+import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.Bitacora;
 import edu.mx.utdelacosta.model.Concepto;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
+import edu.mx.utdelacosta.model.Cuatrimestre;
 import edu.mx.utdelacosta.model.NotaCredito;
 import edu.mx.utdelacosta.model.PagoAlumno;
 import edu.mx.utdelacosta.model.PagoAsignatura;
+import edu.mx.utdelacosta.model.PagoCuatrimestre;
 import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.PagoRecibe;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Remedial;
 import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.dto.FolioDTO;
+import edu.mx.utdelacosta.service.IAlumnoGrupoService;
+import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IBitacoraService;
 import edu.mx.utdelacosta.service.IConceptoService;
+import edu.mx.utdelacosta.service.ICuatrimestreService;
 import edu.mx.utdelacosta.service.INotaCreditoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
@@ -60,6 +65,15 @@ public class FolioController {
 	
 	@Autowired
 	private IBitacoraService bitacoraService;
+	
+	@Autowired
+	private IAlumnoService alumnoService;
+	
+	@Autowired
+	private ICuatrimestreService cuatrimestreService;
+	
+	@Autowired
+	private IAlumnoGrupoService alGrService;
 
 	@GetMapping("/ver-edicion/{folio}")
 	public String vistaEdicion(@PathVariable("folio") String noFolio, Model model) {
@@ -164,11 +178,15 @@ public class FolioController {
 
 		}
 
+		List<Integer> list = new ArrayList<>();
 		//se crea una lista que se iterara para tener ambas partes del recibo
-		List<Integer> list = Arrays.asList(1, 2);
+		if (infoRecibo.getActivo()==0) {
+			list.add(1);
+		}else {
+			list.add(1);
+			list.add(2);
+		}
 		
-		System.out.println("activo del recibo"+infoRecibo.getActivo());
-
 		// extrae el monto del adeudo y lo comvierte a letras
 		String montoLetras = NumberToLetterConverter.convertNumberToLetter(totalPago);
 		model.addAttribute("notas", notas);
@@ -273,6 +291,36 @@ public class FolioController {
 		//se iteran los pagos para desactivar sus respectivos conceptos
 		for (PagoGeneral pago : pagos) {
 			
+			//se comprar si existen remediales en caso de ser asi estos se marcan como no pagados
+			if (pago.getPagoAsignatura()!=null) {
+				System.out.println("alumno   : "+pago.getPagoAlumno().getAlumno().getMatricula());
+				System.out.println("carga    : "+pago.getPagoAsignatura().getCargaHoraria().getId());
+				System.out.println("corte    : "+pago.getPagoAsignatura().getId());	
+				System.out.println("corte    : "+pago.getPagoAsignatura().getIdCorteEvaluativo());	
+				System.out.println("remedial : "+new Remedial(2));
+				RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(pago.getPagoAlumno().getAlumno(), pago.getPagoAsignatura().getCargaHoraria(), new Remedial(2), new CorteEvaluativo(pago.getPagoAsignatura().getIdCorteEvaluativo()));
+				//se compara si el extraordinario es diferente a nulo	
+				if (remedial!=null) {
+					remedial.setPagado(false);
+					//remedialAlumnoService.guardar(remedial);
+				}
+				
+				remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(pago.getPagoAlumno().getAlumno(), pago.getPagoAsignatura().getCargaHoraria(), new Remedial(1), new CorteEvaluativo(pago.getPagoAsignatura().getIdCorteEvaluativo()));
+				if (remedial!=null) {
+					remedial.setPagado(false);
+					//remedialAlumnoService.guardar(remedial);
+				}
+			}
+			
+			
+			if (pago.getPagoCuatrimestre()!=null) {
+				AlumnoGrupo alumnoG = alGrService.buscarPorId(pago.getPagoCuatrimestre().getId());
+				System.out.println("alumno grupo: "+alumnoG.getId());
+				alumnoG.setPagado(false);
+				//alGrService.guardar(alumnoG);
+			}
+			
+			
 			//se procede a duplicar el pagoGeneral para guardarlo como adeudo nuevamente
 			PagoGeneral nuevoPago = clonarPagoGeneral(pago);
 			
@@ -280,11 +328,13 @@ public class FolioController {
 			pago.setActivo(false);
 			pago.setStatus(0);
 			
+			
+			
 			//se guarda el pago
-			pagoGeneralService.guardar(pago);
+			//pagoGeneralService.guardar(pago);
 			
 			//se guarda el nuevo adeudo
-			pagoGeneralService.guardar(nuevoPago);
+			//pagoGeneralService.guardar(nuevoPago);
 			
 			//guardar en bitacora
 			bitacora.setDetalle("LA PERSONA "+bitacora.getPersona().getId()+" DIO DE BAJA EL FOLIO: "+folio);
@@ -330,8 +380,8 @@ public class FolioController {
 		}
 		
 		//guardar en bitacora
-		bitacora.setDetalle("LA PERSONA "+bitacora.getPersona().getId()+" GENERO UNA NOTA DE CREDITO PARA EL FOLIO: "+folio+", CON CANTIDAD DE: "+cantidad);
-		bitacora.setAccion("NOTA DE CREDITO");
+		bitacora.setDetalle("LA PERSONA "+bitacora.getPersona().getId()+" REGISTRÓ UNA NOTA DE CRÉDITO PARA EL FOLIO: "+folio+", CON CANTIDAD DE: "+cantidad);
+		bitacora.setAccion("NOTA DE CRÉDITO");
 		bitacoraService.guardar(bitacora);
 
 		return "ok";
@@ -373,6 +423,20 @@ public class FolioController {
 			pagoAsignatura.setIdCorteEvaluativo(pagoOriginal.getPagoAsignatura().getIdCorteEvaluativo());
 			pagoAsignatura.setOportunidad(pagoOriginal.getPagoAsignatura().getOportunidad());
 			pagoAsignatura.setPagoGeneral(pagoClon);
+			pagoClon.setPagoAsignatura(pagoAsignatura);
+		}
+		
+		// se comprueba si existe un pago de un pago de cuatrimestre, en caso de que este exista se quita el estatus de pagado
+		if (pagoOriginal.getPagoCuatrimestre()!=null) {
+			PagoCuatrimestre pagoCuatrimestre = new PagoCuatrimestre();
+			pagoCuatrimestre.setAlumnoGrupo(pagoOriginal.getPagoCuatrimestre().getAlumnoGrupo());
+			pagoCuatrimestre.setPagoGeneral(pagoClon);
+			pagoClon.setPagoCuatrimestre(pagoCuatrimestre);
+		}
+		
+		if (pagoOriginal.getPagoCliente()!=null) {
+			
+			
 		}
 		
 		// regresa el pago duplicado
@@ -431,8 +495,29 @@ public class FolioController {
 			pAlumno.setPagoGeneral(pago);
 			pago.setPagoAlumno(pAlumno);
 		}
+		
+		//pago cliente
 			
 		pagoGeneralService.guardar(pago);
+	}
+	
+	@PostMapping(path = "/generar-adeudo-catrimestre", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String generarAdeudosCuatrimestre(@RequestBody Map<String, String> obj, HttpSession session) {
+		
+		// varaibles de la vista
+		Integer c = Integer.valueOf(obj.get("cuatrimestre"));
+		Cuatrimestre cuatrimestre = cuatrimestreService.buscarPorId(c);
+		
+		Integer periodo = Integer.valueOf(obj.get("periodo"));
+		
+		// se obtiene la fecha en base a los 3 selectores de datos
+		Date fecha = java.sql.Date.valueOf(obj.get("annioLimite")+"-"+obj.get("mesLimite")+"-"+obj.get("diaLimite"));
+		
+		//LISTA DE ALUMNOS DEL CUATRIMESTRE
+		List<Alumno> alumnos = alumnoService.buscarTodosPorPeriodo(periodo, c);
+	
+		return "ok";
 	}
 
 }

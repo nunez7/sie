@@ -1,6 +1,5 @@
 package edu.mx.utdelacosta.repository;
 
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
@@ -79,30 +78,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 				 + "WHERE pa.id_alumno=:idAlumno AND pg.status=:status AND pg.activo=true", nativeQuery = true)
 		Integer countByAlumnoAndStatus(@Param("idAlumno") Integer idAlumno, @Param("status") Integer status);
 		
-	// prueba para reporte de caja detallado
-	@Query(value="SELECT * FROM pagos_generales WHERE status = 1 ORDER BY id DESC LIMIT 50", nativeQuery = true)
-	List<PagoGeneral> findByLast100();	
-	
-	//busca los pagos para reporte detallado con fechas de inicio, fin y un cajero
-	@Query(value="SELECT pg.* FROM pagos_generales pg "
-			+ "INNER JOIN pago_recibe pr ON pg.id = pr.id_pago "
-			+ "INNER JOIN personas p ON p.id = pr.id_cajero "
-			+ "WHERE pg.status = 1 AND p.id = :cajero "
-			+ "AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true)
-	List<PagoGeneral> findByFechaInicioAndFechaFinAndCajero(@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin, @Param("cajero") Integer idCajero);
-	
-	//busca los pagos para reporte detallado con fechas de inicio, fin y todos los cajeros
-	@Query(value="SELECT pg.* FROM pagos_generales pg "
-			+ "INNER JOIN pago_recibe pr ON pg.id = pr.id_pago "
-			+ "INNER JOIN personas p ON p.id = pr.id_cajero "
-			+ "WHERE pg.status = 1 "
-			+ "AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true)
-	List<PagoGeneral> findByFechaInicioAndFechaFinAndAllCajeros(@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
-	
-
-	// queryes de modulo gestion de pagos - submodulo folios
-
-	@Query(value = "SELECT pg.folio AS Folio, MAX(COALESCE(a.id, c.id)) as idCliente, MAX(CONCAT(COALESCE(c.nombre_cliente,' '), "
+		@Query(value = "SELECT pg.folio AS Folio, MAX(COALESCE(a.id, c.id)) as idCliente, MAX(CONCAT(COALESCE(c.nombre_cliente,' '), "
 				+ "COALESCE(p.primer_apellido,''), ' ' , COALESCE(p.segundo_apellido, '') , ' ' , COALESCE(p.nombre,''))) AS nombre, "
 				+ "SUM((pg.cantidad  * pg.monto_unitario) - ((COALESCE(pg.descuento,0) * (pg.cantidad * pg.monto_unitario))/100) ) AS Monto, "
 				+ "MAX(CAST(pg.status AS INT)) AS Activo, MAX(pg.created) AS Fecha, MAX(pg.tipo)AS TipoPago "
@@ -147,7 +123,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 				+ "SUM(DISTINCT(pg.cantidad  * pg.monto_unitario) - ((COALESCE(pg.descuento,0) * (pg.cantidad * pg.monto_unitario))/100) ) AS Monto, "
 				+ "MAX(CAST(pg.activo AS INT)) AS Activo, MAX(pg.created) AS Fecha, MAX(pg.tipo)AS TipoPago, "
 				+ "MAX(COALESCE(c.sector, g.nombre)) as grupo, MAX(COALESCE(c.tipo, concat(cc.fecha_inicio,' - ',cc.fecha_fin))) as ciclos, MAX(COALESCE(c.tamano, CAST(cu.consecutivo AS VARCHAR))) as cuatrimestre,"
-				+ "MAX(COALESCE(pr.fecha_cobro, null)) as fechaPago, MAX(COALESCE(CONCAT(p2.segundo_apellido, ' ', p2.primer_apellido,' ',p2.nombre), '')) as pagoRecibe, MAX(COALESCE(a.id, 0)) as idAlumno "
+				+ "MAX(COALESCE(pr.fecha_cobro, null)) as fechaPago, MAX(COALESCE(CONCAT(p2.primer_apellido, ' ', p2.segundo_apellido,' ',p2.nombre), '')) as pagoRecibe, MAX(COALESCE(a.id, 0)) as idAlumno "
 				+ "FROM pagos_generales pg "
 				+ "LEFT JOIN pago_recibe pr ON pr.id_pago = pg.id "
 				+ "LEFT JOIN personas p2 ON pr.id_cajero  = p2.id "
@@ -165,4 +141,6 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 				+ "WHERE pg.folio = :folio "
 				+ "GROUP BY pg.folio ORDER BY pg.folio DESC", nativeQuery = true)
 		FolioDTO findFolioRecibo(@Param("folio") String folio);
+	
+	
 }

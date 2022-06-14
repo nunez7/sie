@@ -13,9 +13,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
-
 @Entity
 @Table(name = "pagos_generales")
 public class PagoGeneral {
@@ -70,15 +67,22 @@ public class PagoGeneral {
 	
 	private Double descuento;
 	
+	private String comentario;
+	
 	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
 	private PagoAlumno pagoAlumno;
 	
 	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
 	private PagoRecibe pagoRecibe;
 	
-	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "pagoGeneral")
-	@LazyCollection(LazyCollectionOption.FALSE)
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
 	private PagoAsignatura pagoAsignatura;
+	
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
+	private PagoCuatrimestre pagoCuatrimestre;
+	
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
+	private PagoCliente pagoCliente;
 	
 	public Integer getId() {
 		return id;
@@ -232,6 +236,14 @@ public class PagoGeneral {
 		this.descuento = descuento;
 	}
 
+	public String getComentario() {
+		return comentario;
+	}
+
+	public void setComentario(String comentario) {
+		this.comentario = comentario;
+	}
+
 	public PagoAlumno getPagoAlumno() {
 		return pagoAlumno;
 	}
@@ -255,5 +267,24 @@ public class PagoGeneral {
 	public void setPagoAsignatura(PagoAsignatura pagoAsignatura) {
 		this.pagoAsignatura = pagoAsignatura;
 	}
+
+	public PagoCuatrimestre getPagoCuatrimestre() {
+		return pagoCuatrimestre;
+	}
+
+	public void setPagoCuatrimestre(PagoCuatrimestre pagoCuatrimestre) {
+		this.pagoCuatrimestre = pagoCuatrimestre;
+	}
+
+	public PagoCliente getPagoCliente() {
+		return pagoCliente;
+	}
+
+	public void setPagoCliente(PagoCliente pagoCliente) {
+		this.pagoCliente = pagoCliente;
+	}
+	
+	
+	
 	
 }

@@ -1,6 +1,5 @@
 package edu.mx.utdelacosta.service.db;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.PagoGeneral;
+import edu.mx.utdelacosta.model.dto.FolioDTO;
 import edu.mx.utdelacosta.repository.PagoGeneralRepository;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
 
@@ -103,19 +103,6 @@ public class PagoGeneralServiceJpa implements IPagoGeneralService{
 	}
 
 	@Override
-	public List<PagoGeneral> buscarPorFechaInicioYFechaFinYCajero(Date fechaInicio, Date fechaFin,
-			Integer idCajero) {
-		// TODO Auto-generated method stub
-		return pagoRepo.findByFechaInicioAndFechaFinAndCajero(fechaInicio, fechaFin, idCajero);
-	}
-
-	@Override
-	public List<PagoGeneral> buscarPorFechaInicioYFechaFinYTodosCajeros(Date fechaInicio, Date fechaFin) {
-		// TODO Auto-generated method stub
-		return pagoRepo.findByFechaInicioAndFechaFinAndAllCajeros(fechaInicio, fechaFin);
-	}
-
-	@Override
 	public List<FolioDTO> buscarFolioPorFolioONombreOCliente(String folio) {
 		return pagoRepo.FindByFolioOrNombreOrCliente(folio);
 	}
@@ -138,7 +125,7 @@ public class PagoGeneralServiceJpa implements IPagoGeneralService{
 	@Override
 	public PagoGeneral buscarUltimoPorFolio(String folio) {
 		return pagoRepo.findLastByFolio(folio);
-	}		
+	}	
 	
 
 }

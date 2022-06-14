@@ -364,9 +364,8 @@ public class ProfesorController {
 		}
 		if (cargaActual!=null) {
 			cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera() , cargaActual.getPeriodo());
-			System.out.println("numero de cortes: "+cortes.size());
 		}
-		System.out.println(cargaActual.getGrupo().getNombre());
+
 		List<CargaHoraria> cargas = cargaService.buscarPorProfesorYPeriodo(usuario.getPersona(), new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		List<Prorroga> prorrogas = prorrogaService.buscarPorProfesorYPeriodoYActivo(persona.getId(), usuario.getPreferencias().getIdPeriodo());
 		model.addAttribute("cargas", cargas);

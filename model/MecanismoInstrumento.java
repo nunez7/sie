@@ -29,7 +29,7 @@ public class MecanismoInstrumento {
 	@Column(name = "id_corte_evaluativo")
 	private Integer idCorteEvaluativo;
 	
-	private String rubrica;
+	private String archivo;
 	
 	private Boolean activo;
 	
