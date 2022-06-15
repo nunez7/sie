@@ -1,17 +1,21 @@
 package edu.mx.utdelacosta.controller;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +30,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AsistenciaTemaGrupal;
+import edu.mx.utdelacosta.model.Canalizacion;
+import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Dia;
 import edu.mx.utdelacosta.model.Evaluacion;
 import edu.mx.utdelacosta.model.Foco;
@@ -33,6 +39,7 @@ import edu.mx.utdelacosta.model.FocosAtencion;
 import edu.mx.utdelacosta.model.Fortaleza;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Horario;
+import edu.mx.utdelacosta.model.Mail;
 import edu.mx.utdelacosta.model.Motivo;
 import edu.mx.utdelacosta.model.MotivoTutoria;
 import edu.mx.utdelacosta.model.PagoGeneral;
@@ -40,6 +47,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Pregunta;
 import edu.mx.utdelacosta.model.ProgramacionTutoria;
+import edu.mx.utdelacosta.model.Servicio;
 import edu.mx.utdelacosta.model.TemaGrupal;
 import edu.mx.utdelacosta.model.TutoriaIndividual;
 import edu.mx.utdelacosta.model.Usuario;
@@ -52,9 +60,12 @@ import edu.mx.utdelacosta.model.dto.PreguntaDTO;
 import edu.mx.utdelacosta.model.dto.PromedioPreguntaDTO;
 import edu.mx.utdelacosta.model.dto.TutoriasProgramadasDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
+import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAsistenciaTemaGrupalService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
+import edu.mx.utdelacosta.service.ICanalizacionService;
+import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.IComentarioEvaluacionTutorService;
 import edu.mx.utdelacosta.service.IDiaService;
 import edu.mx.utdelacosta.service.IEvaluacionesService;
@@ -77,6 +88,9 @@ import edu.mx.utdelacosta.service.IUsuariosService;
 @PreAuthorize("hasRole('Administrador') and hasRole('Profesor') and hasRole('Informatica') ")
 @RequestMapping("/tutorias")
 public class TutorController {
+	
+	@Value("${spring.mail.username}")
+	private String correo;
 	
 	@Autowired
 	private IGrupoService grupoService;
@@ -141,6 +155,15 @@ public class TutorController {
 	@Autowired
 	private IProgramacionTutoriaService proTutoriaService;
 	
+	@Autowired
+	private ICargaHorariaService cargaHorariaService;
+	
+	@Autowired
+	private EmailSenderService emailService;
+	
+	@Autowired
+	private ICanalizacionService canalizacionService;
+	
 	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Rector', 'Servicios Escolares')")
     @GetMapping("/cargar-alumno/{dato}")
    	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato,  Model model, HttpSession session) { 
@@ -169,95 +192,6 @@ public class TutorController {
 		return "tutorias/gruposTutorados";
 	}
 	
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
-	@PostMapping(path = "/save-individual", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
-	public String guardarIndividual(@RequestBody Map<String, String> obj,HttpSession session) throws ParseException {			
-		if(obj.get("idAlumno")!=null) {
-			SimpleDateFormat dFHora = new SimpleDateFormat("hh:mm");
-			SimpleDateFormat dFDia = new SimpleDateFormat("dd/MM/yyyy");
-			
-			Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");
-			Integer cveAlumno = Integer.parseInt(obj.get("idAlumno"));
-			Date fecha = dFDia.parse(obj.get("fechaInicioTutoria"));			
-			Date horaInicio = dFHora.parse(obj.get("horaInicio"));
-			Date horaFin = dFHora.parse(obj.get("horaFin"));
-			
-			//recibo los motivos de la tutoria como un string y los comvierto a una ArrayList<Integer>
-			String mo = obj.get("motivos");							
-		    String s = ",";
-		    String[] mot = mo.split(s);		
-			List<String> motiv = Arrays.asList(mot);				
-			ArrayList<Integer> motivos = new ArrayList<Integer>();//lista de motivos seleccionados
-			for(int i = 0; i < motiv.size(); i++) {
-				motivos.add(Integer.parseInt(motiv.get(i)));   
-			}						
-			
-			String puntosRelevantes = obj.get("puntosRelevantes");
-			String compromisosAcuerdos = obj.get("compromisosAcuerdos");
-			String usuarioMatricula = obj.get("usuarioMatricula");
-			String userNip = obj.get("userNip");
-			
-			//Se valida el nivel de atención recibido desde la vista
-			Integer nivelAtencion = Integer.parseInt(obj.get("nivelAtencion"));			
-			String nvAtencion = null;			
-			switch (nivelAtencion) {
-			  case 1:
-			    nvAtencion = "ALTO";
-			    break;
-			  case 2:
-				nvAtencion = "MEDIO";
-			    break;
-			  case 3:
-				nvAtencion = "BAJO";
-			    break;
-			}
-			
-			Usuario usuario = usuarioService.buscarPorUsuario(usuarioMatricula);												
-			
-			if(usuario!=null) {								
-				Boolean valContra =  passwordEncoder.matches(userNip, usuario.getContrasenia());				
-				if(valContra == true) {													
-					TutoriaIndividual tutInd = new TutoriaIndividual();
-					tutInd.setAlumno(new Alumno(cveAlumno));
-					tutInd.setGrupo(new Grupo(cveGrupo));
-					tutInd.setFechaRegistro(fecha);
-					tutInd.setHoraInicio(horaInicio);
-					tutInd.setHoraFin(horaFin);
-					tutInd.setPuntosImportantes(puntosRelevantes);
-					tutInd.setCompromisosAcuerdos(compromisosAcuerdos);
-					tutInd.setNivelAtencion(nvAtencion);
-					tutInd.setValidada(false);
-					tutoriaIndiService.guardar(tutInd);
-					
-					for(int i = 0; i < motivos.size(); i++) {
-						MotivoTutoria motivoTutoria = new MotivoTutoria();
-						motivoTutoria.setTutoriaIndividual(tutInd);
-						motivoTutoria.setMotivo(new Motivo(motivos.get(i)));
-						motivoTutoService.guardar(motivoTutoria);
-					}
-					
-					return "ok";
-				}else{
-					return "PaError";
-				}
-			}else{
-				return "NoUser";
-			}
-		}
-		return "NoAl";
-	}
-	
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
-	@PostMapping(path = "/save-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
-	public String guardarBaja(@RequestBody Map<String, String> obj) {			
-		if(obj.get("idAlumno")!=null) {
-			return "ok";
-		}
-		return "NoAl";
-	}
-	
 	@GetMapping("/tutoriaIndividual")
 	public String tutoriaIndividual(Model model, HttpSession session) {
 		// extrae el usuario apartir del usuario cargado en cesion.
@@ -284,6 +218,207 @@ public class TutorController {
 		return "tutorias/tutoriaIndividual";		
 	}
 	
+	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
+	@PostMapping(path = "/save-individual", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String guardarIndividual(@RequestBody Map<String, String> obj,HttpSession session, Model model) throws ParseException {			
+		if(obj.get("idAlumno")!=null) {
+			SimpleDateFormat dFHora = new SimpleDateFormat("hh:mm");		
+			
+			Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");
+			String cveAlumno = obj.get("idAlumno");
+			Date fecha = new Date();			
+			Date horaInicio = dFHora.parse(obj.get("horaInicio"));
+			Date horaFin = dFHora.parse(obj.get("horaFin"));
+			
+			//recibo los motivos de la tutoria como un string y los comvierto a una ArrayList<Integer>
+			String mo = obj.get("motivos");							
+		    String s = ",";
+		    String[] mot = mo.split(s);		
+			List<String> motiv = Arrays.asList(mot);				
+			ArrayList<Integer> motivos = new ArrayList<Integer>();//lista de motivos seleccionados
+			for(int i = 0; i < motiv.size(); i++) {
+				motivos.add(Integer.parseInt(motiv.get(i)));   
+			}						
+			
+			String puntosRelevantes = obj.get("puntosRelevantes");
+			String compromisosAcuerdos = obj.get("compromisosAcuerdos");
+			String usuarioMatricula = obj.get("usuarioMatricula");
+			String userNip = obj.get("userNip");
+			
+			Integer tipo = Integer.parseInt(obj.get("tipo-tutoria"));			
+			//Se valida el nivel de atención recibido desde la vista
+			Integer nivelAtencion = Integer.parseInt(obj.get("nivelAtencion"));			
+			String nvAtencion = null;			
+			switch (nivelAtencion) {
+			  case 1:
+			    nvAtencion = "ALTO";
+			    break;
+			  case 2:
+				nvAtencion = "MEDIO";
+			    break;
+			  case 3:
+				nvAtencion = "BAJO";
+			    break;
+			}
+																				
+			if(cveAlumno!=null) {	
+				Usuario usuario = usuarioService.buscarPorUsuario(usuarioMatricula);							
+				Boolean valContra =  passwordEncoder.matches(userNip, usuario.getContrasenia());				
+				if(valContra == true) {													
+					TutoriaIndividual tutInd = new TutoriaIndividual();
+					tutInd.setAlumno(new Alumno(Integer.parseInt(cveAlumno)));
+					tutInd.setGrupo(new Grupo(cveGrupo));
+					tutInd.setFechaRegistro(fecha);
+					tutInd.setHoraInicio(horaInicio);
+					tutInd.setHoraFin(horaFin);
+					tutInd.setPuntosImportantes(puntosRelevantes);
+					tutInd.setCompromisosAcuerdos(compromisosAcuerdos);
+					tutInd.setNivelAtencion(nvAtencion);
+					tutInd.setValidada(false);
+					tutoriaIndiService.guardar(tutInd);
+					
+					for(int i = 0; i < motivos.size(); i++) {
+						MotivoTutoria motivoTutoria = new MotivoTutoria();
+						motivoTutoria.setTutoriaIndividual(tutInd);
+						motivoTutoria.setMotivo(new Motivo(motivos.get(i)));
+						motivoTutoService.guardar(motivoTutoria);
+					}
+					//Se valida si la tutoría se canalizara								
+					if(tipo==1) {		
+						TutoriaIndividual tutoria = tutoriaIndiService.ultimoRegistro();						
+						return  String.valueOf(tutoria.getId());
+					}else{
+						return "ok";
+					}
+					
+				}else{
+					return "PaError";
+				}
+			}else{
+				return "NoUser";
+			}
+		}
+		return "NoAl";
+	}
+	
+	@GetMapping("/canalizacion/{cveTutoria}")	
+	public String canalizacion(@PathVariable(name = "cveTutoria", required = false) Integer cveTutoria, Model model, HttpSession session) {				
+		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");	
+		List<Alumno> alumnos = new ArrayList<>();
+		List<CargaHoraria> materias = new ArrayList<>();
+		if (cveGrupo != null) {									
+			materias = cargaHorariaService.buscarPorGrupo(new Grupo(cveGrupo));
+			TutoriaIndividual tutoriaIndividual = tutoriaIndiService.buscarPorId(cveTutoria);
+			model.addAttribute("tutoria", tutoriaIndividual);
+		}
+		
+		model.addAttribute("alumnos", alumnos);		
+		model.addAttribute("materias", materias);
+		model.addAttribute("cveGrupo", cveGrupo);	
+		return "tutorias/canalizacion";
+	}
+	
+	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
+	@PostMapping(path = "/canalizar-alumno", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String canalizarAlumno(@RequestBody Map<String, String> obj,HttpSession session) throws ParseException {
+		SimpleDateFormat dFHora = new SimpleDateFormat("hh:mm");	
+		SimpleDateFormat dFDia = new SimpleDateFormat("dd/MM/yyyy");		
+		
+		String cveTutoria =  obj.get("idTutoria");		
+		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");
+		String cveAlumno = obj.get("idAlumno");
+		Date fechaRegistro = new Date();
+		Date fecha = dFDia.parse(obj.get("fechaCanalizacion"));
+		Date hora = dFHora.parse(obj.get("horaCanalizacion"));
+		Integer servicio =  Integer.parseInt(obj.get("servicio"));
+		// Solo se utiliza para correo como complemento del servicio solicitado		
+		String resumen =  obj.get("resumen");
+		Integer materia =  Integer.parseInt(obj.get("materia"));
+		//		
+		String razon =  obj.get("razon");
+		String comentario =  obj.get("comentario");
+		
+		if(cveGrupo!=null) {
+			Grupo grupo = grupoService.buscarPorId(cveGrupo);			
+			if(cveAlumno!=null) {	
+				if(cveTutoria!=null) {
+					Canalizacion canalizacion = new Canalizacion();
+					canalizacion.setAlumno(new Alumno(Integer.parseInt(cveAlumno)));
+					canalizacion.setTutoriaIndividual(new TutoriaIndividual(Integer.parseInt(cveTutoria)));
+					canalizacion.setPeriodo(grupo.getPeriodo());
+					canalizacion.setFechaRegistro(fechaRegistro);
+					canalizacion.setFechaCanalizar(fecha);
+					canalizacion.setHoraCanalizar(hora);
+					canalizacion.setServicio(new Servicio(servicio));
+					canalizacion.setRazones(razon);
+					canalizacion.setComentarios(comentario);
+					canalizacion.setStatus(1);
+					canalizacionService.guardar(canalizacion);
+					
+					Alumno alumno = alumnoService.buscarPorId(Integer.parseInt(cveAlumno));				
+					// se crear un correo y se envia al director correspondiente			
+					Mail mail = new Mail();
+					String de = correo;
+					String para = "brayan.bg499@gmail.com";
+					
+					//Se valida el tipo de servicio al que se canalizara para enviar el correo			
+//					if(servicio==1){
+//						
+//					}
+//					else if(servicio==2){
+//						
+//					}
+//					else if(servicio==3){
+					CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(materia);
+//					para = cargaHoraria.getProfesor().getEmail();
+//					}
+//					else if(servicio==4){
+//					
+//					}
+//					else if(servicio==5){
+//						
+//					}
+					
+					mail.setDe(de);
+					mail.setPara(new String[] {para});		
+					//Email title
+					mail.setTitulo("Canalización de alumnos");		
+					//Variables a plantilla
+					Map<String, Object> variables = new HashMap<>();
+					variables.put("titulo", "Canalización del alumno(a) "+alumno.getPersona().getNombreCompleto());
+					//La canalización a profesor cambia un poco la estructura del correo enviado
+					if(servicio==3){
+						variables.put("cuerpoCorreo", "Canalización del alumno "+alumno.getPersona().getNombreCompleto()
+								+", por el tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
+								+", solicita una canalización el día "+dFDia.format(fecha)+" a las "+dFHora.format(hora)
+								+" para la materia "+cargaHoraria.getMateria().getNombre()+" que imparte"
+								+", por esta razon: "+razon
+								+". "+comentario+". Espero su confirmación"+grupo.getProfesor().getEmail()+".");
+					}else{
+						variables.put("cuerpoCorreo", "Canalización del alumno "+alumno.getPersona().getNombreCompleto()
+								+", por el tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
+								+", solicita una canalización el día "+dFDia.format(fecha)+" a las "+dFHora.format(hora)
+								+" debido a que "+resumen
+								+", por esta razon: "+razon
+								+". "+comentario+". Espero su confirmación"+grupo.getProfesor().getEmail()+".");
+					}
+					mail.setVariables(variables);			
+					try {
+						emailService.sendEmail(mail);
+						return "ok";
+					}catch (MessagingException | IOException e) {
+						return "error";
+				  	}
+				}				
+				return "noTuto";
+			}
+			return "noAl";
+		}
+		return "noGru";
+	}
+	
 	@GetMapping("/bajaAlumno")
 	public String bajaAlumno(Model model, HttpSession session) {
 		// extrae el usuario apartir del usuario cargado en cesion.
@@ -307,6 +442,16 @@ public class TutorController {
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("cveGrupo", cveGrupo);
 		return "tutorias/bajaAlumno";		
+	}
+	
+	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
+	@PostMapping(path = "/save-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String guardarBaja(@RequestBody Map<String, String> obj) {			
+		if(obj.get("idAlumno")!=null) {
+			return "ok";
+		}
+		return "NoAl";
 	}
 	
 	@GetMapping("/tutoriaGrupal")
@@ -660,31 +805,6 @@ public class TutorController {
 		return "error";		
 	}
 	
-	@GetMapping("/canalizacion")
-	public String canalizacion(Model model, HttpSession session) {
-		// extrae el usuario apartir del usuario cargado en cesion.
-		Usuario usuario = (Usuario) session.getAttribute("usuario");
-		int cvePersona;
-		try {
-			cvePersona = (Integer) session.getAttribute("cvePersona");
-		} catch (Exception e) {
-			cvePersona = usuario.getPersona().getId();
-		}
-					
-		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));		
-		Integer cveGrupo = (Integer) session.getAttribute("cveGrupo");		
-		List<Alumno> alumnos = new ArrayList<>();
-		
-		if (cveGrupo != null) {						
-			alumnos = alumnoService.buscarPorGrupo(cveGrupo);			
-		}
-		
-		model.addAttribute("alumnos", alumnos);
-		model.addAttribute("grupos", grupos);
-		model.addAttribute("cveGrupo", cveGrupo);
-		return "tutorias/canalizacion";
-	}
-	
 	@GetMapping("/reporte-evaluacion-tutor")
 	public String encuestaEvaluacionTutor(Model model, HttpSession session) {
 		// extrae el usuario apartir del usuario cargado en cesion.
@@ -895,10 +1015,10 @@ public class TutorController {
 	  return "reportes/reporteHorarioClases"; 
 	 }
 	 
-//		@GetMapping("/entrevistaInicial")
-//		public String encuestaEntrevistaInicial() {
-//			return "encuestas/encuestaEntrevistaInicial";
-//		}
+//	@GetMapping("/entrevistaInicial")
+//	public String encuestaEntrevistaInicial() {
+//		return "encuestas/encuestaEntrevistaInicial";
+//	}
 	 
 //	 @GetMapping("/reporte-entrevista-inicial") 
 //	 public String reporteEntrevistaInicial() { 

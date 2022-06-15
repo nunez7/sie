@@ -12,4 +12,6 @@ public interface TutoriaIndividualRepository extends CrudRepository<TutoriaIndiv
 	
 	List<TutoriaIndividual> findByAlumnoAndGrupo(Alumno alumno, Grupo grupo);
 	
+	TutoriaIndividual findTopByOrderByIdDesc();
+			
 }
