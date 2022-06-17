@@ -135,7 +135,7 @@ public class PersonaDocumentoController {
 			variables.put("titulo", "Documentación aprobada");
 			variables.put("cuerpoCorreo",
 					"Estimado Alumno, <br>"
-							+ "Se te notifica que tus documentos han sido aprobados por Servicios Escolares.<br>"
+							+ "Se le notifica que tus documentos han sido aprobados por Servicios Escolares.<br>"
 							+ "¡Ya eres parte de nuestra Universidad! <br>"
 							+ "<a style ='color:white' href='"+url+"' class='btn' target='_blank'>Link de acceso a sistema</a><br>");				
 			mail.setVariables(variables);
@@ -195,8 +195,8 @@ public class PersonaDocumentoController {
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("titulo", "Problemas con tu documento");
 		variables.put("cuerpoCorreo",
-				"Estimado alumno, se te notifica que su documento: "+tipo+" ha sido rechazado, debido a: "+motivo+".<br>"
-						+ "Puedes subirlo nuevamente al sistema o acudiendo con tu documentación a la oficina de Servicios Escolares. <br>");				
+				"Estimado alumno, se le notifica que su documento: "+tipo+" ha sido rechazado, debido a: "+motivo+".<br>"
+						+ "Puedes subirlo nuevamente al sistema o acudir con tu documentación a la oficina de Servicios Escolares. <br>");				
 		mail.setVariables(variables);
 		try {
 			emailService.sendEmail(mail);

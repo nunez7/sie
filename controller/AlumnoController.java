@@ -50,6 +50,7 @@ import edu.mx.utdelacosta.model.Horario;
 import edu.mx.utdelacosta.model.MecanismoAlumno;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
 import edu.mx.utdelacosta.model.PagoGeneral;
+import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.PersonaDocumento;
 import edu.mx.utdelacosta.model.RemedialAlumno;
@@ -219,8 +220,9 @@ public class AlumnoController {
 				
 				List<CorteEvaluativoDTO> corteDto = new ArrayList<>();								
 				
+				Integer c = 0;
 				for (CorteEvaluativo corte : corteEvaluativos) {
-
+					
 					CorteEvaluativoDTO cortesEvaluativosDTO = new CorteEvaluativoDTO();
 					cortesEvaluativosDTO.setIdCorte(corte.getId());
 					cortesEvaluativosDTO.setFechaInicio(corte.getFechaInicio());
@@ -230,6 +232,8 @@ public class AlumnoController {
 					
 					List<Date> meses = serviceAsistencia.mesesEntreFechaInicioYFechaFinAsc(corte.getFechaInicio(), corte.getFechaFin());
 					
+					Integer n = 0;
+					Integer zm = meses.size();
 					List<MesDTO> mesesDto = new ArrayList<>();
 					for (Date mes : meses) {									
 						
@@ -255,26 +259,44 @@ public class AlumnoController {
 						mesDTO.setMes(mesLetra);						
 						mesesDto.add(mesDTO);
 						cortesEvaluativosDTO.setMeses(mesesDto);
-						
-						 List<Date> dias = serviceAsistencia.diasEntreFechaInicioYFechaFin(primerDia, ultimoDia);							 
-						 
-						 List<DiaDTO> diasDto = new ArrayList<>();
+						List<Date> dias = new ArrayList<>();
+						if(zm==1) {
+							dias = serviceAsistencia.diasEntreFechaInicioYFechaFin(sdf.format(corte.getFechaInicio()), sdf.format(corte.getFechaFin()));							
+						}else{								
+							if(c==0) {
+								if (n==(zm-1)){
+									dias = serviceAsistencia.diasEntreFechaInicioYFechaFin(primerDia, sdf.format(corte.getFechaFin()));
+								}else{
+									dias = serviceAsistencia.diasEntreFechaInicioYFechaFin(primerDia, ultimoDia);
+								}
+								
+							}else{
+								if (n==0){
+									dias = serviceAsistencia.diasEntreFechaInicioYFechaFin(sdf.format(corte.getFechaInicio()), ultimoDia);
+								}else{
+									dias = serviceAsistencia.diasEntreFechaInicioYFechaFin(primerDia, ultimoDia);
+								}
+							}																				
+						}
+							
+						List<DiaDTO> diasDto = new ArrayList<>();
                         for (Date dia : dias) {
+                        	
                             DiaDTO diaDto = new DiaDTO();
                             diaDto.setDia(dia);
                             diasDto.add(diaDto);
                             mesDTO.setDias(diasDto);                          
                             
                         } 
-						
-					}					
+						++n;
+					}
+					++c;
 				}
 				//----------------
 				
 				// Se extraen la carga horaria a partir del grupo seleccinado				
-				List<CargaHoraria> cargasHor = serviceCargaHor.buscarPorGrupo(grupo);
-				
-				//Lista de asistencias asociadas a las cargas horarias del grupo y a el alumno				
+				List<CargaHoraria> cargasHor = serviceCargaHor.buscarPorGrupo(grupo);				
+
 				List<Asistencia> asistencias = serviceAsistencia.buscarPorGrupoYalumno(cveGrupo, alumno.getId());
 				
 				model.addAttribute("corteDto", corteDto);
@@ -497,8 +519,7 @@ public class AlumnoController {
 		// carga el usuario apartir del usuario cargado en cesion.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;		
-		int cveDocumento = Integer.parseInt(idDocumento);
-		
+		Integer cveDocumento = Integer.parseInt(idDocumento);		
 		try {
 			cvePersona = (Integer) session.getAttribute("cvePersona");
 		} catch (Exception e) {
@@ -721,6 +742,7 @@ public class AlumnoController {
 		if (alumno != null) {
 			// Extrae el ultimo grupo del alumno y se envia al modelo de grupo
 			Grupo ultimoGrupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());
+			
 			alumno.setUltimoGrupo(ultimoGrupo);
 			//Se extraen la lista de grupos 	
 			List<Grupo> grupos = serviceGrupo.buscarTodosDeAlumnosOrdenPorPeriodoDesc(alumno.getId());
@@ -763,56 +785,58 @@ public class AlumnoController {
 			}
 			model.addAttribute("estadoDocs", estadoDocs);
 			model.addAttribute("docsExp", docsExp);
-			
-			AlumnoGrupo alumnoGrupo = serviceAlumGrupo.buscarPorAlumnoYGrupo(alumno, ultimoGrupo);
-			Boolean reincripsion = null;
-			boolean FechaInscripcion = false;
-			Date fechaHoy = new Date();	
-			//se valida que el alumno no este incrito en el grupo actual			
-			if(ultimoGrupo.getPeriodo().getFinInscripcion()!=null && ultimoGrupo.getPeriodo().getFinInscripcion().after(fechaHoy)) {
-				reincripsion = false;
-				if(alumnoGrupo!=null && alumnoGrupo.getFechaInscripcion() == null) {									
-					if(grupos.size()>1) {
-						
-						//lista de adeudos 										
-						int cantidadAdeudos = servicePagoGeneral.contarPorAlumnoYStatus(alumno.getId(), 0);
-						System.out.println(cantidadAdeudos);
-						//promedio del grupo anterior
-						Grupo penultimoGrupo = serviceGrupo.buscarPorAlumnoPenultimoGrupo(alumno.getId());
-						double promedio = serviceGrupo.obtenerPromedioAlumn(alumno.getId(), penultimoGrupo.getId());				
-						int promedioRed = (int) Math.round(promedio);
-						
-						//Se valida si ahi un convenio para alguno que extiende el palso de entrega de documetos
-						boolean convenio = false; 
-						for(DocumentoDTO doc :docsExp) {	
-							if (doc.getConvenio()!=null) {
-								
-							if(doc.getConvenio() == true) {
-								convenio = true;
-							}
-							}
-						}	
-						
-						//Validacion de los requisitos de reinscripcion
-						if(ultimoGrupo.getPeriodo().getId() >= 10 || convenio == true) {											
-							if((alumnoGrupo.getFechaInscripcion() == null) && (cantidadAdeudos == 0) && (promedioRed >= 8)) {							
-								reincripsion = true;
-							}						
-						}else{						
-							//Validasion de los requisitos para la reincripsion
-							if((alumnoGrupo.getFechaInscripcion() == null) && (estadoDocs == true) && (cantidadAdeudos == 0) && (promedioRed >= 8)) {							
-								reincripsion = true;
-							}													
-						}	
-						
-					}																
-				}else{									
-					FechaInscripcion = true;
-				}
-			}			
-			model.addAttribute("FechaInscripcion", FechaInscripcion);
-			model.addAttribute("reincripsion", reincripsion);
-			model.addAttribute("grupos", gruposDTO);			
+				
+			if(ultimoGrupo!=null) {
+				AlumnoGrupo alumnoGrupo = serviceAlumGrupo.buscarPorAlumnoYGrupo(alumno, ultimoGrupo);
+				Boolean reincripsion = null;
+				boolean FechaInscripcion = false;
+				Date fechaHoy = new Date();	
+				//se valida que el alumno no este incrito en el grupo actual			
+				if(ultimoGrupo.getPeriodo().getFinInscripcion()!=null && ultimoGrupo.getPeriodo().getFinInscripcion().after(fechaHoy)) {
+					reincripsion = false;
+					if(alumnoGrupo!=null && alumnoGrupo.getFechaInscripcion() == null) {									
+						if(grupos.size()>1) {
+							
+							//lista de adeudos 										
+							int cantidadAdeudos = servicePagoGeneral.contarPorAlumnoYStatus(alumno.getId(), 0);
+							System.out.println(cantidadAdeudos);
+							//promedio del grupo anterior
+							Grupo penultimoGrupo = serviceGrupo.buscarPorAlumnoPenultimoGrupo(alumno.getId());
+							double promedio = serviceGrupo.obtenerPromedioAlumn(alumno.getId(), penultimoGrupo.getId());				
+							int promedioRed = (int) Math.round(promedio);
+							
+							//Se valida si ahi un convenio para alguno que extiende el palso de entrega de documetos
+							boolean convenio = false; 
+							for(DocumentoDTO doc :docsExp) {	
+								if (doc.getConvenio()!=null) {
+									
+								if(doc.getConvenio() == true) {
+									convenio = true;
+								}
+								}
+							}	
+							
+							//Validacion de los requisitos de reinscripcion
+							if(ultimoGrupo.getPeriodo().getId() >= 10 || convenio == true) {											
+								if((alumnoGrupo.getFechaInscripcion() == null) && (cantidadAdeudos == 0) && (promedioRed >= 8)) {							
+									reincripsion = true;
+								}						
+							}else{						
+								//Validasion de los requisitos para la reincripsion
+								if((alumnoGrupo.getFechaInscripcion() == null) && (estadoDocs == true) && (cantidadAdeudos == 0) && (promedioRed >= 8)) {							
+									reincripsion = true;
+								}													
+							}	
+							
+						}																
+					}else{									
+						FechaInscripcion = true;
+					}
+				}			
+				model.addAttribute("FechaInscripcion", FechaInscripcion);
+				model.addAttribute("reincripsion", reincripsion);
+				model.addAttribute("grupos", gruposDTO);
+			}
 			model.addAttribute("grupo", ultimoGrupo);
 		}
 		model.addAttribute("alumno", alumno);
@@ -843,11 +867,12 @@ public class AlumnoController {
 			
 			Boolean periodoAct = false;
 			Date fechaHoy = new Date();	
-			Grupo ultimoGrupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());
+			Periodo periodo = periodoService.buscarUltimo();
 			
-			if(ultimoGrupo.getPeriodo().getFinInscripcion()!=null && ultimoGrupo.getPeriodo().getFinInscripcion().after(fechaHoy)) {
+			if(periodo.getFinInscripcion()!=null && periodo.getFinInscripcion().after(fechaHoy)) {
 				periodoAct = true;
-			}			
+			}
+			
 			model.addAttribute("totalAdeudo", suma);
 			model.addAttribute("adeudos", adeudos);
 			model.addAttribute("periodoAct", periodoAct);
@@ -909,14 +934,12 @@ public class AlumnoController {
 		Integer idAdeudo = (Integer) session.getAttribute("cveAdeudo");
 		PagoGeneral adeudo = servicePagoGeneral.buscarPorId(idAdeudo);
 		Date fechaHoy = new Date();
-		//se extrae el ultimo grupo al que pertenecio el alumno
-		Grupo ultimoGrupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());
 		
 		// valida si la refensia fondos esta vacia		
 		if (adeudo.getReferenciaFondos() == null || adeudo.getReferenciaFondos().isEmpty()) {			
 			
 			ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
-			refereciaDTO.setCarrera(ultimoGrupo.getCarrera());			
+			refereciaDTO.setCarrera(alumno.getCarreraInicio());			
 			refereciaDTO.setMatricula(alumno.getMatricula());			
 			refereciaDTO.setPago(adeudo.getMonto());			
 			String cadena = generarReferenciaFondos.referenciaFondos(refereciaDTO);				
@@ -940,7 +963,7 @@ public class AlumnoController {
 	        Date fechaLimiteP = c.getTime();
 	        		        		      		   
 			ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
-			refereciaDTO.setCarrera(ultimoGrupo.getCarrera());			
+			refereciaDTO.setCarrera(alumno.getCarreraInicio());			
 			refereciaDTO.setMatricula(alumno.getMatricula());
 			refereciaDTO.setFechaLimite(fechaLimite);
 			refereciaDTO.setPago(adeudo.getMonto());	
@@ -963,7 +986,7 @@ public class AlumnoController {
 		        Date fechaL = c.getTime();
 		        		        		      		   
 				ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
-				refereciaDTO.setCarrera(ultimoGrupo.getCarrera());				
+				refereciaDTO.setCarrera(alumno.getCarreraInicio());				
 				refereciaDTO.setMatricula(alumno.getMatricula());				
 				refereciaDTO.setFechaLimite(fechaLimite);
 				refereciaDTO.setPago(adeudo.getMonto());
@@ -981,7 +1004,8 @@ public class AlumnoController {
 		String montoLetras = NumberToLetterConverter.convertNumberToLetter(adeudo.getMonto());
 		model.addAttribute("montoLetras", montoLetras);
 		
-		String periodo = ultimoGrupo.getPeriodo().getNombre();
+		Periodo pe = periodoService.buscarUltimo();
+		String periodo = pe.getNombre();
 		model.addAttribute("periodo", periodo);
 
 		// Extrae la fecha actual y le da formato
@@ -1009,9 +1033,6 @@ public class AlumnoController {
 		Date fechaHoy = new Date();		
 		try {
 		if (alumno != null) {
-			// Extrae el ultmi grupo
-			Grupo ultimoGrupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());	
-			
 			List<PagoGeneral> adeudos = servicePagoGeneral.buscarPorAlumno(alumno.getId(), 0);
 			
 			//Se recorrere la lista de  adeudos para extraer las referesias fondos y comparar todas son iguales			
@@ -1027,7 +1048,7 @@ public class AlumnoController {
 				
 				if(adeudo.getReferenciaFondos() == null || adeudo.getReferenciaFondos().isEmpty()) {
 					ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
-					refereciaDTO.setCarrera(ultimoGrupo.getCarrera());			
+					refereciaDTO.setCarrera(alumno.getCarreraInicio());			
 					refereciaDTO.setMatricula(alumno.getMatricula());			
 					refereciaDTO.setPago(adeudo.getMonto());
 					String cadena = generarReferenciaFondos.referenciaFondos(refereciaDTO);				
@@ -1042,7 +1063,7 @@ public class AlumnoController {
 				PagoGeneral adeudo = adeudos.get(0);
 				
 				ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
-				refereciaDTO.setCarrera(ultimoGrupo.getCarrera());			
+				refereciaDTO.setCarrera(alumno.getCarreraInicio());			
 				refereciaDTO.setMatricula(alumno.getMatricula());			
 				refereciaDTO.setPago(adeudo.getMonto());			
 				String cadena = generarReferenciaFondos.referenciaFondos(refereciaDTO);	
@@ -1083,7 +1104,7 @@ public class AlumnoController {
 			        Date fechaLimiteP = c.getTime();
 			        		        		      		   
 					ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
-					refereciaDTO.setCarrera(ultimoGrupo.getCarrera());
+					refereciaDTO.setCarrera(alumno.getCarreraInicio());
 					refereciaDTO.setMatricula(alumno.getMatricula());
 					refereciaDTO.setFechaLimite(fechaLimite);
 					refereciaDTO.setPago(suma);
@@ -1114,7 +1135,7 @@ public class AlumnoController {
 		        Date fechaLimiteP = c.getTime();
 		        		        		      		   
 				ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
-				refereciaDTO.setCarrera(ultimoGrupo.getCarrera());
+				refereciaDTO.setCarrera(alumno.getCarreraInicio());
 				refereciaDTO.setMatricula(alumno.getMatricula());
 				refereciaDTO.setFechaLimite(fechaLimite);
 				refereciaDTO.setPago(suma);
@@ -1132,9 +1153,9 @@ public class AlumnoController {
 			List<PagoGeneral> adeudosActulizado = servicePagoGeneral.buscarPorAlumno(alumno.getId(), 0);
 			
 			PagoGeneral adeudo = adeudosActulizado.get(0);
-
-			model.addAttribute("ultimoGrupo", ultimoGrupo);
-			String periodo = ultimoGrupo.getPeriodo().getNombre();
+			
+			Periodo pe = periodoService.buscarUltimo();
+			String periodo = pe.getNombre();
 			model.addAttribute("periodo", periodo);
 			
 			// Calcula el adeudo total
@@ -1210,9 +1231,14 @@ public class AlumnoController {
 			}			
 			// extrae el monto del adeudo y lo comvierte a letras
 			String montoLetras = NumberToLetterConverter.convertNumberToLetter(totalPago);
+			List<String> dos = new ArrayList<>();
+			dos.add("");
+			dos.add("RPt-3");
+			
 			model.addAttribute("montoLetras", montoLetras);
 			model.addAttribute("totalPago", totalPago);	
 			model.addAttribute("folioCifrado", folioCifrado);			
+			model.addAttribute("dos", dos);
 		}
 		model.addAttribute("alumno", alumno);
 		return "alumno/recibo";
