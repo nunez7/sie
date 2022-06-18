@@ -1,7 +1,6 @@
 package edu.mx.utdelacosta.controller;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -9,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -47,7 +45,6 @@ import edu.mx.utdelacosta.model.Estado;
 import edu.mx.utdelacosta.model.FolioCeneval;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Localidad;
-import edu.mx.utdelacosta.model.Mail;
 import edu.mx.utdelacosta.model.Materia;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
 import edu.mx.utdelacosta.model.Municipio;
@@ -73,10 +70,8 @@ import edu.mx.utdelacosta.model.dtoreport.CalificacionParcial;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
-import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
-import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICalificacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
@@ -85,7 +80,6 @@ import edu.mx.utdelacosta.service.ICicloService;
 import edu.mx.utdelacosta.service.IConceptoService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.ICuatrimestreService;
-import edu.mx.utdelacosta.service.IDocumentosService;
 import edu.mx.utdelacosta.service.IEscuelaService;
 import edu.mx.utdelacosta.service.IEstadoCivilService;
 import edu.mx.utdelacosta.service.IEstadoService;
@@ -194,13 +188,7 @@ public class EscolaresController {
 	private IPersonaDocumentoService personaDocumentoService;
 	
 	@Autowired
-	private IDocumentosService documentoService;
-	
-	@Autowired
 	private IPrestamoDocumentoService prestamoDocumento;
-
-	@Autowired
-	private ICalificacionCorteService calificacionCorteService;
 	
 	@Autowired
 	private ICorteEvaluativoService corteEvaluativoService;
@@ -221,10 +209,7 @@ public class EscolaresController {
 	
 	@Autowired
 	private IPagoAlumnoService pagoAlumnoService;
-	
-	@Autowired
-	private EmailSenderService emailService;
-	
+		
 	@Value("${spring.mail.username}")
 	private String correo;
 
@@ -699,7 +684,6 @@ public class EscolaresController {
 	
 	@GetMapping("/boleta-alumno/{alumno}/{grupo}")
 	public String boletaAlumno(@PathVariable("alumno") int idAlumno, @PathVariable("grupo") int idGrupo, Model model, HttpSession session) {
-		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		//Carrera carrera = carreraService.bus
 		Grupo grupo = grupoService.buscarPorId(idGrupo);
 		List<AlumnoDTO> alumnos = new ArrayList<AlumnoDTO>();
@@ -1137,12 +1121,14 @@ public class EscolaresController {
 							CalificacionParcial calificacion = new CalificacionParcial();
 							calificacion.setMatricula(alumno.getMatricula());
 							calificacion.setNombre(alumno.getPersona().getNombreCompleto());
-							List<CalificacionInstrumentoDTO> mecanismos = calificacionService
-									.findByCargaHorariaAndCorteEvaluativo(alumno.getId(), cargaActual, parcialActual);
+							
+							List<CalificacionInstrumentoDTO> mecanismos = new ArrayList<>();
+							for (MecanismoInstrumento meca : mecanismoInstrumento) {
+								CalificacionInstrumentoDTO cali = calificacionService.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual, parcialActual, meca.getInstrumento().getId());
+								mecanismos.add(cali);
+							}
 							calificacion.setMecanismos(mecanismos);
-							calificacion.setCalificacionOrdinaria(calificacionCorteService
-									.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(),
-											cargaActual, parcialActual).floatValue());
+							
 							RemedialAlumno rem = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 									alumno, new CargaHoraria(cargaActual), new Remedial(1),
 									new CorteEvaluativo(parcialActual));

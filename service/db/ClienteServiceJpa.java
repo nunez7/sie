@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import edu.mx.utdelacosta.model.Cliente;
-import edu.mx.utdelacosta.model.Concepto;
 import edu.mx.utdelacosta.repository.ClienteRepository;
 import edu.mx.utdelacosta.service.IClienteService;
 

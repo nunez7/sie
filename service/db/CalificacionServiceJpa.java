@@ -80,4 +80,10 @@ public class CalificacionServiceJpa implements ICalificacionService {
 	public Integer contarPorIdMecanismoInstrumento(Integer idMecanismo) {
 		return calificacionRepository.countByIdMecanismoInstrumento(idMecanismo);
 	}
+	
+	@Override
+	public CalificacionInstrumentoDTO buscarPorCargaHorariaYCorteEvaluativoEInstrumento(Integer idAlumno,
+			Integer idCargaHoraria, Integer idCorteEvaluativo, Integer idInstrumento) {
+		return calificacionRepository.findByCargaHorariaAndCorteEvaluativoAndInstrumento(idCargaHoraria, idCorteEvaluativo, idAlumno, idInstrumento);
+	}
 }

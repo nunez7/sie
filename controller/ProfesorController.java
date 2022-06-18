@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -342,6 +343,10 @@ public class ProfesorController {
 			model.addAttribute("cActual", cargaActual);
 			model.addAttribute("cveCarga", cargaActual.getId());
 		}
+		Date fechaActual = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		String format = formatter.format(fechaActual);
+		model.addAttribute("fecha", format);
 		model.addAttribute("asesoria", new Asesoria());
 		model.addAttribute("alumnos", alumnos);
 		model.addAttribute("cargas", cargas);
@@ -362,6 +367,7 @@ public class ProfesorController {
 		if (cargaActual!=null) {
 			cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera() , cargaActual.getPeriodo());
 		}
+
 		List<CargaHoraria> cargas = cargaService.buscarPorProfesorYPeriodo(usuario.getPersona(), new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		List<Prorroga> prorrogas = prorrogaService.buscarPorProfesorYPeriodoYActivo(persona.getId(), usuario.getPreferencias().getIdPeriodo());
 		model.addAttribute("cargas", cargas);
@@ -462,7 +468,7 @@ public class ProfesorController {
 				indicadores.setNumeroBajas(noAlumnos);
 				indicadores.setPorcentajeBajas((noAlumnos*100)/alumnos);
 								
-				noAlumnos = alumnoService.obtenerRegulares(cargaActual.getGrupo().getCarrera().getId(), usuario.getPreferencias().getIdPeriodo(), cargaActual.getGrupo().getCuatrimestre().getId()).size();
+				noAlumnos = alumnoService.contarAlumnosRegularesPorGrupo(cargaActual.getGrupo().getId()); 
 				indicadores.setNumeroRegulares(noAlumnos);
 				indicadores.setPorcentajeRegulares((noAlumnos*100)/alumnos);
 				
@@ -478,9 +484,11 @@ public class ProfesorController {
 				indicadores.setPorcentajeExtra((totalExtra*100)/alumnos);
 				indicadores.setIndicadoresExtra(indicadoresExtra);
 				
+				
 				model.addAttribute("indicadores", indicadores);
 				model.addAttribute("cargaActual", cargaActual.getId());
-				model.addAttribute("cortes", cortes);			
+				model.addAttribute("cortes", cortes);	
+				model.addAttribute("noAlumnos", alumnos);
 			}
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
 			model.addAttribute("cargas", cargasHorarias);

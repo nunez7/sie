@@ -49,12 +49,10 @@ import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICalificacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.ICarrerasServices;
-import edu.mx.utdelacosta.service.IConceptoService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IMateriasService;
 import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
-import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
@@ -118,13 +116,7 @@ public class CalificacionController {
 
 	@Autowired
 	private ITestimonioService testimonioService;
-	
-	@Autowired
-	private IPagoGeneralService pagoGeneralService;
-	
-	@Autowired
-	private IConceptoService conceptoService;
-	
+		
 	@Autowired
 	private ActualizarCalificacion actualizarCalificacion;
 	
@@ -296,8 +288,13 @@ public class CalificacionController {
 							CalificacionParcial calificacion = new CalificacionParcial();
 							calificacion.setMatricula(alumno.getMatricula());
 							calificacion.setNombre(alumno.getPersona().getNombreCompleto());
-							List<CalificacionInstrumentoDTO> mecanismos = calificacionService
-									.findByCargaHorariaAndCorteEvaluativo(alumno.getId(), cargaActual, parcialActual);
+							
+							List<CalificacionInstrumentoDTO> mecanismos = new ArrayList<>();
+							for (MecanismoInstrumento meca : mecanismoInstrumento) {
+								CalificacionInstrumentoDTO cali = calificacionService.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual, parcialActual, meca.getInstrumento().getId());
+								mecanismos.add(cali);
+							}		
+							
 							calificacion.setMecanismos(mecanismos);
 							calificacion.setCalificacionOrdinaria(calificacionCorteService
 									.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(),
@@ -466,9 +463,6 @@ public class CalificacionController {
 		
 		//se declaran las variables
 		Alumno alumno = new Alumno ((Integer) session.getAttribute("cveAlumno"));
-		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
-		Usuario usuario = usuarioService.buscarPorPersona(persona);
-		Periodo periodo = new Periodo(usuario.getPreferencias().getIdPeriodo());
 		CargaHoraria carga = cargaService.buscarPorIdCarga(idCarga);
 		
 		//se crea la calificacion materia
