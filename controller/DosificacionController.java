@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -132,7 +133,7 @@ public class DosificacionController {
 	
 	@PostMapping(path = "/guardar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String guardaDosificacion(@RequestBody Map<String, String> obj) {
+	public String guardaDosificacion(@RequestBody Map<String, String> obj, HttpSession session) {
 		String competencia = obj.get("competencia");
 		String actividadApertura = obj.get("actividadApertura");
 		String actividadCierra = obj.get("actividadCierra");
@@ -143,7 +144,7 @@ public class DosificacionController {
 		CorteEvaluativo corte = corteService.buscarPorId(Integer.parseInt(obj.get("idCorteEvaluativo")));
 		Dosificacion dosificacion = dosificacionService.buscarPorIdCargaHorariaEIdCorteEvaluativo(carga.getId(),
 				corte.getId());
-		
+		Integer idPersona = (Integer) session.getAttribute("cvePersona");
 		// si la dosificacion es nueva
 		if (dosificacion == null) {
 			
@@ -151,10 +152,10 @@ public class DosificacionController {
 			dosificacion = new Dosificacion();
 			dosificacion.setIdCorteEvaluativo(corte.getId());
 			dosificacion.setPersona(profesor);
-			dosificacion.setCompetenciaDesarrollar(competencia);
-			dosificacion.setActividadApertura(actividadApertura);
-			dosificacion.setActividadCierre(actividadCierra);
-			dosificacion.setActividadDesarrollo(actividadDesarrollo);
+			dosificacion.setCompetenciaDesarrollar(competencia.toUpperCase());
+			dosificacion.setActividadApertura(actividadApertura.toUpperCase());
+			dosificacion.setActividadCierre(actividadCierra.toUpperCase());
+			dosificacion.setActividadDesarrollo(actividadDesarrollo.toUpperCase());
 			dosificacion.setFechaAlta(new Date());
 			dosificacion.setAvanceObservaciones("");
 			dosificacion.setValidaDirector(false);
@@ -204,9 +205,16 @@ public class DosificacionController {
 			
 		//en de que la dosificacion no este vacia
 		} else {
+			
+			System.err.println("dosificacion existente: "+dosificacion.getPersona().getId());
+			System.err.println("persona que guarda: "+idPersona);
+			if (!dosificacion.getPersona().getId().equals(idPersona)){
+				return "dif";
+			}
+			
 			// si la dosificacion ya esta validada
 			if (dosificacion.getValidaDirector() == true && AvanceYObservaciones != null) {
-				dosificacion.setAvanceObservaciones(AvanceYObservaciones);
+				dosificacion.setAvanceObservaciones(AvanceYObservaciones.toUpperCase());
 				dosificacion.setTerminada(true);
 				dosificacionService.guardar(dosificacion);
 				return "up";
@@ -217,10 +225,10 @@ public class DosificacionController {
 			
 			// si la dosificacion no esta validada ni terminada
 			} else {
-				dosificacion.setActividadApertura(actividadApertura);
-				dosificacion.setActividadCierre(actividadCierra);
-				dosificacion.setActividadDesarrollo(actividadDesarrollo);
-				dosificacion.setCompetenciaDesarrollar(competencia);
+				dosificacion.setActividadApertura(actividadApertura.toUpperCase());
+				dosificacion.setActividadCierre(actividadCierra.toUpperCase());
+				dosificacion.setActividadDesarrollo(actividadDesarrollo.toUpperCase());
+				dosificacion.setCompetenciaDesarrollar(competencia.toUpperCase());
 			}
 			
 			dosificacionService.guardar(dosificacion);
@@ -312,13 +320,42 @@ public class DosificacionController {
 		if (idCargaHoraria != null && idCargaCompartida != null) {
 			CargaHoraria cargaHoraria = new CargaHoraria(idCargaHoraria);
 			CargaHoraria cargaCompartida = new CargaHoraria(idCargaCompartida);
+			
+			System.out.println("carga horaria: "+idCargaHoraria);
+			System.out.println("carga nueva: "+idCargaCompartida);
+			
+			//SE OBTIENEN LAS DOSIFICACIONES Y SE GUARDAN COMO NUEVAS USANDO LA CARGA COMPARTIDA
 			List<DosificacionCarga> dosificacionesCargas = dosiCargaService.buscarPorCargaHoraria(cargaCompartida);
+			System.err.println("lista de dosificaciones: "+dosificacionesCargas.size());
 			for (DosificacionCarga dosificacionCarga : dosificacionesCargas) {
 				DosificacionCarga nuevaDC = new DosificacionCarga();
 				nuevaDC.setCargaHoraria(cargaHoraria);
 				nuevaDC.setDosificacion(dosificacionCarga.getDosificacion());
 				nuevaDC.setActivo(true);
 				dosiCargaService.guardar(nuevaDC);
+			}
+			
+			List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHoraria(cargaCompartida);
+			System.err.println("lista de calendarios: "+calendarios.size());
+			for (CalendarioEvaluacion calendario : calendarios) {
+				CalendarioEvaluacion calen = new CalendarioEvaluacion();
+				calen.setCargaHoraria(cargaHoraria);
+				calen.setCorteEvaluativo(calendario.getCorteEvaluativo());
+				calen.setUnidadTematica(calendario.getUnidadTematica());
+				calendarioService.guarda(calen);
+			}
+			
+			List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCargaCompartida, true);
+			System.err.println("lista de mecanismos: "+mecanismos.size());
+			for (MecanismoInstrumento mecanismo : mecanismos) {
+				MecanismoInstrumento meca = new MecanismoInstrumento();
+				meca.setActivo(true);
+				meca.setArchivo(mecanismo.getArchivo());
+				meca.setIdCargaHoraria(idCargaHoraria);
+				meca.setIdCorteEvaluativo(mecanismo.getIdCorteEvaluativo());
+				meca.setInstrumento(mecanismo.getInstrumento());
+				meca.setPonderacion(mecanismo.getPonderacion());
+				mecanismoService.guardar(meca);
 			}
 		}
 		return "ok";
@@ -504,6 +541,7 @@ public class DosificacionController {
 		Persona profesor = personaService.buscarPorId(idProfesor);
 		CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(idCargaHoraria);
 		
+		/*
 		Mail mail = new Mail();
 		String de = correo;
 		//se deberá enviar el correo al profesor
@@ -524,6 +562,8 @@ public class DosificacionController {
 		} catch (MessagingException | IOException e) {
 			System.out.println("Error "+e);
 		} 
+		*/
+		
 		return "ok";
 	}
 	
@@ -549,6 +589,7 @@ public class DosificacionController {
 		dosificacionValidaService.guardar(dosificacionValida);
 		//se envia correo al profesor 
 		
+		/*
 		Mail mail = new Mail();
 		String de = correo;
 		//se deberá enviar el correo al profesor
@@ -569,6 +610,7 @@ public class DosificacionController {
 		} catch (MessagingException | IOException e) {
 			System.out.println("Error "+e);
 		} 
+		*/
 		
 		return "ok";
 	}

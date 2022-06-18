@@ -309,13 +309,13 @@ public class RemedialController {
 			pago.setDescuento(0.0);
 			pago.setFechaAlta(new Date());
 			pago.setFechaImportacion(null);
-			pago.setFirmaDigital(null);
-			pago.setFolio(null);
+			pago.setFirmaDigital("");
+			pago.setFolio("");
 			pago.setMonto(concepto.getMonto());
 			pago.setMontoUnitario(concepto.getMonto());
-			pago.setReferencia(null);
-			pago.setReferenciaFondos(null);
-			pago.setRefReconciliacion(null);
+			pago.setReferencia("");
+			pago.setReferenciaFondos("");
+			pago.setRefReconciliacion("");
 			pago.setStatus(0);
 			pago.setTipo(1);
 			

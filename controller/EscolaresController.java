@@ -1137,12 +1137,14 @@ public class EscolaresController {
 							CalificacionParcial calificacion = new CalificacionParcial();
 							calificacion.setMatricula(alumno.getMatricula());
 							calificacion.setNombre(alumno.getPersona().getNombreCompleto());
-							List<CalificacionInstrumentoDTO> mecanismos = calificacionService
-									.findByCargaHorariaAndCorteEvaluativo(alumno.getId(), cargaActual, parcialActual);
+							
+							List<CalificacionInstrumentoDTO> mecanismos = new ArrayList<>();
+							for (MecanismoInstrumento meca : mecanismoInstrumento) {
+								CalificacionInstrumentoDTO cali = calificacionService.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual, parcialActual, meca.getInstrumento().getId());
+								mecanismos.add(cali);
+							}
 							calificacion.setMecanismos(mecanismos);
-							calificacion.setCalificacionOrdinaria(calificacionCorteService
-									.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(),
-											cargaActual, parcialActual).floatValue());
+							
 							RemedialAlumno rem = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 									alumno, new CargaHoraria(cargaActual), new Remedial(1),
 									new CorteEvaluativo(parcialActual));

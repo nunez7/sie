@@ -185,5 +185,9 @@ public class AlumnosServiceJpa implements IAlumnoService{
 		return alumnosRepo.getAllAlumnoAdeudoByCarreraAndPeriodo(idCarrera, idPeriodo);
 	}
 	
+	@Override
+	public Integer contarAlumnosRegularesPorGrupo(Integer idGrupo) {
+		return alumnosRepo.countAlumnosRegularesByGrupo(idGrupo);
+	}
 
 }
