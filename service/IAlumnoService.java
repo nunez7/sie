@@ -3,6 +3,7 @@ import java.util.List;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
@@ -67,5 +68,9 @@ public interface IAlumnoService {
 	List<Alumno> buscarTodos();
 	
 	Integer contarAlumnosRegularesPorGrupo(Integer idGrupo);
+	
+	List<ProspectoDTO> buscarProspectosActivos();
+	
+	List<Alumno> buscarProspectosAceptados(Integer idCarrera, Integer idPeriodo);
 
 }

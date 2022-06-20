@@ -98,4 +98,10 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true)
 	List<PagoGeneral> findByFechaInicioAndFechaFinAndAllCajeros(@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
 	
+	@Query(value = "SELECT MAX(pg.status) FROM pagos_generales pg "
+			+ "LEFT JOIN pago_alumno pa ON pa.id_pago=pg.id "
+			+ "LEFT JOIN alumnos al on pa.id_alumno = al.id "
+			+ "WHERE al.id_persona=:idPersona AND pg.id_concepto=12 AND pg.activo=true ", nativeQuery = true)
+Integer countPagoExamenAdmision(@Param("idPersona") Integer idPersona);
+	
 }

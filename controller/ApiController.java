@@ -200,6 +200,7 @@ public class ApiController {
 		datosA.setDiscapacitado(datos.getDiscapacitado());
 		datosA.setTipoDiscapacidad(datos.getTipoDiscapacidad());
 		datosA.setIndigena(datos.getIndigena());
+		datosA.setTipoBeca(datos.getTipoBeca());
 		datosA.setPromocion(datos.getPromocion());
 		datosA.setAlumno(alumno);
 		//Se anexa alumnoFam a alumno

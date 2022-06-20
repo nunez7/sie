@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
@@ -292,5 +293,30 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "INNER JOIN pagos_generales pg  ON pg.id=pa.id_pago "
 			+ "WHERE pa.id_alumno=a.id AND pg.status=0)", nativeQuery = true)
 	Integer countAlumnosRegularesByGrupo(@Param("grupo") Integer idGrupo);
+	
+	@Query(value = "SELECT a.id AS idAlumno, a.matricula, CONCAT(p.primer_apellido, ' ',p.segundo_apellido, ' ',p.nombre)AS nombreCompleto,  c.nombre AS carrera, c.id as idCarrera, "
+			+ "a.documentos_ingresos AS entregoDocumentos, CAST( COALESCE(( "
+			+ "SELECT MAX(status) FROM pagos_generales pg "
+			+ "INNER JOIN pago_alumno pa ON pa.id_pago =pg.id "
+			+ "WHERE pa.id_alumno=a.id AND pg.id_concepto=12 "
+			+ "), 0) AS INTEGER ) AS pago, p.id as idPersona "
+			+ "FROM alumnos a "
+			+ "INNER JOIN personas p ON p.id=a.id_persona "
+			+ "INNER JOIN carreras c ON c.id=a.id_carrera "
+			+ "LEFT JOIN datos_personales dp ON dp.id_persona=p.id "
+			+ "LEFT JOIN alumnos_grupos ag ON ag.id_alumno=a.id "
+			+ "WHERE ag.id_alumno IS NULL AND a.estatus = 1 and a.documentos_ingresos = 1"
+			+ "ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre, c.nombre  ", nativeQuery = true)
+	List<ProspectoDTO> findAllActiveProspectos();
+	
+	@Query(value = "SELECT a.* "
+			+ "FROM alumnos a "
+			+ "INNER JOIN personas p ON p.id=a.id_persona "
+			+ "INNER JOIN carreras c ON c.id=a.id_carrera "
+			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno=a.id "
+			+ "INNER JOIN grupos g on ag.id_grupo=g.id "
+			+ "WHERE a.estatus = 1 AND a.documentos_ingresos=1 AND a.id_carrera =:idCarrera AND ag.pagado = 'True' AND g.id_periodo = :idPeriodo "
+			+ "ORDER BY a.id DESC ", nativeQuery = true)
+	List<Alumno> findAllAceptedProspectos(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo);
 	
 }

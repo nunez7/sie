@@ -21,6 +21,7 @@ public class AlumnoDTO extends PersonaDTO{
 	private Boolean discapacitado;
 	private String tipoDiscapacidad;
 	private Boolean indigena;
+	private String tipoBeca;
 	private String promocion;
 	private String observaciones;
 	private Boolean otraUt;
@@ -132,6 +133,12 @@ public class AlumnoDTO extends PersonaDTO{
 	}
 	public void setIndigena(Boolean indigena) {
 		this.indigena = indigena;
+	}
+	public String getTipoBeca() {
+		return tipoBeca;
+	}
+	public void setTipoBeca(String tipoBeca) {
+		this.tipoBeca = tipoBeca;
 	}
 	public String getPromocion() {
 		return promocion;

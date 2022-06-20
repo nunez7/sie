@@ -13,15 +13,15 @@ import edu.mx.utdelacosta.repository.AlumnoGrupoRepository;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 
 @Service
-public class AlumnoGrupoServiceJpa implements IAlumnoGrupoService{
-	
+public class AlumnoGrupoServiceJpa implements IAlumnoGrupoService {
+
 	@Autowired
 	private AlumnoGrupoRepository agRepositorio;
 
 	@Override
 	public AlumnoGrupo buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
-		Optional<AlumnoGrupo> optional =agRepositorio.findById(id);
+		Optional<AlumnoGrupo> optional = agRepositorio.findById(id);
 		if (optional.isPresent()) {
 			return optional.get();
 		}
@@ -45,13 +45,13 @@ public class AlumnoGrupoServiceJpa implements IAlumnoGrupoService{
 		// TODO Auto-generated method stub
 		return agRepositorio.findByAlumnoAndGrupo(alumno, grupo);
 	}
-	
+
 	@Override
 	public AlumnoGrupo buscarPorIdAlumnoYidGrupo(Integer idAlumno, Integer idGrupo) {
 		// TODO Auto-generated method stub
 		return agRepositorio.findByIdAlumnoAndIdGrupo(idAlumno, idGrupo);
 	}
-	
+
 	@Override
 	public List<AlumnoGrupo> buscarPorIdAlumnoDesc(Integer idAlumno) {
 		// TODO Auto-generated method stub
@@ -61,14 +61,17 @@ public class AlumnoGrupoServiceJpa implements IAlumnoGrupoService{
 	@Override
 	public void eliminar(AlumnoGrupo alumnoGrupo) {
 		agRepositorio.delete(alumnoGrupo);
-		
-	}
-	
-	@Override
-	 public List<AlumnoGrupo> buscarPorAlumnoYPeriodo(Integer idAlumno, Integer idPeriodo) {
-	  // TODO Auto-generated method stub
-	  return agRepositorio.findByIdAlumnoAndIdPeriodo(idAlumno, idPeriodo);
-	 }
-	
 
+	}
+
+	@Override
+	public List<AlumnoGrupo> buscarPorAlumnoYPeriodo(Integer idAlumno, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return agRepositorio.findByIdAlumnoAndIdPeriodo(idAlumno, idPeriodo);
+	}
+
+	@Override
+	public Integer contarAlumnosGruposPorGrupo(Integer idGrupo) {
+		return agRepositorio.countAlumnosByGrupo(idGrupo);
+	}
 }

@@ -115,5 +115,9 @@ public class PagoGeneralServiceJpa implements IPagoGeneralService{
 		return pagoRepo.findByFechaInicioAndFechaFinAndAllCajeros(fechaInicio, fechaFin);
 	}	
 	
+	@Override
+	public Integer validarPagoExamenAdmision(Integer idPersona) {
+		return pagoRepo.countPagoExamenAdmision(idPersona);
+	}
 
 }
