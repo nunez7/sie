@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
@@ -185,5 +186,14 @@ public class AlumnosServiceJpa implements IAlumnoService{
 		return alumnosRepo.getAllAlumnoAdeudoByCarreraAndPeriodo(idCarrera, idPeriodo);
 	}
 	
+		@Override
+	public List<ProspectoDTO> buscarProspectosActivos() {
+		return alumnosRepo.findAllActiveProspectos();
+	}
+
+	@Override
+	public List<Alumno> buscarProspectosAceptados(Integer idCarrera, Integer idPeriodo) {
+		return alumnosRepo.findAllAceptedProspectos(idCarrera, idPeriodo);
+	}
 
 }

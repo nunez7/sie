@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -33,10 +35,12 @@ import edu.mx.utdelacosta.model.Mail;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.PersonaDocumento;
 import edu.mx.utdelacosta.model.PrestamoDocumento;
+import edu.mx.utdelacosta.model.dto.DocumentoDTO;
 import edu.mx.utdelacosta.model.dto.PdfUrlPDO;
 import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IDocumentosService;
+import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPersonaDocumentoService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IPrestamoDocumentoService;
@@ -68,12 +72,14 @@ public class PersonaDocumentoController {
 	 @Autowired
 	 private IPrestamoDocumentoService prestamoDocumentoService;
 	 
+	 @Autowired
+	 private IPagoGeneralService pagoGeneralService;
+	 
 	 @Value("${siestapp.ruta.docs}")
 	 private String rutaDocs;
 	
 	@GetMapping("/search-by-idpersona/{id}")
 	public ResponseEntity<List<PdfUrlPDO>>buscarDocumentos(@PathVariable("id") int id, Model model) {
-		
 		List<PersonaDocumento> documentos = personaDocService.buscarActaCurpCerbachiPorPersona(id);
 		List<PdfUrlPDO> pdfUrl = new ArrayList<>();
 		for(PersonaDocumento ch : documentos) {
@@ -84,6 +90,10 @@ public class PersonaDocumentoController {
 			   pdfDTO.setValidado(ch.getValidado());
 			   pdfUrl.add(pdfDTO);
 			  }
+		
+			for (PdfUrlPDO pdfUrlPDO : pdfUrl) {
+				System.err.println(pdfUrlPDO.getUrl());
+			}
 		 return ResponseEntity.ok(pdfUrl);
 	}
 	
@@ -195,8 +205,8 @@ public class PersonaDocumentoController {
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("titulo", "Problemas con tu documento");
 		variables.put("cuerpoCorreo",
-				"Estimado alumno, se te notifica que su documento: "+tipo+" ha sido rechazado, debido a: "+motivo+".<br>"
-						+ "Puedes subirlo nuevamente al sistema o acudiendo con tu documentación a la oficina de Servicios Escolares. <br>");				
+				"Estimado alumno, se le notifica que su documento: "+tipo+" ha sido rechazado, debido a: "+motivo+".<br>"
+						+ "Puede subirlo nuevamente al sistema o acudir con tu documentación a la oficina de Servicios Escolares. <br>");				
 		mail.setVariables(variables);
 		try {
 			emailService.sendEmail(mail);
@@ -211,11 +221,22 @@ public class PersonaDocumentoController {
 	public String validocs(@PathVariable("id") String id) {
 		Integer valor = personaDocService.documentosValidosPorPersona(Integer.parseInt(id));
 		if(valor ==3) {
+			
+			//se comprueba si se pago el cuatri
+			//esto deberia ir en otro controller pero desde aqui hace la validacion de documento y preferi  no crear otro controller
+			Integer pagado =  pagoGeneralService.validarPagoExamenAdmision(Integer.parseInt(id));
+			
+			if (pagado==null || pagado == 0) {
+				return "no";
+			}
+			
 			return "ok";		
 		}else {
 		
 		return "no";
 		}
+		
+		
 	}
 	
 	@PostMapping(path = "/activar", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -273,7 +294,30 @@ public class PersonaDocumentoController {
 					personaDocService.guardar(personaDoc);
 					return respuesta;
 				}
+				
+				
 
+			}
+			
+			List<DocumentoDTO> docsExp = personaDocService.buscarActaCurpCerbachiPorPersonaParaDto(alumno.getPersona().getId());
+			
+			// validacion de expediente completo o incompleto			
+			List<Boolean> valDoc = new ArrayList<>();			
+			for(DocumentoDTO documentoDTO : docsExp){
+				valDoc.add(documentoDTO.getValidado());
+			}		
+			
+			//variable para documentos expediente
+			Boolean validados = false;
+			if(new HashSet<Boolean>(valDoc).size() <= 1) {
+				validados = valDoc.get(0);
+				if(validados==true) {
+					alumno.setEstadoDocumentosIngreso(1);
+				}else{
+					//
+				}
+			}else{
+				//
 			}
 
 		} else {

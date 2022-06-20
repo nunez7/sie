@@ -65,6 +65,7 @@ import edu.mx.utdelacosta.model.dto.AlumnoDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoDocumentoDTO;
 import edu.mx.utdelacosta.model.dto.DocumentoDTO;
 import edu.mx.utdelacosta.model.dto.MateriaDTO;
+import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoRegularDTO;
@@ -232,7 +233,8 @@ public class EscolaresController {
 
 	@GetMapping("/aceptarAspirantes")
 	public String aceptarAspirantes(Model model, HttpSession session) {
-		List<Alumno> prospectos = alumnoService.buscarProspectosRegular();
+		//List<Alumno> prospectos = alumnoService.buscarProspectosRegular();
+		List<ProspectoDTO> prospectos = alumnoService.buscarProspectosActivos();
 		List<Carrera> carreras = carreraService.buscarTodasMenosIngles();
 		List<PersonaDocumento> documentos = new ArrayList<>();
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona"));
@@ -260,7 +262,8 @@ public class EscolaresController {
 		Periodo periodo = periodosService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		List<Carrera> carreras = carreraService.buscarTodasMenosIngles();
 		List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), usuario.getPreferencias().getIdCarrera());
-		List<Alumno> alumnos = alumnoService.buscarTodoAceptarPorCarreraYPeriodo(carIni.getId(), periodo.getId());
+		List<Alumno> alumnos = alumnoService.buscarProspectosAceptados(carIni.getId(), periodo.getId());
+		//List<Alumno> alumnos = alumnoService.buscarTodoAceptarPorCarreraYPeriodo(carIni.getId(), periodo.getId());
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("alumnos", alumnos);
 		model.addAttribute("carreras", carreras);
@@ -1137,12 +1140,14 @@ public class EscolaresController {
 							CalificacionParcial calificacion = new CalificacionParcial();
 							calificacion.setMatricula(alumno.getMatricula());
 							calificacion.setNombre(alumno.getPersona().getNombreCompleto());
-							List<CalificacionInstrumentoDTO> mecanismos = calificacionService
-									.findByCargaHorariaAndCorteEvaluativo(alumno.getId(), cargaActual, parcialActual);
+							
+							List<CalificacionInstrumentoDTO> mecanismos = new ArrayList<>();
+							for (MecanismoInstrumento meca : mecanismoInstrumento) {
+								CalificacionInstrumentoDTO cali = calificacionService.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual, parcialActual, meca.getInstrumento().getId());
+								mecanismos.add(cali);
+							}
 							calificacion.setMecanismos(mecanismos);
-							calificacion.setCalificacionOrdinaria(calificacionCorteService
-									.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(),
-											cargaActual, parcialActual).floatValue());
+							
 							RemedialAlumno rem = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 									alumno, new CargaHoraria(cargaActual), new Remedial(1),
 									new CorteEvaluativo(parcialActual));

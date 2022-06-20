@@ -10,7 +10,7 @@ import edu.mx.utdelacosta.model.Carrera;
 
 public interface CarrerasRepository extends JpaRepository<Carrera, Integer>{
 	@Query(value = "SELECT * FROM carreras "
-			+ "WHERE id NOT IN(26, 14) "
+			+ "WHERE id NOT IN(26, 14) AND id_nivel_estudio = 1 "
 			+ "ORDER BY nombre ", nativeQuery = true)
 	List<Carrera> findAllExceptEnglishOrderByNombre();
 	

@@ -68,6 +68,7 @@ public class GruposController {
 		}
 		grupo.setActivo(datos.isActivo());
 		grupo.setNombre(datos.getNombreGrupo());
+		grupo.setCapacidadMaxima(datos.getCantidad());
 		grupoService.guardar(grupo);
 		return "ok";
 	}
@@ -86,6 +87,7 @@ public class GruposController {
 			grupoDto.setIdGrupo(grupo.getCarrera().getId());
 			grupoDto.setNombreGrupo(grupo.getNombre());
 			grupoDto.setActivo(grupo.getActivo());
+			grupoDto.setCantidad(grupo.getCapacidadMaxima());
 			return ResponseEntity.ok(grupoDto);
 		}
 	}
