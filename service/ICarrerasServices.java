@@ -13,4 +13,6 @@ public interface ICarrerasServices {
 	List<Carrera> buscarCarrerasPorIdPersona(Integer id);
 	
 	List<Carrera> buscarTodasMenosIngles();
+	
+	List<Carrera> buscarTodasTSU();
 }

@@ -305,17 +305,17 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "INNER JOIN carreras c ON c.id=a.id_carrera "
 			+ "LEFT JOIN datos_personales dp ON dp.id_persona=p.id "
 			+ "LEFT JOIN alumnos_grupos ag ON ag.id_alumno=a.id "
-			+ "WHERE ag.id_alumno IS NULL AND a.estatus = 1 and a.documentos_ingresos = 1"
+			+ "WHERE ag.id_alumno IS NULL AND a.estatus = 1 "
 			+ "ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre, c.nombre  ", nativeQuery = true)
 	List<ProspectoDTO> findAllActiveProspectos();
 	
 	@Query(value = "SELECT a.* "
 			+ "FROM alumnos a "
 			+ "INNER JOIN personas p ON p.id=a.id_persona "
-			+ "INNER JOIN carreras c ON c.id=a.id_carrera "
 			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno=a.id "
 			+ "INNER JOIN grupos g on ag.id_grupo=g.id "
-			+ "WHERE a.estatus = 1 AND a.documentos_ingresos=1 AND a.id_carrera =:idCarrera AND ag.pagado = 'True' AND g.id_periodo = :idPeriodo "
+			+ "INNER JOIN carreras c ON c.id = g.id_carrera "
+			+ "WHERE a.estatus = 1 AND a.documentos_ingresos=1 AND c.id=:idCarrera AND ag.pagado = 'True' AND g.id_periodo = :idPeriodo "
 			+ "ORDER BY a.id DESC ", nativeQuery = true)
 	List<Alumno> findAllAceptedProspectos(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo);
 	
