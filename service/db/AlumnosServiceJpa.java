@@ -191,6 +191,11 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	public List<Alumno> buscarTodos() {
 		return (List<Alumno>) alumnosRepo.findAll();
 	}
+
+	@Override
+	public List<Alumno> buscarPorGrupoYPeriodo(Integer idGrupo, Integer idPeriodo) {
+		return alumnosRepo.findByGrupoAndPeriodo(idGrupo, idPeriodo);
+	}
 	
 
 }

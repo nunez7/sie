@@ -25,7 +25,7 @@ public class AsistenciaTemaGrupal {
 	@JoinColumn(name="id_alumno")
 	private Alumno alumno; 
 	
-	private String asiencia;
+	private String asistencia;
 
 	public Integer getId() {
 		return id;
@@ -51,12 +51,12 @@ public class AsistenciaTemaGrupal {
 		this.alumno = alumno;
 	}
 
-	public String getAsiencia() {
-		return asiencia;
+	public String getAsistencia() {
+		return asistencia;
 	}
 
-	public void setAsiencia(String asiencia) {
-		this.asiencia = asiencia;
+	public void setAsistencia(String asistencia) {
+		this.asistencia = asistencia;
 	}
 	
 }

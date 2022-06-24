@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.service;
 
+import java.util.Date;
 import java.util.List;
 
 import edu.mx.utdelacosta.model.Grupo;
@@ -12,5 +13,7 @@ public interface ITemaGrupalService {
 	List<TemaGrupal> buscarPorGrupo(Grupo grupo);
 	
 	TemaGrupal  bucarPorId(Integer id);
+	
+	List<TemaGrupal> buscarEntreFechasPorGrupo(Integer idGrupo, Date fechaInicio, Date fechaFin);
 	
 }

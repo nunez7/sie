@@ -20,16 +20,19 @@ public class TutoriaIndividual {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name="id_alumno")
 	private Alumno alumno;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name="id_grupo")
 	private Grupo grupo;
 	
 	@Column(name = "fecha_registro")
 	private Date fechaRegistro;
+	
+	@Column(name = "fecha_tutoria")
+	private Date fechaTutoria;
 	
 	@Column(name = "hora_inicio")
 	private Date horaInicio;
@@ -47,6 +50,14 @@ public class TutoriaIndividual {
 	private String nivelAtencion;
 	
 	private Boolean validada;
+
+	public TutoriaIndividual() {
+
+	}
+	
+	public TutoriaIndividual(Integer id) {
+		this.id = id;
+	}
 
 	public Integer getId() {
 		return id;
@@ -78,6 +89,14 @@ public class TutoriaIndividual {
 
 	public void setFechaRegistro(Date fechaRegistro) {
 		this.fechaRegistro = fechaRegistro;
+	}
+
+	public Date getFechaTutoria() {
+		return fechaTutoria;
+	}
+
+	public void setFechaTutoria(Date fechaTutoria) {
+		this.fechaTutoria = fechaTutoria;
 	}
 
 	public Date getHoraInicio() {

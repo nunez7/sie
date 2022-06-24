@@ -15,7 +15,7 @@ public interface AsistenciaTemaGrupalRepository extends CrudRepository<Asistenci
 
 	@Query(value = "SELECT a.id, "
 			+ "CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) AS nombreCompleto, "
-			+ "(SELECT atg.asiencia FROM asistencia_tema_grupal atg "
+			+ "(SELECT atg.asistencia FROM asistencia_tema_grupal atg "
 			+ "WHERE atg.id_alumno=a.id and atg.id_tema_grupal=:idTemaGrupal) as asistencia "
 			+ "FROM alumnos_grupos ag "
 			+ "INNER JOIN alumnos a ON a.id=ag.id_alumno "

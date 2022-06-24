@@ -29,9 +29,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.mx.utdelacosta.model.Alumno;
+import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.AsistenciaTemaGrupal;
+import edu.mx.utdelacosta.model.Baja;
 import edu.mx.utdelacosta.model.Canalizacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
+import edu.mx.utdelacosta.model.CausaBaja;
+import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Dia;
 import edu.mx.utdelacosta.model.Evaluacion;
 import edu.mx.utdelacosta.model.Foco;
@@ -59,14 +63,21 @@ import edu.mx.utdelacosta.model.dto.HorarioDTO;
 import edu.mx.utdelacosta.model.dto.PreguntaDTO;
 import edu.mx.utdelacosta.model.dto.PromedioPreguntaDTO;
 import edu.mx.utdelacosta.model.dto.TutoriasProgramadasDTO;
+import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioDTO;
+import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaDTO;
+import edu.mx.utdelacosta.model.dtoreport.IndicadorParcialDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.EmailSenderService;
+import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAsistenciaTemaGrupalService;
+import edu.mx.utdelacosta.service.IBajaService;
+import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICanalizacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.IComentarioEvaluacionTutorService;
+import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IDiaService;
 import edu.mx.utdelacosta.service.IEvaluacionesService;
 import edu.mx.utdelacosta.service.IFocosAtencionService;
@@ -85,7 +96,7 @@ import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
-@PreAuthorize("hasRole('Administrador') and hasRole('Profesor') and hasRole('Informatica') ")
+@PreAuthorize("hasRole('Administrador') and hasRole('Profesor')")
 @RequestMapping("/tutorias")
 public class TutorController {
 	
@@ -164,7 +175,23 @@ public class TutorController {
 	@Autowired
 	private ICanalizacionService canalizacionService;
 	
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Rector', 'Servicios Escolares')")
+	@Autowired
+	private IBajaService bajaService;
+	
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
+	
+	@Autowired
+	private ICalificacionMateriaService calificacionMateriaService;
+	
+	@Autowired
+	private ICorteEvaluativoService corteEvaluativoService;
+	
+	@Autowired
+	private ICalificacionCorteService calificacionCorteService;
+	
+	@Autowired
+	private IAlumnoGrupoService alumnoGrupoService;
+	
     @GetMapping("/cargar-alumno/{dato}")
    	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato,  Model model, HttpSession session) { 
 		// extrae el usuario apartir del usuario cargado en cesion.
@@ -203,11 +230,11 @@ public class TutorController {
 			cvePersona = usuario.getPersona().getId();
 		}
 	
-		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));		
+		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");		
 		List<Alumno> alumnos = new ArrayList<>();				
 		if (cveGrupo != null) {						
-			alumnos = alumnoService.buscarPorGrupo(cveGrupo);			
+			alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());		
 		}
 		
 		List<Motivo> motivos = motivoService.buscarTodo();		
@@ -218,16 +245,17 @@ public class TutorController {
 		return "tutorias/tutoriaIndividual";		
 	}
 	
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
 	@PostMapping(path = "/save-individual", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String guardarIndividual(@RequestBody Map<String, String> obj,HttpSession session, Model model) throws ParseException {			
 		if(obj.get("idAlumno")!=null) {
 			SimpleDateFormat dFHora = new SimpleDateFormat("hh:mm");		
+			SimpleDateFormat dFDia = new SimpleDateFormat("dd/MM/yyyy");
 			
 			Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");
 			String cveAlumno = obj.get("idAlumno");
-			Date fecha = new Date();			
+			Date fecha = new Date();	
+			Date fechaTutoria = dFDia.parse(obj.get("fechaInicioTutoria"));
 			Date horaInicio = dFHora.parse(obj.get("horaInicio"));
 			Date horaFin = dFHora.parse(obj.get("horaFin"));
 			
@@ -269,6 +297,7 @@ public class TutorController {
 					TutoriaIndividual tutInd = new TutoriaIndividual();
 					tutInd.setAlumno(new Alumno(Integer.parseInt(cveAlumno)));
 					tutInd.setGrupo(new Grupo(cveGrupo));
+					tutInd.setFechaTutoria(fechaTutoria);
 					tutInd.setFechaRegistro(fecha);
 					tutInd.setHoraInicio(horaInicio);
 					tutInd.setHoraFin(horaFin);
@@ -318,8 +347,7 @@ public class TutorController {
 		model.addAttribute("cveGrupo", cveGrupo);	
 		return "tutorias/canalizacion";
 	}
-	
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
+
 	@PostMapping(path = "/canalizar-alumno", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String canalizarAlumno(@RequestBody Map<String, String> obj,HttpSession session) throws ParseException {
@@ -431,11 +459,11 @@ public class TutorController {
 		}
 		
 		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));		
-		Integer cveGrupo = (Integer) session.getAttribute("cveGrupo");		
+		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");		
 		List<Alumno> alumnos = new ArrayList<>();		
 		
 		if (cveGrupo != null) {						
-			alumnos = alumnoService.buscarPorGrupo(cveGrupo);			
+			alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());				
 		}
 		
 		model.addAttribute("alumnos", alumnos);
@@ -445,11 +473,52 @@ public class TutorController {
 	}
 	
 	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
-	@PostMapping(path = "/save-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(path = "/guardar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String guardarBaja(@RequestBody Map<String, String> obj) {			
-		if(obj.get("idAlumno")!=null) {
-			return "ok";
+	public String guardarBaja(@RequestBody Map<String, String> obj,HttpSession session) throws ParseException {	
+		// extrae el usuario apartir del usuario cargado en cesion.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}		
+		SimpleDateFormat dFDia = new SimpleDateFormat("dd/MM/yyyy");
+		Date fecha = new Date();	
+		
+		String cveAlumno = obj.get("idAlumno");
+		String ultimaFechaAsistio = obj.get("ultimaFechaAsistio");
+		String fechaSolicitud = obj.get("fechaSolicitud");
+		String tipoBaja = obj.get("tipoBaja");
+		String causaBaja = obj.get("causaBaja");
+		String expTipoBaja = obj.get("exp-tipoBaja");
+		String motivoBaja = obj.get("motivoBaja");	
+						
+		if(cveAlumno!=null) {
+			if(causaBaja!=null) {
+				Baja ComprobarBaja = bajaService.buscarPorEstadoAlumnoYFechaAutorizacion(0, new Alumno(Integer.parseInt(cveAlumno)), null);
+				if(ComprobarBaja==null) {
+					Periodo periodo = periodoService.buscarUltimo();
+					Baja baja = new Baja();
+					baja.setPeriodo(periodo);
+					baja.setPersona(new Persona(cvePersona));
+					baja.setAlumno(new Alumno(Integer.parseInt(cveAlumno)));
+					baja.setTipoBaja(Integer.parseInt(tipoBaja));
+					baja.setCausaBaja(new CausaBaja(Integer.parseInt(causaBaja)));
+					baja.setOtraCausa(expTipoBaja);
+					baja.setFechaAsistencia(dFDia.parse(ultimaFechaAsistio));
+					baja.setFechaSolicitud(dFDia.parse(fechaSolicitud));
+					baja.setFechaAutorizacion(null);
+					baja.setDescripcion(motivoBaja);
+					baja.setEstatus(0);
+					baja.setFechaRegistro(fecha);
+					bajaService.guardar(baja);
+					return "ok";
+				}
+				return "bajaActiva";
+			}
+			return "NoCausaBaja";
 		}
 		return "NoAl";
 	}
@@ -472,11 +541,15 @@ public class TutorController {
 		List<FocosAtencion> focosAtencion = null;
 		List<TemaGrupal> temasGrupales = null;
 		
-		if (cveGrupo != null) {						
-			alumnos = alumnoService.buscarPorGrupo(cveGrupo);
-			fortalezas = fortalezaService.buscarPorGrupo(new Grupo(cveGrupo));
-			focosAtencion = focoAtenService.buscarPorGrupo(new Grupo(cveGrupo));
-			temasGrupales = temaGrupalService.buscarPorGrupo(new Grupo(cveGrupo));	
+		if (cveGrupo != null) {	
+			Boolean GrupoEnPeriodo = grupoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			if(GrupoEnPeriodo==true) {
+				alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
+				fortalezas = fortalezaService.buscarPorGrupo(new Grupo(cveGrupo));
+				focosAtencion = focoAtenService.buscarPorGrupo(new Grupo(cveGrupo));
+				temasGrupales = temaGrupalService.buscarPorGrupo(new Grupo(cveGrupo));	
+				model.addAttribute("cveGrupo", cveGrupo);
+			}
 		}
 		
 		model.addAttribute("alumnos", alumnos);
@@ -484,11 +557,10 @@ public class TutorController {
 		model.addAttribute("focosAtencion", focosAtencion);
 		model.addAttribute("temasGrupales", temasGrupales);
 		model.addAttribute("grupos", grupos);
-		model.addAttribute("cveGrupo", cveGrupo);
+		
 		return "tutorias/tutoriaGrupal";
 	}
 	
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
 	@PostMapping(path = "/guardar-fortaleza", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String guardarFortalezas(@RequestBody Map<String, String> obj,HttpSession session) {			
@@ -525,10 +597,9 @@ public class TutorController {
 			fortalezas = fortalezaService.buscarPorGrupo(new Grupo(cveGrupo));			
 		}
 		model.addAttribute("fortalezas", fortalezas);
-		return "fragments/tutorias-grupales :: cargar-fortalezas";
+		return "fragments/tutorias :: cargar-fortalezas";
 	}
 	
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
 	@PostMapping(path = "/guardar-foco", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String guardarFoco(@RequestBody Map<String, String> obj,HttpSession session) {			
@@ -571,10 +642,9 @@ public class TutorController {
 			focosAtencion = focoAtenService.buscarPorGrupo(new Grupo(cveGrupo));			
 		}
 		model.addAttribute("focosAtencion", focosAtencion);
-		return "fragments/tutorias-grupales :: cargar-focos";
+		return "fragments/tutorias :: cargar-focos";
 	}
 	
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
 	@PostMapping(path = "/programar-tema", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String guardarTema(@RequestBody Map<String, String> obj,HttpSession session) throws ParseException {	
@@ -607,13 +677,12 @@ public class TutorController {
 		return "noGrupo";
 	}
 	
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Rector', 'Servicios Escolares')")
 	@GetMapping("/cargar-tema-grupal/{cveTemaTutoria}")
 	public String temaGrupal(@PathVariable(name = "cveTemaTutoria", required = false) Integer cveTemaTutoria, Model model) {
 		TemaGrupal temaGrupal = temaGrupalService.bucarPorId(cveTemaTutoria);
 		
 		if(temaGrupal!=null) {				
-			List<AlumnoAsistenciaDTO> alumnos = asisTemaGruService.buscarPorTemaGrupalYGrupo(temaGrupal.getGrupo().getId(), temaGrupal.getId());
+			List<AlumnoAsistenciaDTO> alumnos = asisTemaGruService.buscarPorTemaGrupalYGrupo(temaGrupal.getGrupo().getId(), temaGrupal.getId());			
 			model.addAttribute("alumnos", alumnos);
 			model.addAttribute("temaGrupal", temaGrupal);			
 		}
@@ -635,11 +704,11 @@ public class TutorController {
 				AsistenciaTemaGrupal asistencia = new AsistenciaTemaGrupal();
 				asistencia.setTemaGrupal(new TemaGrupal(idTemaGrupal));
 				asistencia.setAlumno(new Alumno(idAlumno));
-				asistencia.setAsiencia(tipoAsistencia);
+				asistencia.setAsistencia(tipoAsistencia);
 				asisTemaGruService.guardar(asistencia);
 				return "ok";
 			}else{
-				asistenciaTemaGrupal.setAsiencia(tipoAsistencia);
+				asistenciaTemaGrupal.setAsistencia(tipoAsistencia);
 				asisTemaGruService.guardar(asistenciaTemaGrupal);
 				return "ok";
 			}
@@ -649,7 +718,6 @@ public class TutorController {
 		return "Error";
 	}
 	
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
 	@PostMapping(path = "/actualizar-tema", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String actualizarTema(@RequestBody Map<String, String> obj,HttpSession session) throws ParseException {			
@@ -698,7 +766,7 @@ public class TutorController {
 			temasGrupales = temaGrupalService.buscarPorGrupo(new Grupo(cveGrupo));			
 		}
 		model.addAttribute("temasGrupales", temasGrupales);
-		return "fragments/tutorias-grupales :: cargar-temas";
+		return "fragments/tutorias :: cargar-temas";
 	}
 	
 	@GetMapping("/programacionTutorias")
@@ -719,7 +787,7 @@ public class TutorController {
 				
 		if (cveGrupo != null) {				
 			Grupo grupo = grupoService.buscarPorId(cveGrupo);			
-			alumnos = alumnoService.buscarPorGrupo(cveGrupo);			
+			alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());				
 			
 			List<Date> DiasAlviles = periodoService.buscarDiasPorFechaInicioYFechafin(f.format(grupo.getPeriodo().getInicio()), f.format(grupo.getPeriodo().getFin()));
 			
@@ -776,7 +844,6 @@ public class TutorController {
 		return "tutorias/programacionTutorias";
 	}
 	
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
 	@PostMapping(path = "/actualizar-fecha-tutoria-programada", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String actualizarFechaTema(@RequestBody Map<String, String> obj,HttpSession session) throws ParseException {	
@@ -880,40 +947,115 @@ public class TutorController {
 		model.addAttribute("periodo", periodo);
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("aluEncuestados", aluEncuestados);
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "reportes/reporteEvaluacionTutor";
 	}
 	  
 	 @GetMapping("/reporte-tutorias-grupales") 
-	 public String reporteTutoriasGrupales() { 
-	  return "reportes/reporteTutoriaGrupal"; 
+	 public String reporteTutoriasGrupales(Model model, HttpSession session) { 
+		// extrae el usuario apartir del usuario cargado en cesion.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+					
+		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));			
+		List<TemaGrupal> temasGrupales = new ArrayList<>();	
+		Integer cveGrupo = (Integer) session.getAttribute("rtg-cveGrupo");						
+		
+		if(cveGrupo!=null) {									
+			if((String) session.getAttribute("rtg-fechaInicio")!=null) {					
+				Date fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("rtg-fechaInicio"));				
+				if((String) session.getAttribute("rtg-fechaFin")!=null) {						
+					Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rtg-fechaFin"));
+					temasGrupales = temaGrupalService.buscarEntreFechasPorGrupo(cveGrupo,fechaInicio, fechaFin);
+					model.addAttribute("fechaFin", fechaFin);
+				}
+				model.addAttribute("fechaInicio", fechaInicio);
+			}															
+		}
+						
+		model.addAttribute("cveGrupo", cveGrupo);
+		model.addAttribute("grupos", grupos);		
+		model.addAttribute("temas", temasGrupales);	
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "reportes/reporteTutoriaGrupal"; 
 	 } 
 	  
 	 @GetMapping("/reporte-tutoria-individual") 
-	 public String reporteTutoriaIndividual() {		
-	  return "reportes/reporteTutoriaIndividual"; 
+	 public String reporteTutoriaIndividual(Model model, HttpSession session) {	
+			// extrae el usuario apartir del usuario cargado en cesion.
+			Usuario usuario = (Usuario) session.getAttribute("usuario");
+			int cvePersona;
+			try {
+				cvePersona = (Integer) session.getAttribute("cvePersona");
+			} catch (Exception e) {
+				cvePersona = usuario.getPersona().getId();
+			}
+						
+			List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));			
+			List<TutoriaIndividual> tutorias = new ArrayList<>();	
+			Integer cveGrupo = (Integer) session.getAttribute("rtg-cveGrupo");
+			Integer cveAlumno = (Integer) session.getAttribute("rti-cveAlumno");	
+			List<Alumno> alumnos = new ArrayList<>();
+			
+			if(cveGrupo!=null) {				
+				alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
+				if((String) session.getAttribute("rti-fechaInicio")!=null) {					
+					Date fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("rti-fechaInicio"));				
+					if((String) session.getAttribute("rti-fechaFin")!=null) {						
+						Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rti-fechaFin"));
+						if(cveAlumno!=null) {
+							tutorias = tutoriaIndiService.buscarEntreFechasPorGrupoYAlumno(cveGrupo, cveAlumno, fechaInicio, fechaFin);
+						}
+						model.addAttribute("fechaFin", fechaFin);
+					}
+					model.addAttribute("fechaInicio", fechaInicio);
+				}				
+			}
+							
+			model.addAttribute("cveGrupo", cveGrupo);
+			model.addAttribute("cveAlumno", cveAlumno);
+			model.addAttribute("grupos", grupos);	
+			model.addAttribute("alumnos", alumnos);	
+			model.addAttribute("tutorias", tutorias);	
+			model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		 return "reportes/reporteTutoriaIndividual"; 
 	 } 
 	  
 	 @GetMapping("/reporte-informacion-estudiante/{cveAlumno}") 
-	 public String reporteInformacionEstudiante(@PathVariable("cveAlumno") Integer cveAlumno, Model model) {		
-		Date fechaActual = new Date();		 
+	 public String reporteInformacionEstudiante(@PathVariable("cveAlumno") Integer cveAlumno, Model model, HttpSession session) {		
+		 Usuario usuario = (Usuario) session.getAttribute("usuario");
+		 Date fechaActual = new Date();		 
 		if(cveAlumno!=null) {
 			Alumno alumno = alumnoService.buscarPorId(cveAlumno);
-			Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
+			//Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
 			
-			if(ultimoGrupo!=null) {
-				List<MateriaPromedioDTO> promediosMate = calMatService.buscarPorGrupoAlumno(ultimoGrupo.getId(), cveAlumno);			
-				model.addAttribute("grupo", ultimoGrupo);
+			AlumnoGrupo AlGrupo = alumnoGrupoService.checkInscrito(cveAlumno, usuario.getPreferencias().getIdPeriodo());
+			List<MateriaPromedioDTO> promediosMate = new ArrayList<>();
+			
+			if(AlGrupo!=null) {
+				promediosMate = calMatService.buscarPorGrupoAlumno(AlGrupo.getGrupo().getId(), cveAlumno);			
+				model.addAttribute("grupo", AlGrupo.getGrupo());
 				model.addAttribute("calificasiones", promediosMate);
 			}
 			
 			List<PagoGeneral> pagos = pagoGenService.buscarPorAlumno(cveAlumno, 1);
 			List<PagoGeneral> adeudos = pagoGenService.buscarPorAlumno(cveAlumno, 0);
-		
+			List<TutoriaIndividual> tutorias =  tutoriaIndiService.buscarPorAlumno(alumno);
+			List<Canalizacion> canalizaciones =  canalizacionService.buscarPorAlumno(alumno);
+			
 			model.addAttribute("alumno", alumno);
 			model.addAttribute("pagos", pagos);
 			model.addAttribute("adeudos", adeudos);
+			model.addAttribute("tutorias", tutorias);
+			model.addAttribute("canalizaciones", canalizaciones);			
 		}		 
 	  model.addAttribute("fechaActual", fechaActual);
+	  model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 	  return "reportes/reporteInformacionEstudiante"; 
 	 } 
 	  
@@ -933,16 +1075,16 @@ public class TutorController {
 			List<Alumno> alumnos = new ArrayList<>();
 			
 			if (cveGrupo != null) {						
-				alumnos = alumnoService.buscarPorGrupo(cveGrupo);			
+				alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());				
 			}
 			
 			model.addAttribute("alumnos", alumnos);
 			model.addAttribute("grupos", grupos);
 			model.addAttribute("cveGrupo", cveGrupo);
+			model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 	  return "reportes/reporteDatosContacto"; 
 	 } 
-	 
-	  
+	 	 
 	 @GetMapping("/reporte-horario-clases") 
 	 public String reporteHorarioClases(Model model, HttpSession session) { 
 		// extrae el usuario apartir del usuario cargado en cesion.
@@ -1014,6 +1156,144 @@ public class TutorController {
 		model.addAttribute("cveGrupo", cveGrupo);
 	  return "reportes/reporteHorarioClases"; 
 	 }
+	 
+	 @GetMapping("/reporte-bajas") 
+	 public String reporteBajas(Model model, HttpSession session) { 
+		// extrae el usuario apartir del usuario cargado en cesion.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+					
+		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));		
+		Integer cveGrupo = (Integer) session.getAttribute("rb-cveGrupo");
+		List<Baja> bajas = new ArrayList<>();
+		
+		if(cveGrupo!=null) {
+			Boolean GrupoEnPeriodo = grupoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			if(GrupoEnPeriodo==true) {
+				bajas = bajaService.buscarPorTipoStatusGrupoYPeriodo(2, 2, cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			}
+		}
+		model.addAttribute("bajas", bajas);
+		model.addAttribute("grupos", grupos);
+		model.addAttribute("cveGrupo", cveGrupo);
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "reportes/reporteBajas"; 
+	 } 
+	 
+	 @GetMapping("/reporte-canalizaciones") 
+	 public String reporteCanalizaciones(Model model, HttpSession session) { 
+		// extrae el usuario apartir del usuario cargado en cesion.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+					
+		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));
+		List<Alumno> alumnos = new ArrayList<>();
+		Integer cveGrupo = (Integer) session.getAttribute("rc-cveGrupo");
+		Integer cveAlumno = (Integer) session.getAttribute("rc-cveAlumno");
+		List<Canalizacion> canalizaciones = new ArrayList<>();
+		
+		if(cveGrupo!=null) {
+			alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			if(cveAlumno!=null) {
+				canalizaciones = canalizacionService.buscarPorGrupoPeriodoYAlumno(cveGrupo, usuario.getPreferencias().getIdPeriodo(), cveAlumno);
+			}			
+		}
+		
+		model.addAttribute("grupos", grupos);
+		model.addAttribute("alumnos", alumnos);
+		model.addAttribute("cveGrupo", cveGrupo);
+		model.addAttribute("cveAlumno", cveAlumno);
+		model.addAttribute("canalizaciones", canalizaciones);
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "reportes/reporteCanalizaciones"; 
+	 }
+	 
+	 @GetMapping("/reporte-cal-grupo") 
+	 public String reporteCalificacionesPorGrupo(Model model, HttpSession session) { 
+		// extrae el usuario apartir del usuario cargado en cesion.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+					
+		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));
+		Integer cveGrupo = (Integer) session.getAttribute("rcg-cveGrupo");
+			
+		if (cveGrupo != null) {
+			model.addAttribute("cveGrupo", cveGrupo);
+			model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
+			//proceso para sacar las materias
+			List<CargaHoraria> cargaHorarias = cargaHorariaService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			model.addAttribute("cargasHorarias", cargaHorarias);
+			List<CorteEvaluativo> corte = corteEvaluativoService.buscarPorCarreraYPeriodo(usuario.getPreferencias().getIdCarrera(), usuario.getPreferencias().getIdPeriodo());
+			List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
+			model.addAttribute("alumnos", alumnos);
+			//lista para rellenar alumnos con calificaciones
+			List<AlumnoPromedioDTO> alumnosCalificaciones =  new ArrayList<AlumnoPromedioDTO>();
+			if (alumnos.size() > 0) {
+				for (Alumno alumno : alumnos) {
+					//AlumnoCalificacionMateriaDTO alumnoDTO = new AlumnoCalificacionMateriaDTO();
+					AlumnoPromedioDTO alumnoDTO = new AlumnoPromedioDTO();
+					//se rellena el alumno y sus calificaciones
+					alumnoDTO.setIdAlumno(alumno.getId());
+					alumnoDTO.setNombre(alumno.getPersona().getNombreCompleto());
+					List<IndicadorMateriaDTO> indicadoresMaterias = new ArrayList<IndicadorMateriaDTO>();
+					for (CargaHoraria ch : cargaHorarias) {
+						IndicadorMateriaDTO im = new IndicadorMateriaDTO();
+						im.setIdMateria(ch.getId());
+						im.setNombre(ch.getMateria().getNombre());
+						// variables para guardar promedios y remediales de la materia
+						double promedioFinal = 0;
+						double promedioparciales = 0;
+						List<IndicadorParcialDTO> indicaroresParcial = new ArrayList<IndicadorParcialDTO>();
+						for (CorteEvaluativo c : corte) {
+							IndicadorParcialDTO ip = new IndicadorParcialDTO();
+							// para sacar el promedio de la materia y sus indicadores
+							double calificacionTotal = calificacionCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(), ch.getId(), c.getId());
+							// para guardar el promedio de los dos parciales
+							promedioparciales = promedioparciales + calificacionTotal;
+							ip.setIdMateria(ch.getMateria().getId());
+							ip.setParcial(c.getId());
+							ip.setPromedio(calificacionTotal);
+							// se agrega el objeto a la lista de indicador parcial
+							indicaroresParcial.add(ip);
+						}
+						//promedio final de la materia
+						promedioFinal = Math.round(promedioparciales / corte.size());
+						im.setPromedio(promedioFinal);
+						//se egraga la lista de indicacires materia
+						im.setParciales(indicaroresParcial);
+						//se agrega el estatus de la materia
+						im.setEstatus(calificacionMateriaService.buscarPorAlumnoYCarga(alumno.getId(), ch.getId()));
+						// se agrega el objeto de indficador materia
+						indicadoresMaterias.add(im);
+					}
+					//se agrega la lista de indicadores materia al alumno
+					alumnoDTO.setMaterias(indicadoresMaterias);
+					//se agregan los alumnos al arreglo
+					alumnosCalificaciones.add(alumnoDTO);
+				}
+				model.addAttribute("carrera", grupoService.buscarPorId(cveGrupo).getCarrera().getNombre());
+				model.addAttribute("alumnosCali", alumnosCalificaciones);
+			}
+		}
+		model.addAttribute("grupos", grupos);
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "reportes/reporteCalificacionesPorGrupo"; 
+	}
 	 
 //	@GetMapping("/entrevistaInicial")
 //	public String encuestaEntrevistaInicial() {

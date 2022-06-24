@@ -97,4 +97,7 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 			+ "ORDER BY id_grupo DESC LIMIT 2", nativeQuery = true)
 	List<Grupo> findByAlumnoPenultimoGrupo(@Param("alumno") Integer idAlumno);
 	
+	@Query(value = "SELECT EXISTS(SELECT * FROM grupos WHERE id=:idGrupo AND id_periodo =:idPeriodo)", nativeQuery = true)
+	Boolean findByGrupoYPeriodo(@Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo);
+	
 }

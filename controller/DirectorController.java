@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
@@ -14,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +25,8 @@ import edu.mx.utdelacosta.model.Actividad;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.Asistencia;
+import edu.mx.utdelacosta.model.Baja;
+import edu.mx.utdelacosta.model.BajaAutorizada;
 import edu.mx.utdelacosta.model.CambioGrupo;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
@@ -38,6 +42,7 @@ import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Personal;
 import edu.mx.utdelacosta.model.PlanEstudio;
 import edu.mx.utdelacosta.model.Prorroga;
+import edu.mx.utdelacosta.model.TutoriaIndividual;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
 import edu.mx.utdelacosta.model.dto.CambiarGrupoDTO;
@@ -54,6 +59,8 @@ import edu.mx.utdelacosta.service.IActividadService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAsistenciaService;
+import edu.mx.utdelacosta.service.IBajaAutorizadaService;
+import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICambioGrupoService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
@@ -69,6 +76,7 @@ import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IPersonalService;
 import edu.mx.utdelacosta.service.IPlanEstudioService;
 import edu.mx.utdelacosta.service.IProrrogaService;
+import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
@@ -134,7 +142,16 @@ public class DirectorController {
 	
 	@Autowired
 	private IMecanismoInstrumentoService mecanismoInstrumentoService;
-
+	
+	@Autowired
+	private IBajaService bajaService;
+	
+	@Autowired
+	private ITutoriaIndividualService tutoriaIndService;
+	
+	@Autowired
+	private IBajaAutorizadaService bajaAutorizaService;
+	
 	@GetMapping("/dosificacion")
 	public String dosificacion(Model model, HttpSession session) {
 		//objetos de la persona en sesión 
@@ -566,5 +583,87 @@ public class DirectorController {
 		model.addAttribute("alumnos", alumnos);
 		return "director/reporteAdeudos";
 	}	
+	
+	///////////////////////////////////////////////////////////////////
+	//-------------------------Brayan---------------------------------
+	//////////////////////////////////////////////////////////////////
+	
+	@GetMapping("/bajas")
+	 public String bajasAlumnos(Model model, HttpSession session) {
+		// extrae el usuario apartir del usuario cargado en cesion.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}	
+		
+		List<Baja> bajas = bajaService.buscarPorPersonaYEstatus(cvePersona, 0);
+		model.addAttribute("bajas", bajas);
+		return "director/bajas";
+	}
+	
+	@GetMapping("/bajas-cargar-tutorias/{idAlumno}")
+	public String cargarAlumnos(@PathVariable(name = "idAlumno", required = false) String idAlumno,  Model model) { 
+		if(idAlumno!=null){
+			Alumno alumno = alumnoService.buscarPorId(Integer.parseInt(idAlumno));
+			List<TutoriaIndividual> tutorias =  tutoriaIndService.buscarUltimas5PorAlumno(alumno);
+			// Extrae el último grupo del alumno y se inserta en el modelo del alumno
+			Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
+			alumno.setUltimoGrupo(ultimoGrupo);
+			model.addAttribute("alumno", alumno);
+			model.addAttribute("tutorias", tutorias);
+		}
+		return "fragments/tutorias :: cargar-tutorias";
+	}
+	
+	@PostMapping(path="/aprobar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String aprobarBaja(@RequestBody Map<String, String> obj, HttpSession session) {
+		// extrae el usuario apartir del usuario cargado en cesion.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+		
+		Date fechaHoy = new Date();	
+		String cveBaja = obj.get("id");		
+		if(cveBaja!=null){
+			
+			Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
+			baja.setEstatus(1);
+			baja.setFechaAutorizacion(fechaHoy);
+			bajaService.guardar(baja);
+			
+			BajaAutorizada  bajaAutorizada = new BajaAutorizada();
+			bajaAutorizada.setBaja(baja);
+			bajaAutorizada.setFechaRegistro(fechaHoy);
+			bajaAutorizada.setPersona(new Persona(cvePersona));
+			bajaAutorizada.setTipo(1);
+			bajaAutorizaService.guardar(bajaAutorizada);
+			
+			return "ok";
+		}
+		return "error";
+	}
+	
+	@PostMapping(path="/rechazar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String rechazarBaja(@RequestBody Map<String, String> obj, HttpSession session) {
+//		Date fechaHoy = new Date();	
+		String cveBaja = obj.get("id");	
+//		String motivo = obj.get("motivo");	
+		if(cveBaja!=null){
+			Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
+			baja.setEstatus(1);
+			bajaService.guardar(baja);
+			return "ok";
+		}
+		return "error";
+	}
 
 }

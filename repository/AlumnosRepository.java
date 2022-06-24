@@ -287,4 +287,12 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre", nativeQuery = true)
 	List<AlumnoInfoDTO> findByProfesorAndPeriodo(@Param("idProfesor") Integer idProfesor, @Param("idPeriodo") Integer idPeriodo);
 	
+	@Query(value = "SELECT a.* FROM alumnos_grupos ag "
+			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
+			+ "INNER JOIN alumnos a ON a.id=ag.id_alumno "
+			+ "INNER JOIN personas p ON p.id=a.id_persona "
+			+ "WHERE ag.id_grupo=:idGrupo AND g.id_periodo=:idPeriodo "
+			+ "ORDER BY p.primer_apellido ASC, p.segundo_apellido ASC, p.nombre ASC", nativeQuery = true)
+	List<Alumno> findByGrupoAndPeriodo(@Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo);
+	
 }

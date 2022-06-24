@@ -21,7 +21,7 @@ public class Canalizacion {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name="id_alumno")
 	private Alumno alumno;
 	
@@ -29,7 +29,7 @@ public class Canalizacion {
 	@JoinColumn(name = "id_tutoria_individual")
 	private TutoriaIndividual tutoriaIndividual;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_periodo")
 	private Periodo periodo;
 	
@@ -42,7 +42,7 @@ public class Canalizacion {
 	@Column(name = "hora_canalizar")
 	private Date horaCanalizar;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_servicio")
 	private Servicio servicio;
 	

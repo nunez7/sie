@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.service.db;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +35,11 @@ public class TemaGrupalServiceJpa implements ITemaGrupalService{
 			return optional.get();
 		}
 		return null;
+	}
+
+	@Override
+	public List<TemaGrupal> buscarEntreFechasPorGrupo(Integer idGrupo, Date fechaInicio, Date fechaFin) {
+		return temaGrupalRepo.findByGrupoAndFechaProgramada(idGrupo, fechaInicio, fechaFin);
 	}
 	
 }

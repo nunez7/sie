@@ -36,6 +36,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
+import edu.mx.utdelacosta.model.Baja;
+import edu.mx.utdelacosta.model.BajaAutorizada;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Concepto;
@@ -76,6 +78,8 @@ import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
+import edu.mx.utdelacosta.service.IBajaAutorizadaService;
+import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICalificacionService;
@@ -229,6 +233,12 @@ public class EscolaresController {
 	private String correo;
 
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
+	
+	@Autowired
+	private IBajaService bajaService;
+	
+	@Autowired
+	private IBajaAutorizadaService bajaAutorizaService;
 
 	@GetMapping("/aceptarAspirantes")
 	public String aceptarAspirantes(Model model, HttpSession session) {
@@ -1421,5 +1431,87 @@ public class EscolaresController {
 		return "ok";
 	}
 	
+	///////////////////////////////////////////////////////////////////
+	//-------------------------Brayan---------------------------------
+	//////////////////////////////////////////////////////////////////
+	
+	 @GetMapping("/bajas")
+	 public String bajas(Model model) {
+		 // extrae la lista de bajas que puede aprobar escolares, 
+		 // aquellas que tengan status 1 (aprobados por el director) en la tabla de "bajas" y que
+		 // tengan una relación en la tabla de "bajas autorizadas" con el tipo 1 (aprobados por el director)
+		 List<Baja> bajas = bajaService.buscarPorTipoYStatus(1, 1);
+		 model.addAttribute("bajas", bajas);
+		 return "escolares/bajas";
+	 }
+	 
+	 @PostMapping(path="/aprobar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+		@ResponseBody
+		public String aprobarBaja(@RequestBody Map<String, String> obj, HttpSession session) {
+			// extrae el usuario apartir del usuario cargado en cesion.
+			Usuario usuario = (Usuario) session.getAttribute("usuario");
+			int cvePersona;
+			try {
+				cvePersona = (Integer) session.getAttribute("cvePersona");
+			} catch (Exception e) {
+				cvePersona = usuario.getPersona().getId();
+			}
+			
+			Date fechaHoy = new Date();	
+			String cveBaja = obj.get("id");		
+			if(cveBaja!=null){
+				
+				Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
+				baja.setEstatus(2);
+				baja.setFechaAutorizacion(fechaHoy);
+				bajaService.guardar(baja);
+				
+				BajaAutorizada  bajaAutorizada = new BajaAutorizada();
+				bajaAutorizada.setBaja(baja);
+				bajaAutorizada.setFechaRegistro(fechaHoy);
+				bajaAutorizada.setPersona(new Persona(cvePersona));
+				bajaAutorizada.setTipo(2);
+				bajaAutorizaService.guardar(bajaAutorizada);
+				
+				// Se valida y actualiza el estado del alumno, usuario, alumno Grupo la false 
+				if(baja.getAlumno().getEstatusGeneral() != 0) {
+					
+					Usuario userAlumno = usuarioService.buscarPorUsuario(baja.getAlumno().getMatricula());
+					userAlumno.setActivo(false);
+					//usuarioService.guardar(usuario);
+					
+					Alumno alumno = baja.getAlumno();
+					alumno.setEstatusGeneral(0);
+					//alumnoService.guardar(alumno);
+					
+					//Se desactiva la relación alumno grupo del último grupo al que el alumno allá pertenecido
+					Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
+					AlumnoGrupo alumnoGrupo = alumnoGrService.buscarPorAlumnoYGrupo(alumno, ultimoGrupo);
+					alumnoGrupo.setActivo(false);
+					//alumnoGrService.guardar(alumnoGrupo);
+					
+					return "ok";
+				}else{
+					return "alumnoInactivo";
+				}
+	
+			}
+			return "error";
+		}
+		
+		@PostMapping(path="/rechazar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+		@ResponseBody
+		public String rechazarBaja(@RequestBody Map<String, String> obj, HttpSession session) {
+//			Date fechaHoy = new Date();	
+			String cveBaja = obj.get("id");	
+//			String motivo = obj.get("motivo");	
+			if(cveBaja!=null){
+				Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
+				baja.setEstatus(2);
+				bajaService.guardar(baja);
+				return "ok";
+			}
+			return "error";
+		}
 	
 }

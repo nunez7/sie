@@ -68,4 +68,6 @@ public interface IAlumnoService {
 	List<AlumnoInfoDTO> buscarPorProfesorYPeriodo(Integer idProfesor,Integer idPeriodo);
 	
 	List<Alumno> buscarTodos();
+	
+	List<Alumno> buscarPorGrupoYPeriodo(Integer idGrupo, Integer idPeriodo);
 }
