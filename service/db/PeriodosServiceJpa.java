@@ -47,6 +47,11 @@ public class PeriodosServiceJpa implements IPeriodosService{
 	public List<Date> buscarDiasPorFechaInicioYFechafin(String fechaInicio, String fechaFin) {
 		return periodosRepository.findDiasByFechaInicioAndFechafin(fechaInicio, fechaFin);
 	}
+
+	@Override
+	public Periodo buscarUltimo() {
+		return periodosRepository.findTopByOrderByIdDesc();
+	}
 	
 
 }

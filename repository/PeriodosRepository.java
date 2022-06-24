@@ -16,5 +16,7 @@ public interface PeriodosRepository extends JpaRepository<Periodo, Integer>{
 			+ "FROM generate_series(CAST(:fechaInicio AS date),CAST(:fechaFin AS date),CAST('1 day' AS interval))AS dia(dd) "
 			+ "WHERE CAST(TO_CHAR(dia.dd, 'd') AS INT) NOT IN (7, 1) LIMIT 200 ", nativeQuery = true)
 	List<Date> findDiasByFechaInicioAndFechafin(@Param("fechaInicio") String fechaInicio, @Param("fechaFin") String fechaFin);
-
+	
+	Periodo findTopByOrderByIdDesc();
+	
 }
