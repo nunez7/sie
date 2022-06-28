@@ -107,23 +107,20 @@ public class MateriasController {
 				AreaConocimiento area = new AreaConocimiento(materiaDTO.getAreaConocimiento()); 
 				materia.setAreaConocimiento(area);
 				materia.setCalificacion(materiaDTO.isCalificacion());
-				materia.setCompetencia(materiaDTO.getCompetencia());
+				materia.setCompetencia(null);
 				// buscamos y construimos el cuatrimestre
 				Cuatrimestre cuatrimestre = new Cuatrimestre(materiaDTO.getCuatrimestre());
 				materia.setCuatrimestre(cuatrimestre);
 				materia.setCurricular(materiaDTO.isCurricular());
-				materia.setExtracurricular(materiaDTO.isExtracurricular());
+				materia.setExtracurricular(false);
 				materia.setFechaAlta(new Date());
-				materia.setHorasPractica(materiaDTO.getHorasPracticas());
-				materia.setHorasSemanales(materiaDTO.getHorasSemanales());
-				materia.setHorasTeoria(materiaDTO.getHorasTeoria());
-				// proceso para sumar horas totales
-				int horasTotales = 0;
-				horasTotales = materiaDTO.getHorasPracticas() + materiaDTO.getHorasTeoria();
-				materia.setHorasTotales(horasTotales);
+				materia.setHorasPractica(null);
+				materia.setHorasSemanales(null);
+				materia.setHorasTeoria(null);
+				materia.setHorasTotales(null);
 				materia.setIntegradora(materiaDTO.isIntegradora());
 				materia.setNombre(materiaDTO.getNombre());
-				materia.setObjetivo(materiaDTO.getObjetivo());
+				materia.setObjetivo(null);
 				// buscamos y construimos el plan de estudio
 				materia.setPlanEstudio(plan);
 				materiasService.guardar(materia);
@@ -164,15 +161,12 @@ public class MateriasController {
 		Cuatrimestre cuatrimestre = new Cuatrimestre(materiaDTO.getCuatrimestre());
 		materia.setCuatrimestre(cuatrimestre);
 		materia.setCurricular(materiaDTO.isCurricular());
-		materia.setExtracurricular(materiaDTO.isExtracurricular());
+		materia.setExtracurricular(false);
 		materia.setFechaAlta(new Date());
-		materia.setHorasPractica(materiaDTO.getHorasPracticas());
-		materia.setHorasSemanales(materiaDTO.getHorasSemanales());
-		materia.setHorasTeoria(materiaDTO.getHorasTeoria());
-		// proceso para sumar horas totales
-		int horasTotales = 0;
-		horasTotales = materiaDTO.getHorasPracticas() + materiaDTO.getHorasTeoria();
-		materia.setHorasTotales(horasTotales);
+		materia.setHorasPractica(null);
+		materia.setHorasSemanales(null);
+		materia.setHorasTeoria(null);
+		materia.setHorasTotales(null);
 		materia.setIntegradora(materiaDTO.isIntegradora());
 		materia.setNombre(materiaDTO.getNombre());
 		// buscamos y construimos el plan de estudio

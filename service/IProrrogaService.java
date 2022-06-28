@@ -6,6 +6,7 @@ import java.util.List;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Prorroga;
+import edu.mx.utdelacosta.model.TipoProrroga;
 
 public interface IProrrogaService {
 	
@@ -25,10 +26,13 @@ public interface IProrrogaService {
 	
 	List<Prorroga> buscarPorIdProfesor (Integer idProfesor);
 	
-	Prorroga buscarPorCargaHorariaYCorteEvaluativoEIdTipoProrrgaYActivo(CargaHoraria cargaHoraria, CorteEvaluativo corteEvaluativo, Integer idTipoProrroga, boolean activo);
+	Prorroga buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(CargaHoraria cargaHoraria, CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, boolean activo);
+
+	Prorroga buscarPorCargaHorariaYTipoProrrogaYFechaLimiteMayorQueYActivoYAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, Date fechaLimite, Boolean activo, Boolean aceptada);
+
+	Prorroga buscarPorCargaHorariaYTipoProrrogaYActivoYAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, boolean activo, boolean aceptada);
 	
-	Prorroga buscarPorCargaHorariaIdTipoProrrogaYFechaLimiteMayorQueYActivoYAceptada(CargaHoraria cargaHoraria, Integer idTipoProrroga, Date fechaLimite, Boolean activo, Boolean aceptada);
+	List<Prorroga> buscarPorPersonaCarrerraAndAceptadas(Integer idPersona);
 	
-	Prorroga buscarPorCargaHorariaEIdTipoProrrogaYActivoYAceptada(CargaHoraria cargaHoraria, Integer idTipo, boolean activo, boolean aceptada);
-	
+	Integer contarProrrogasPendientesPorPersona(Integer idPersona);
 }

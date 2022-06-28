@@ -184,6 +184,11 @@ public class AlumnosServiceJpa implements IAlumnoService{
 		// TODO Auto-generated method stub
 		return alumnosRepo.getAllAlumnoAdeudoByCarreraAndPeriodo(idCarrera, idPeriodo);
 	}
+
+	@Override
+	public List<Alumno> buscarPorPersonaCarreraAndActivo(Integer idPersona) {
+		return alumnosRepo.findAllAlumnosByPersonaCarreraAndActivo(idPersona);
+	}
 	
 
 }

@@ -17,4 +17,5 @@ public interface IDosificacionService {
 	Dosificacion encontrarUltimaDosificacion();
 	List<Dosificacion> buscarPorIdCargaHoraria(Integer idCargaHoraria);
 	Dosificacion buscarPorIdMateriaEIdPersona(Integer idMateria, Integer IdPersona);
+	Integer contarPendientesPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo);
 }

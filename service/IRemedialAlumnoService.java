@@ -39,5 +39,5 @@ public interface IRemedialAlumnoService {
 	
 	Integer countByCarreraAndCorteEvaluativo(Integer idCarrera, Integer tipoRemedial, Integer idCorteEvaluativo);
 	
-
+	Integer buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(Integer idAlumno, Integer idCargaHoraria, Integer idCorte, Integer tipo);
 }

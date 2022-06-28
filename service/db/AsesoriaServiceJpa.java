@@ -27,4 +27,10 @@ public class AsesoriaServiceJpa implements IAsesoriaService{
 		return asesoriaRepository.findByIdGrupo(idGrupo);
 	}
 
+	@Override
+	public List<AsesoriaDTO> buscarPorPersonaCarrera(Integer idPersona) {
+		// TODO Auto-generated method stub
+		return asesoriaRepository.findByPersonaCarrera(idPersona);
+	}
+
 }

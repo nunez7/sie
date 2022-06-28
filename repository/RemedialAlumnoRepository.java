@@ -70,4 +70,11 @@ public interface RemedialAlumnoRepository extends CrudRepository<RemedialAlumno,
 			+ "WHERE g.id_carrera=:idCarrera AND ra.tipo_remedial=:tipoRemedial AND ra.id_corte=:idCorteEvaluativo", nativeQuery = true)
 	Integer countByCarreraAndCorteEvaluativo(@Param("idCarrera") Integer idCarrera, @Param("tipoRemedial") Integer tipoRemedial, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
 	
+	//trae la calificacion de un remedial o extraordinario de un corte en caso de tenerlo
+	@Query(value = "SELECT COALESCE(SUM(t.numero), 0) AS remedial FROM remedial_alumno ra "
+			+ "INNER JOIN testimonios t on t.id = ra.tipo_testimonio "
+			+ "WHERE id_alumno = :idAlumno AND id_carga_horaria = :idCargaHoraria "
+			+ "AND id_corte = :idCorte AND tipo_remedial = :tipo", nativeQuery = true)
+	Integer findByAlumnoAndCargaHorariaAndCorteEvaluativoAndTipo(@Param("idAlumno") Integer idAlumno, @Param("idCargaHoraria") Integer idCargaHoraria, @Param("idCorte") Integer idCorte, 
+				@Param("tipo") Integer tipo);
 }

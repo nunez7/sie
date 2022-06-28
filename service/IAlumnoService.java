@@ -65,4 +65,6 @@ public interface IAlumnoService {
 	List<Alumno> buscarPorNombreOMatricula(String nombre);
 	
 	List<Alumno> buscarTodos();
+	
+	List<Alumno> buscarPorPersonaCarreraAndActivo(Integer idPersona);
 }

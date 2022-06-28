@@ -48,11 +48,13 @@ import edu.mx.utdelacosta.model.dto.MateriaDTO;
 import edu.mx.utdelacosta.model.dto.MesDTO;
 import edu.mx.utdelacosta.model.dto.ProfesorProrrogaDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
+import edu.mx.utdelacosta.model.dtoreport.AsistenciasCorteDTO;
 import edu.mx.utdelacosta.model.dtoreport.DosificacionPendienteDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorParcialDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorProfesorDTO;
+import edu.mx.utdelacosta.model.dtoreport.MateriaAsistenciaDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.IActividadService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
@@ -151,8 +153,11 @@ public class DirectorController {
 	@Autowired
 	private ITestimonioCorteService testimonioCorteService;
 	
+	@Autowired
+	private IAsistenciaService asistenciaService;
+	
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
-
+	
 	@GetMapping("/dosificacion")
 	public String dosificacion(Model model, HttpSession session) {
 		//objetos de la persona en sesión 
@@ -295,7 +300,7 @@ public class DirectorController {
 			model.addAttribute("dias", dias);
 			//List<Horario> cantHoras = horarioService.buscarPorIdProfesor(cveProfesor);
 			//formato para horas
-			DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss");
+			DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 			//Se extrae una lista de las horas que ahi asociadas a cada hora de calse con un disting por hora inicio y hora fin				
 			List<Horario> horas = horarioService.buscarPorProfesorDistinctPorHoraInicio(cveProfesor, usuario.getPreferencias().getIdPeriodo());
 			model.addAttribute("horas", horas);
@@ -479,8 +484,7 @@ public class DirectorController {
 			}
 		}
 		
-		model.addAttribute("materias",
-				materias);
+		model.addAttribute("materias", materias);
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("carreras", carrerasServices.buscarTodasMenosIngles());
 		model.addAttribute("grupos", grupos);
@@ -601,26 +605,29 @@ public class DirectorController {
 		return "director/reporteAdeudos";
 	}	
 	
-	//reporte de indicadores 
+	// reporte de indicadores
 	@GetMapping("/reporte-indicadores")
 	public String reporteIndicadores(Model model, HttpSession session) {
 		int cvePersona = (Integer) session.getAttribute("cvePersona");
 		Persona persona = personaService.buscarPorId(cvePersona);
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(persona.getId());
-		if(session.getAttribute("cveCarrera") != null) {
+		if (session.getAttribute("cveCarrera") != null) {
 			int cveCarrera = (Integer) session.getAttribute("cveCarrera");
-			List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), cveCarrera);
-			model.addAttribute("grupos",grupos); 
+			List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(),
+					cveCarrera);
+			model.addAttribute("grupos", grupos);
 			model.addAttribute("cveCarrera", cveCarrera);
 			if (session.getAttribute("cveGrupo") != null) {
-				  int cveGrupo = (Integer) session.getAttribute("cveGrupo");
+				int cveGrupo = (Integer) session.getAttribute("cveGrupo");
 				model.addAttribute("cveGrupo", cveGrupo);
-				//model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
-				//proceso para sacar las materias
-				List<CargaHoraria> cargaHorarias = cargaHorariaService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
-				//model.addAttribute("ch", cargaHorarias);
-				List<CorteEvaluativo> corte = corteEvaluativoService.buscarPorCarreraYPeriodo(usuario.getPreferencias().getIdCarrera(), usuario.getPreferencias().getIdPeriodo());
+				// model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
+				// proceso para sacar las materias
+				List<CargaHoraria> cargaHorarias = cargaHorariaService.buscarPorGrupoYPeriodo(cveGrupo,
+						usuario.getPreferencias().getIdPeriodo());
+				// model.addAttribute("ch", cargaHorarias);
+				List<CorteEvaluativo> corte = corteEvaluativoService.buscarPorCarreraYPeriodo(
+						usuario.getPreferencias().getIdCarrera(), usuario.getPreferencias().getIdPeriodo());
 				List<IndicadorMateriaDTO> indicadoresMaterias = new ArrayList<IndicadorMateriaDTO>();
 				int alumnos = alumnoService.buscarPorGrupo(cveGrupo).size();
 				model.addAttribute("alumnos", alumnos);
@@ -640,7 +647,8 @@ public class DirectorController {
 							for (CorteEvaluativo c : corte) {
 								IndicadorParcialDTO ip = new IndicadorParcialDTO();
 								// para sacar el promedio de la materia y sus indicadores
-								double calificacionTotal = calificacionCorteService.buscarPorCargaHorariaIdCorteEvaluativoIdGrupo(ch.getId(), c.getId());
+								double calificacionTotal = calificacionCorteService
+										.buscarPorCargaHorariaIdCorteEvaluativoIdGrupo(ch.getId(), c.getId());
 								double promedio = calificacionTotal / alumnos;
 								int remediales = remedialAlumnoService.contarRemedialesAlumno(ch.getId(), 1);
 								double pr = remediales / alumnos;
@@ -679,16 +687,16 @@ public class DirectorController {
 						model.addAttribute("materias", indicadoresMaterias);
 					}
 				}
-			}  //pruebas de indicadores por carrera
+			} // pruebas de indicadores por carrera
 		}
 		model.addAttribute("carreras", carreras);
 		return "director/reporteIndicadores";
 	}
-	
-	// reporte de indicadores por carrera RAUL HDEZ 17/06/2022
+
+	// reporte de indicadores por carrera
 	@GetMapping("/reporte-indicadores-carrera")
 	public String rindicadores(HttpSession session, Model model) {
-		Persona persona = new Persona((Integer)session.getAttribute("cvePersona"));
+		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
 		int cveCarrera;
 		try {
@@ -696,7 +704,8 @@ public class DirectorController {
 		} catch (Exception e) {
 			cveCarrera = 500;
 		}
-		List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(new Carrera(cveCarrera),new Periodo(usuario.getPreferencias().getIdPeriodo()));
+		List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(new Carrera(cveCarrera),
+				new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		List<IndicadorProfesorDTO> indicadoresSD = new ArrayList<>();
 		List<IndicadorProfesorDTO> indicadoresRemedial = new ArrayList<>();
 		List<IndicadorProfesorDTO> indicadoresExtra = new ArrayList<>();
@@ -708,87 +717,175 @@ public class DirectorController {
 		Integer numExt = 0;
 		Integer alumnos = alumnoService.countAlumnosByCarrera(cveCarrera, usuario.getPreferencias().getIdPeriodo());
 		for (CorteEvaluativo corte : cortes) {
-			
+
 			IndicadorProfesorDTO indicadorExt = new IndicadorProfesorDTO();
 			IndicadorProfesorDTO indicadorSD = new IndicadorProfesorDTO();
 			IndicadorProfesorDTO indicadorRem = new IndicadorProfesorDTO();
 
 			numSD = testimonioCorteService.countAlumnosSDByCarrera(cveCarrera, corte.getId());
-			indicadorSD.setNumero(numSD); //se busca el numero de alumnos en SD y se agrega al indicador
-			indicadorSD.setPromedio((numSD*100)/alumnos); //se promedia en base al alumno
-			totalSD = totalSD+numSD; //se suma el numero de SD para la variable general
-			indicadoresSD.add(indicadorSD); //se agrega el indicador a la lista correspondiente
-			
-			numRem = remedialAlumnoService.countByCarreraAndCorteEvaluativo(cveCarrera, 1, corte.getId());
-			indicadorRem.setNumero(numRem); //se obtiene el numero de remediales					
-			indicadorRem.setPromedio((numRem*100)/alumnos); //se promedia					
-			totalRemedial =  totalRemedial + numRem; //se suma a la lista general
-			indicadoresRemedial.add(indicadorRem); //se agrega a la lista
+			indicadorSD.setNumero(numSD); // se busca el numero de alumnos en SD y se agrega al indicador
+			indicadorSD.setPromedio((numSD * 100) / alumnos); // se promedia en base al alumno
+			totalSD = totalSD + numSD; // se suma el numero de SD para la variable general
+			indicadoresSD.add(indicadorSD); // se agrega el indicador a la lista correspondiente
 
-			
+			numRem = remedialAlumnoService.countByCarreraAndCorteEvaluativo(cveCarrera, 1, corte.getId());
+			indicadorRem.setNumero(numRem); // se obtiene el numero de remediales
+			indicadorRem.setPromedio((numRem * 100) / alumnos); // se promedia
+			totalRemedial = totalRemedial + numRem; // se suma a la lista general
+			indicadoresRemedial.add(indicadorRem); // se agrega a la lista
+
 			numExt = remedialAlumnoService.countByCarreraAndCorteEvaluativo(cveCarrera, 2, corte.getId());
-			indicadorExt.setNumero(numExt); //se obtiene el numero de remediales					
-			indicadorExt.setPromedio((numExt*100)/alumnos); //se promedia			
-			totalExtra = totalExtra + numExt; //se suma a la lista general
-			indicadoresExtra.add(indicadorExt); //se agrega a la lista
+			indicadorExt.setNumero(numExt); // se obtiene el numero de remediales
+			indicadorExt.setPromedio((numExt * 100) / alumnos); // se promedia
+			totalExtra = totalExtra + numExt; // se suma a la lista general
+			indicadoresExtra.add(indicadorExt); // se agrega a la lista
 
 		}
 		IndicadorMateriaProfesorDTO indicadores = new IndicadorMateriaProfesorDTO();
-		Integer noAlumnos = alumnoService.countInscritosByCarreraAndPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo());
-		indicadores.setNumeroAlumnos(noAlumnos);	
+		Integer noAlumnos = alumnoService.countInscritosByCarreraAndPeriodo(cveCarrera,
+				usuario.getPreferencias().getIdPeriodo());
+		indicadores.setNumeroAlumnos(noAlumnos);
 		try {
-			indicadores.setPorcentajeAlumnos((noAlumnos*100)/alumnos);
+			indicadores.setPorcentajeAlumnos((noAlumnos * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeAlumnos(0);
 		}
-		
+
 		noAlumnos = alumnoService.countBajaByCarreraAndPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo());
 		indicadores.setNumeroBajas(noAlumnos);
 		try {
-			indicadores.setPorcentajeBajas((noAlumnos*100)/alumnos);
+			indicadores.setPorcentajeBajas((noAlumnos * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeBajas(0);
 		}
-		
-		noAlumnos = alumnoService.obtenerRegularesByCarreraPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo()).size();
+
+		noAlumnos = alumnoService.obtenerRegularesByCarreraPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo())
+				.size();
 		indicadores.setNumeroRegulares(noAlumnos);
-		
+
 		try {
-			indicadores.setPorcentajeRegulares((noAlumnos*100)/alumnos);
+			indicadores.setPorcentajeRegulares((noAlumnos * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeRegulares(0);
 		}
 		indicadores.setNumeroSD(totalSD);
 		try {
-			indicadores.setPorcentajeSD((totalSD*100)/alumnos);
+			indicadores.setPorcentajeSD((totalSD * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeSD(0);
 		}
 		indicadores.setIndicadoresSD(indicadoresSD);
-		
+
 		indicadores.setNumeroRemediales(totalRemedial);
 		try {
-			indicadores.setPorcentajeRemediales((totalRemedial*100)/alumnos);
+			indicadores.setPorcentajeRemediales((totalRemedial * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeRemediales(0);
 		}
 		indicadores.setIndicadoresRemediales(indicadoresRemedial);
-		
+
 		indicadores.setNumeroExtra(totalExtra);
 		try {
-			indicadores.setPorcentajeExtra((totalExtra*100)/alumnos);
+			indicadores.setPorcentajeExtra((totalExtra * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeExtra(0);
 		}
 		indicadores.setIndicadoresExtra(indicadoresExtra);
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(persona.getId());
 		model.addAttribute("indicadores", indicadores);
-		model.addAttribute("cortes", cortes);	
+		model.addAttribute("cortes", cortes);
 		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("cveCarrera", cveCarrera);
 		model.addAttribute("totalAlumnos", alumnos);
 		return "director/reporteIndicadoresCarrera";
+	}
+		
+	@GetMapping("/bajas")
+	public String bajasAlumnos(Model model) {
+		return "director/bajas";
+	}
+	
+	@GetMapping("/reporte-prorrogas")
+	public String reporteProrrogas(Model model, HttpSession session) {
+		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
+		Usuario usuario = usuariosService.buscarPorPersona(persona);
+		List<Prorroga> prorrogas = prorrogaService.buscarPorPersonaCarrerraAndAceptadas(usuario.getPersona().getId());
+		model.addAttribute("prorrogas", prorrogas);
+		model.addAttribute("nombreUT", NOMBRE_UT);
+		return "director/reporteProrrogas";
+	}
+	
+	@GetMapping("/reporte-asistencias-alumno")
+	public String reporteAsistenciasAlumno(Model model, HttpSession session) {
+		int cvePersona = (Integer) session.getAttribute("cvePersona");
+		Persona persona = personaService.buscarPorId(cvePersona);
+		Usuario usuario = usuariosService.buscarPorPersona(persona);
+		if(session.getAttribute("cveCarrera") != null) {
+			int cveCarrera = (Integer) session.getAttribute("cveCarrera");
+			List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), cveCarrera);
+			int cveGrupo = 0;
+			model.addAttribute("grupos",grupos); 
+			model.addAttribute("cveCarrera", cveCarrera);
+			if(session.getAttribute("cveGrupo") != null) {
+				int cveAlumno = 0;
+				cveGrupo = (Integer) session.getAttribute("cveGrupo");
+				//model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
+				model.addAttribute("cveGrupo", cveGrupo);
+				List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
+				model.addAttribute("alumnos", alumnos);
+				if(session.getAttribute("cveAlumno") != null) {
+					cveAlumno = (Integer) session.getAttribute("cveAlumno");
+					model.addAttribute("cveAlumno", cveAlumno);
+				}
+				if(cveAlumno > 0) {	
+					Grupo grupo = grupoService.buscarPorId(cveGrupo);
+					List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(grupo.getCarrera(), grupo.getPeriodo());
+					//se crea la lista de materiaAsistencias
+					List<MateriaAsistenciaDTO> materias = new ArrayList<MateriaAsistenciaDTO>();
+					List<CargaHoraria> cargarHorarias = cargaHorariaService.buscarPorGrupo(new Grupo(cveGrupo));
+					for (CargaHoraria ch : cargarHorarias) {
+						MateriaAsistenciaDTO materiaAsistencia = new MateriaAsistenciaDTO();
+						materiaAsistencia.setIdMateria(ch.getMateria().getId());
+						materiaAsistencia.setMateria(ch.getMateria().getNombre());
+						int ta = 0; //total de asistencias por materia
+						int tf = 0; //total de faltas por materia
+						//se crea la lista de AsistenciasCorte
+						List<AsistenciasCorteDTO> asistenciasCorte = new ArrayList<AsistenciasCorteDTO>();
+						for (CorteEvaluativo c : cortes) {
+							//se crea el objeto de asistenciaCorte
+							AsistenciasCorteDTO ac = new AsistenciasCorteDTO();
+							ac.setIdCorte(c.getId());
+							int asis = asistenciaService.contarAsistenciasPorAlumnoYCargaHorariaYCorteEvaluativo(cveAlumno, ch.getId(), c.getFechaInicio(), c.getFechaFin());
+							ac.setAsistencias(asis);
+							int faltas = asistenciaService.contarFaltasPorAlumnoYCargaHorariaYCorteEvaluativo(cveAlumno, ch.getId(), c.getFechaInicio(), c.getFechaFin());
+							ac.setFaltas(faltas);
+							//se guarda el objeto de asistencias corte en la lista
+							asistenciasCorte.add(ac);
+							//se sumas las faltas y asistencias totales de la materia
+							ta = ta + asis;
+							tf = tf + faltas;
+						}
+						materiaAsistencia.setTotalAsistencias(ta);
+						materiaAsistencia.setTotalFaltas(tf);
+						//se guarda la lista de asistenciasCorte en asistencias materia
+						materiaAsistencia.setCortes(asistenciasCorte);
+						//se guarda el objeto de materia asistencias en la lista
+						materias.add(materiaAsistencia);
+					}
+					model.addAttribute("materias", materias);
+				}
+			}
+			else {
+				model.addAttribute("cveGrupo", cveGrupo); //se retorna el id del grupo seleccionado
+			}
+		}
+		// lista de cortesEvalutivos
+		List<CorteEvaluativo> cortesEvaluativos = corteEvaluativoService.buscarPorCarreraYPeriodo(usuario.getPreferencias().getIdCarrera(), usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("cortes", cortesEvaluativos);
+		model.addAttribute("carreras", carrerasServices.buscarCarrerasPorIdPersona(persona.getId()));
+		model.addAttribute("nombreUT", NOMBRE_UT);
+		return "director/reporteAsistenciasAlumno";
 	}
 
 }

@@ -67,5 +67,24 @@ public interface AsistenciaRepository extends CrudRepository<Asistencia, Integer
 			+ "WHERE a.valor='R' and a.id_alumno=:idAlumno and cg.id=:idCargaHoraria ", nativeQuery = true)
 	List<Asistencia> findRetardosByAlumnoAndCargaHoraria(@Param("idAlumno") Integer idAlumno,
 			@Param("idCargaHoraria") Integer idCargaHoraria);
+	
+	//cuenta el numero de asistencias por alumno, materia y corte(fecha de inicio y fecha de fin)
+	@Query(value = "SELECT COUNT(a.*) as asistencias FROM asistencias a "
+			+ "INNER JOIN horarios h ON h.id = a.id_horario "
+			+ "WHERE h.id_carga_horaria = :idCargaHoraria "
+			+ "AND a.fecha BETWEEN :fechaInicio and :fechaFin "
+			+ "AND a.valor = 'A' OR a.valor = 'J' OR a.valor = 'R' "
+			+ "AND id_alumno = :idAlumno", nativeQuery = true)
+	Integer countAsistenciasByAlumnoAndCargaHorariaAndCorteEvalutivo(@Param("idAlumno") Integer idAlumno, @Param("idCargaHoraria") Integer idCargaHoraria,
+				@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
+
+	//cuenta el numero de faltas por alumno, materia y corte (fecha inicio y fecha fin) 
+	@Query(value = "SELECT COUNT(a.*) as asistencias FROM asistencias a "
+			+ "INNER JOIN horarios h ON h.id = a.id_horario "
+			+ "WHERE h.id_carga_horaria = :idCargaHoraria "
+			+ "AND a.fecha BETWEEN :fechaInicio and :fechaFin "
+			+ "AND a.valor = 'F' AND id_alumno = :idAlumno", nativeQuery = true)
+	Integer countFaltasByAlumnoAndCargaHorariaAndCorteEvalutivo(@Param("idAlumno") Integer idAlumno, @Param("idCargaHoraria") Integer idCargaHoraria,
+				@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
 
 }
