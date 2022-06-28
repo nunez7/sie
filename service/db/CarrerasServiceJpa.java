@@ -19,7 +19,6 @@ public class CarrerasServiceJpa implements ICarrerasServices{
 
 	@Override
 	public Carrera buscarPorId(Integer id) {
-		// TODO Auto-generated method stub
 		Optional<Carrera> optional = carrerasRepository.findById(id);
 		if (optional.isPresent()) {
 			return optional.get();
@@ -29,19 +28,22 @@ public class CarrerasServiceJpa implements ICarrerasServices{
 
 	@Override
 	public List<Carrera> buscarTodasMenosIngles() {
-		// TODO Auto-generated method stub
-		return carrerasRepository.findAllExceptEnglishOrderByNombre();
+		return carrerasRepository.findAllTSUExceptEnglishOrderByNombre();
 	}
 	
 	@Override
 	public List<Carrera> buscarCarrerasPorIdPersona(Integer id) {
-		// TODO Auto-generated method stub
 		return carrerasRepository.findCarrerasByIdPersona(id);
 	}
 
 	@Override
 	public List<Carrera> buscarTodas() {
 		return carrerasRepository.findAll();
+	}
+
+	@Override
+	public List<Carrera> buscarTodasTSUMenosIngles() {
+		return carrerasRepository.findAllTSUExceptEnglishOrderByNombre();
 	}
 
 }

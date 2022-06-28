@@ -28,9 +28,11 @@ import edu.mx.utdelacosta.model.PagoAlumno;
 import edu.mx.utdelacosta.model.PagoAsignatura;
 import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.Remedial;
 import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.Testimonio;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
@@ -38,6 +40,7 @@ import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.IConceptoService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
+import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.ITestimonioService;
 import edu.mx.utdelacosta.service.IUsuariosService;
@@ -76,6 +79,9 @@ public class RemedialController {
 	private ICalificacionMateriaService calificacionMateriaService;
 	
 	@Autowired
+	private IProrrogaService prorrogaService;
+	
+	@Autowired
 	private ActualizarRemedial actualizarRemedial;
 
 	// cargar modal remedial
@@ -92,51 +98,72 @@ public class RemedialController {
 		// se compara el tipo de remdial, si es remedial o extraordinario
 		if (tipo.equals("remedial")) {
 			// se busca si el periodo de remediales esta activo
-			if (fechaHoy.after(corte.getInicioRemedial()) && fechaHoy.before(corte.getFinRemedial())) {
+			if (fechaHoy.before(corte.getInicioRemedial()) || fechaHoy.after(corte.getFinRemedial())) {
+				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
+						new CargaHoraria(idCarga),corte,new TipoProrroga(1), true);
+				if (prorroga != null) {
+					if (prorroga.getFechaLimite().before(fechaHoy)) {
+						model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de remediales");
+						return "fragments/modal-calificar:: verRemedialExtra";
+					}
+				} else {
+					model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de remediales");
+					return "fragments/modal-calificar:: verRemedialExtra";
+				}
 
-				// se busca si el alumno tiene un remedial
-				RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
-						new Alumno(idAlumno), new CargaHoraria(idCarga), new Remedial(1),
-						new CorteEvaluativo(corActual));
+			}
+			
+			// se busca si el alumno tiene un remedial
+			RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
+			new Alumno(idAlumno), new CargaHoraria(idCarga), new Remedial(1),
+			new CorteEvaluativo(corActual));
 
-					if (remedial==null) {
+			if (remedial==null) {
 						
-					//en caso de no tener se busca si el alumno es apto para generar un remedial
-					boolean aptoRemedial = comprobarRemedial(idAlumno, idCarga, corActual);
-					if (aptoRemedial == false) {
-						
-						// caso negativo se devuelve la vista
-						model.addAttribute("respuesta", "El alumno no se encuentra en remedial");
-						}else {
-							CargaHoraria carga = cargaService.buscarPorIdCarga(idCarga);
-							List<Testimonio> testimonios = testimonioService
-									.buscarTodosPorIntegradora(carga.getMateria().getIntegradora());
-
-							model.addAttribute("remedial", remedial);					
-							model.addAttribute("tipo", 1);
-							model.addAttribute("cActual", idCarga);
-							model.addAttribute("testimonios", testimonios);
-						}
-					}else{
-					
-					//se construye la carga y se buscan los testimonios en base a la materia (integradora o no)
+				//en caso de no tener se busca si el alumno es apto para generar un remedial
+				boolean aptoRemedial = comprobarRemedial(idAlumno, idCarga, corActual);
+				if (aptoRemedial == false) {		
+					// caso negativo se devuelve la vista
+					model.addAttribute("respuesta", "El alumno no se encuentra en remedial");
+				}else {
 					CargaHoraria carga = cargaService.buscarPorIdCarga(idCarga);
-					List<Testimonio> testimonios = testimonioService
-							.buscarTodosPorIntegradora(carga.getMateria().getIntegradora());
-
+					List<Testimonio> testimonios = testimonioService.buscarTodosPorIntegradora(carga.getMateria().getIntegradora());
 					model.addAttribute("remedial", remedial);					
 					model.addAttribute("tipo", 1);
 					model.addAttribute("cActual", idCarga);
 					model.addAttribute("testimonios", testimonios);
-					
 				}
-			} else {
-				model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de remediales");
+				
+			}else{
+					
+				//se construye la carga y se buscan los testimonios en base a la materia (integradora o no)
+				CargaHoraria carga = cargaService.buscarPorIdCarga(idCarga);
+				List<Testimonio> testimonios = testimonioService.buscarTodosPorIntegradora(carga.getMateria().getIntegradora());
+
+				model.addAttribute("remedial", remedial);					
+				model.addAttribute("tipo", 1);
+				model.addAttribute("cActual", idCarga);
+				model.addAttribute("testimonios", testimonios);
+		
 			}
+				
 		}
 
 		if (tipo.equals("extraordinario")) {
-			if (fechaHoy.after(corte.getInicioEvaluaciones()) && fechaHoy.before(corte.getFinExtraordinario())) {
+			if (fechaHoy.before(corte.getInicioEvaluaciones()) && fechaHoy.after(corte.getFinExtraordinario())) {
+				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
+						new CargaHoraria(idCarga),corte,new TipoProrroga(1), true);
+				if (prorroga != null) {
+					if (prorroga.getFechaLimite().before(fechaHoy)) {
+						model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de remediales");
+						return "fragments/modal-calificar:: verRemedialExtra";
+					}
+				} else {
+					model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de remediales");
+					return "fragments/modal-calificar:: verRemedialExtra";
+				}
+			}
+			
 				boolean remedial = comprobarExtraordinario(idAlumno, idCarga, Integer.parseInt(corteActual));
 				if (remedial == true) {
 					CargaHoraria carga = cargaService.buscarPorIdCarga(idCarga);
@@ -153,10 +180,10 @@ public class RemedialController {
 				} else {
 					model.addAttribute("respuesta", "El alumno no se encuentra en extraordinario");
 				}
-			} else {
-				model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de extraordinarios");
-			}
 		}
+			/*} else {
+				model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de extraordinarios");
+			}*/
 
 		model.addAttribute("corteActual", corteActual);
 		model.addAttribute("alumno", idAlumno);
@@ -170,7 +197,10 @@ public class RemedialController {
 		CargaHoraria carga = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cveCarga"));
 		Integer idRemedial = Integer.parseInt(obj.get("remedial"));
 		RemedialAlumno remedial = remedialAlumnoService.buscarPorId(idRemedial);
-
+		
+		String respuesta = actualizarRemedial.eliminar(carga, remedial);
+		
+		/*
 		if (remedial.getRemedial().getId() == 1) {
 			// si es un remedial se comprueba si existe en extraordinario activo
 			RemedialAlumno extraordinario = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
@@ -217,8 +247,9 @@ public class RemedialController {
 		
 		//se procede a eliminar el remedial
 		remedialAlumnoService.eliminar(remedial);
+		*/
 
-		return "ok";
+		return respuesta;
 	}
 
 	@PostMapping(path = "/guardar", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -309,13 +340,13 @@ public class RemedialController {
 			pago.setDescuento(0.0);
 			pago.setFechaAlta(new Date());
 			pago.setFechaImportacion(null);
-			pago.setFirmaDigital(null);
-			pago.setFolio(null);
+			pago.setFirmaDigital("");
+			pago.setFolio("");
 			pago.setMonto(concepto.getMonto());
 			pago.setMontoUnitario(concepto.getMonto());
-			pago.setReferencia(null);
-			pago.setReferenciaFondos(null);
-			pago.setRefReconciliacion(null);
+			pago.setReferencia("");
+			pago.setReferenciaFondos("");
+			pago.setRefReconciliacion("");
 			pago.setStatus(0);
 			pago.setTipo(1);
 			

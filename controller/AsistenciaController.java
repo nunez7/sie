@@ -33,6 +33,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.TestimonioCorte;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoResultadoDTO;
 import edu.mx.utdelacosta.model.dto.CorteEvaluativoDTO;
@@ -117,10 +118,9 @@ public class AsistenciaController {
 		// ---------------
 
 		//se busca que la fecha actual no sobrepase el limite de captura de asistencias 
-		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(fechaHoy,
-				fechaHoy, carga.getPeriodo(), carrera);
+		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(fechaHoy, carga.getPeriodo().getId(), carrera.getId());
 		if (corte == null) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaEIdTipoProrrogaYActivoYAceptada(carga, 2, true, true);
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYActivoYAceptada(carga, new TipoProrroga(2), true, true);
 			if (prorroga != null) {
 				if (prorroga.getFechaLimite().before(fechaHoy)) {
 					return "inv";
@@ -132,8 +132,8 @@ public class AsistenciaController {
 			}
 		}
 
-		corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(fecha,
-				fecha, periodo, carrera);
+		corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
+				fecha, periodo.getId(), carrera.getId());
 		if (corte==null) {
 			return "limit";
 		}
@@ -177,7 +177,6 @@ public class AsistenciaController {
 				boolean SD = false;
 				
 				if (noFaltas >= (asistenciasTotales * .15)) {
-//				if (noFaltas >= (Math.round(asistenciasTotales * .15))) {
 					SD = true;
 				}
 
@@ -227,8 +226,8 @@ public class AsistenciaController {
 		}
 		
 		//se compara que la fecha pertenezca a algun corte
-		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(fechaSeleccionada,
-				fechaSeleccionada, new Periodo(usuario.getPreferencias().getIdPeriodo()), new Carrera(usuario.getPreferencias().getIdCarrera()));
+		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
+				fechaSeleccionada, usuario.getPreferencias().getIdPeriodo(), usuario.getPreferencias().getIdCarrera());
 		
 		if (corte==null) {
 		}
