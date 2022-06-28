@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
+import edu.mx.utdelacosta.model.CalificacionMateria;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Concepto;
@@ -61,8 +63,10 @@ import edu.mx.utdelacosta.model.Remedial;
 import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.Testimonio;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.model.dto.AlumnoCalificacionDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoDocumentoDTO;
+import edu.mx.utdelacosta.model.dto.CalificacionDTO;
 import edu.mx.utdelacosta.model.dto.DocumentoDTO;
 import edu.mx.utdelacosta.model.dto.MateriaDTO;
 import edu.mx.utdelacosta.model.dto.ProspectoDTO;
@@ -71,6 +75,7 @@ import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoRegularDTO;
 import edu.mx.utdelacosta.model.dtoreport.CalificacionInstrumentoDTO;
 import edu.mx.utdelacosta.model.dtoreport.CalificacionParcial;
+import edu.mx.utdelacosta.model.dtoreport.CalificacionesMateriasParcialesDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
@@ -261,7 +266,8 @@ public class EscolaresController {
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = periodosService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		List<Carrera> carreras = carreraService.buscarTodasMenosIngles();
-		List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), usuario.getPreferencias().getIdCarrera());
+		List <Grupo> grupos = grupoService.buscarPorCuatrimestreCarreraYPeriodo(1, idCarrera, usuario.getPreferencias().getIdPeriodo());
+		//List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), usuario.getPreferencias().getIdCarrera());
 		List<Alumno> alumnos = alumnoService.buscarProspectosAceptados(carIni.getId(), periodo.getId());
 		//List<Alumno> alumnos = alumnoService.buscarTodoAceptarPorCarreraYPeriodo(carIni.getId(), periodo.getId());
 		model.addAttribute("grupos", grupos);
@@ -506,6 +512,7 @@ public class EscolaresController {
 			model.addAttribute("alumno", alumno);
 			model.addAttribute("grupos", grupos);
 		}
+		model.addAttribute("cveAlumno", cveAlumno);
 		return "escolares/calificacionAlumno";
 	}
 
@@ -542,6 +549,7 @@ public class EscolaresController {
 				model.addAttribute("prestamos",prestamos);
 			}
 		  }
+		model.addAttribute("cveAlumno", cveAlumno);
 		return "escolares/documentacionAlumno";
 	}
 
@@ -1109,6 +1117,108 @@ public class EscolaresController {
 		model.addAttribute("carreras", carreraService.buscarTodasMenosIngles());
 		model.addAttribute("alumnos", alumnos);
 		return "escolares/reporteCalificacionPromedio";
+	}
+	
+	@GetMapping("/reporte-seguimiento")
+	public String reporteSeguimiento(Model model, HttpSession session) {
+		Integer idGrupoActual = 0;
+		idGrupoActual = (Integer)session.getAttribute("cveGrupoEsc");
+		
+		if (idGrupoActual == null) {
+			idGrupoActual = 0;
+		}
+		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
+		Usuario usuario = usuarioService.buscarPorPersona(persona);
+		List<Grupo> grupos = grupoService.buscarTodoPorPeriodoOrdenPorId(usuario.getPreferencias().getIdPeriodo());
+
+		if (idGrupoActual>0){
+			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYPeriodo(idGrupoActual,
+					usuario.getPreferencias().getIdPeriodo());
+			
+			List<CorteEvaluativo> cortes = corteEvaluativoService
+					.buscarPorCarreraYPeriodo(new Carrera(usuario.getPreferencias().getIdCarrera()),new Periodo(usuario.getPreferencias().getIdPeriodo()));
+			
+			List<Alumno> al = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(idGrupoActual);
+			List<AlumnoCalificacionDTO> alumnos = new ArrayList<>();
+				
+				for (Alumno a : al) {
+					AlumnoCalificacionDTO alumno = new AlumnoCalificacionDTO();
+					alumno.setMatricula(a.getMatricula());
+					alumno.setNombre(a.getPersona().getNombreCompleto());
+
+					List<CalificacionesMateriasParcialesDTO> calMaterias = new ArrayList<>();
+					for (CargaHoraria carga : cargasHorarias) {
+					//List<CalificacionDTO> cal = new ArrayList<>();
+
+					CalificacionesMateriasParcialesDTO calificaciones = new CalificacionesMateriasParcialesDTO();
+					calificaciones.setNombreMateria(carga.getMateria().getNombre());
+					
+					//lista de calificaciones por corte y por materia
+					List<CalificacionDTO> calificacion = new ArrayList<>();
+					
+					// se iteran los cortes evaluativos
+					for (CorteEvaluativo corte : cortes) {
+						
+						//lista de calificaciones
+						
+						//se crea el DTO de calificacion
+						CalificacionDTO cali = new CalificacionDTO();
+						
+						//se busca la calificacion del corte y el remedial
+						cali.setCaliCorte(calificacionCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(a.getId(), carga.getId(), corte.getId()).floatValue());
+						RemedialAlumno remedial = remedialAlumnoService.buscarUltimoPorAlumnoYCargaHorariaYCorteEvaluativo(a.getId(), carga.getId(),corte.getId());
+						
+						//se obtiene el estatus del remedial
+						if (remedial != null) {
+							if (remedial.getRemedial().getId() == 1) {
+								cali.setStatus("R");
+							} else {
+								cali.setStatus("E");
+							}
+						} else {
+							cali.setStatus("O");
+						}
+						
+						
+						//resultado de calificacion del corte y de materia
+						calificacion.add(cali);
+					}
+					
+					calificaciones.setCalificaciones(calificacion);
+					
+					// calificacion de la materia en general
+					CalificacionMateria cm = calificacionMateriaService.buscarPorCargayAlumno(carga,
+							a);
+					if (cm != null) {
+						calificaciones.setCalificacionTotal(cm.getCalificacion());
+						calificaciones.setStatus(cm.getEstatus());
+					} else {
+						calificaciones.setCalificacionTotal(0);
+						calificaciones.setStatus("NA");
+					}
+					
+						calMaterias.add(calificaciones);
+					}
+					
+					//se agrega las calificaciones al alumno
+					alumno.setCalificacionesMaterias(calMaterias);
+					
+					//se agrega el alumno a la lista 
+					alumnos.add(alumno);
+				}
+			
+				
+
+			model.addAttribute("alumnos", alumnos);
+			model.addAttribute("cortes", cortes);
+			model.addAttribute("grupoActual", grupoService.buscarPorId(idGrupoActual));
+			model.addAttribute("cargas", cargasHorarias);
+		}
+		model.addAttribute("utName", NOMBRE_UT);
+		model.addAttribute("grupos", grupos);
+		
+		
+		return "escolares/reporteSeguimiento";
 	}
 
 	@GetMapping("rcalificacionparcial")
