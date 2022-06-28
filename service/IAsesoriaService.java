@@ -7,5 +7,6 @@ import edu.mx.utdelacosta.model.dto.AsesoriaDTO;
 
 public interface IAsesoriaService {
 	void guardar (Asesoria asesoria);
-	List<AsesoriaDTO> buscarPorIdGrupo(Integer idGrupo);
+	List<AsesoriaDTO> buscarPorIdGrupoYPeriodo(Integer idGrupo, Integer idPeriodo);
+	List<AsesoriaDTO> buscarPorPersonaCarreraAndPeriodo(Integer idPersona, Integer idPeriodo);
 }

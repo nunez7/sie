@@ -33,6 +33,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.TestimonioCorte;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoResultadoDTO;
 import edu.mx.utdelacosta.model.dto.CorteEvaluativoDTO;
@@ -96,6 +97,8 @@ public class AsistenciaController {
 	@Autowired
 	private IProrrogaService prorrogaService;
 
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
+	
 	@PostMapping(path = "/guardar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String guardarAsistencia(@RequestBody Map<String, String> obj, Model model, HttpSession session) {
@@ -103,7 +106,6 @@ public class AsistenciaController {
 		// --------------- PROCESO DE OBTENCION DE DATOS ---------------
 		Integer grupo = Integer.parseInt(obj.get("idGrupo"));
 		Integer idCargaHoraria = Integer.parseInt(obj.get("idCargaHoraria"));
-		CargaHoraria carga = cargaService.buscarPorIdCarga(idCargaHoraria);
 		Date fecha = java.sql.Date.valueOf(obj.get("fecha"));
 		Date fechaHoy = new Date();
 		String valor = null;
@@ -118,9 +120,10 @@ public class AsistenciaController {
 
 		//se busca que la fecha actual no sobrepase el limite de captura de asistencias 
 		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(fechaHoy,
-				fechaHoy, carga.getPeriodo(), carrera);
+				fechaHoy, periodo, carrera);
 		if (corte == null) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaEIdTipoProrrogaYActivoYAceptada(carga, 2, true, true);
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYActivoYAceptada(
+					new CargaHoraria(idCargaHoraria), new TipoProrroga(2), true, true);
 			if (prorroga != null) {
 				if (prorroga.getFechaLimite().before(fechaHoy)) {
 					return "inv";
@@ -140,8 +143,8 @@ public class AsistenciaController {
 
 		// CorteEvaluativo corte = (CorteEvaluativo)session.getAttribute("corte");
 		Integer noAsistencias = asistenciaService.contarPorFechaInicioYFechaFindYCargaHoraria(corte.getFechaInicio(),
-				corte.getFechaFin(), carga.getId());
-		//CargaHoraria cargas = new CargaHoraria(idCargaHoraria);
+				corte.getFechaFin(), idCargaHoraria);
+		CargaHoraria cargas = new CargaHoraria(idCargaHoraria);
 
 		// --------------- PROCESO DE GUARDADO DE ASISTENCIAS ---------------
 		for (Alumno alumno : alumnos) {
@@ -167,12 +170,12 @@ public class AsistenciaController {
 
 				// *************** PROCESO DE CALCULO DEL ESTADO DEL ALUMNO ***************
 				List<Asistencia> faltas = asistenciaService.buscarFaltasPorIdAlumnoYIdCargaHoraria(alumno.getId(),
-						carga.getId(), corte.getFechaInicio(), corte.getFechaAsistencia());
+						idCargaHoraria, corte.getFechaInicio(), corte.getFechaAsistencia());
 				List<Asistencia> retardos = asistenciaService.buscarRetardosPorIdAlumnoYIdCargaHoraria(alumno.getId(),
-						carga.getId());
+						idCargaHoraria);
 				Integer noFaltas = faltas.size() + (retardos.size()/3);
 				TestimonioCorte testimonio = testimonioCorteService.buscarPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(),
-						carga.getId(), corte.getId());
+						cargas.getId(), corte.getId());
 
 				boolean SD = false;
 				
@@ -184,7 +187,7 @@ public class AsistenciaController {
 				if (testimonio == null) {
 					testimonio = new TestimonioCorte();
 					testimonio.setAlumno(alumno.getId());
-					testimonio.setCargaHoraria(carga.getId());
+					testimonio.setCargaHoraria(cargas.getId());
 					testimonio.setCorteEvaluativo(corte.getId());
 					testimonio.setEditable(true);
 					testimonio.setFechaUltimaEdicion(fechaHoy);
@@ -202,7 +205,7 @@ public class AsistenciaController {
 					testimonioCorteService.guardar(testimonio);
 				}
 				
-				actualizaCalificacion.actualizaTestimonioCalificacion(alumno.getId(), carga.getId(), corte.getId(), SD);
+				actualizaCalificacion.actualizaTestimonioCalificacion(alumno.getId(), idCargaHoraria, corte.getId(), SD);
 				
 			}
 
@@ -501,6 +504,7 @@ public class AsistenciaController {
 		List<CorteEvaluativo> cortesEvaluativos = corteService.buscarPorCarreraYPeriodo(usuario.getPreferencias().getIdCarrera(), usuario.getPreferencias().getIdPeriodo());
 		model.addAttribute("cortes", cortesEvaluativos);
 		model.addAttribute("carreras", carrerasServices.buscarCarrerasPorIdPersona(persona.getId()));
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteAsistencias";
 	}
 }

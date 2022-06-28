@@ -73,4 +73,9 @@ public class DosificacionServiceJpa implements IDosificacionService{
 	public Dosificacion buscarPorIdMateriaEIdPersona(Integer idMateria, Integer IdPersona) {
 		return dosificacionRepository.findByIdMateriaAndIdPersona(idMateria, IdPersona);
 	}
+
+	@Override
+	public Integer contarPendientesPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo) {
+		return dosificacionRepository.coountByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
+	}
 }

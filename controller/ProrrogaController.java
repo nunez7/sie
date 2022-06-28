@@ -27,6 +27,7 @@ import edu.mx.utdelacosta.model.Materia;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.ProrrogaAutoriza;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.dto.ProrrogasDTO;
 import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
@@ -151,15 +152,15 @@ public class ProrrogaController {
 		CargaHoraria carga = cargaService.buscarPorIdCarga(prorrogaDto.getIdCargaHoraria());
 		CorteEvaluativo corte = corteService.buscarPorId(prorrogaDto.getIdCorteEvaluativo());
 
-		Prorroga existente = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoEIdTipoProrrgaYActivo(carga, corte,
-				prorrogaDto.getIdTipoProrroga(), true);
+		Prorroga existente = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(carga, corte,
+				new TipoProrroga(prorrogaDto.getIdTipoProrroga()), true);
 		if (existente == null) {
 			Prorroga prorroga = new Prorroga();
 			prorroga.setCargaHoraria(carga);
 			prorroga.setFechaAlta(new java.util.Date());
 			prorroga.setFechaLimite(prorrogaDto.getFechaLimite());
 			prorroga.setComentario(prorrogaDto.getComentario());
-			prorroga.setIdTipoProrroga(prorrogaDto.getIdTipoProrroga());
+			prorroga.setTipoProrroga(new TipoProrroga(prorrogaDto.getIdTipoProrroga()));
 			prorroga.setActivo(true);
 			prorroga.setAceptada(false);
 			prorroga.setCorteEvaluativo(corte);

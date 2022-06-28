@@ -19,8 +19,10 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 import edu.mx.utdelacosta.model.Sesion;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.service.IDosificacionService;
 import edu.mx.utdelacosta.service.IModuloService;
 import edu.mx.utdelacosta.service.IPeriodosService;
+import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.ISesionesService;
 import edu.mx.utdelacosta.service.ISubmoduloService;
 import edu.mx.utdelacosta.service.IUsuariosService;
@@ -43,6 +45,12 @@ public class HomeController {
 	
 	@Autowired
 	private IPeriodosService periodosService;
+	
+	@Autowired 
+	private IProrrogaService prorrogaService;
+	
+	@Autowired
+	private IDosificacionService dosificacionService;
 
 	@GetMapping("/index")
 	public String mostrarHome(Model model, HttpSession session) {
@@ -102,6 +110,9 @@ public class HomeController {
 		int rol = usuario.getRoles().get(0).getId();
 		model.addAttribute("modulos", modulosService.buscarModulosPorRol(rol));
 		model.addAttribute("periodos", periodosService.buscarTodos());
+		//para notificaciones
+		model.addAttribute("prorrogas", prorrogaService.contarProrrogasPendientesPorPersonaYPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()));
+		model.addAttribute("dosificaciones", dosificacionService.contarPendientesPorPersonaCarreraYPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()));
 	}
 	
     

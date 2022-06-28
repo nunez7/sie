@@ -86,4 +86,15 @@ public class AsistenciaServiceJpa implements IAsistenciaService{
 	public List<Asistencia> buscarRetardosPorIdAlumnoYIdCargaHoraria(Integer idAlumno, Integer idCargaHoraria) {
 		return asistenciaRepo.findRetardosByAlumnoAndCargaHoraria(idAlumno, idCargaHoraria);
 	}
+
+	@Override
+	public Integer contarAsistenciasPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria,  Date fechaInicio, Date fechaFin) {
+		return asistenciaRepo.countAsistenciasByAlumnoAndCargaHorariaAndCorteEvalutivo(idAlumno, idCargaHoraria, fechaInicio, fechaFin);
+	}
+
+	@Override
+	public Integer contarFaltasPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria,
+			Date fechaInicio, Date fechaFin) {
+		return asistenciaRepo.countFaltasByAlumnoAndCargaHorariaAndCorteEvalutivo(idAlumno, idCargaHoraria, fechaInicio, fechaFin);
+	}
 }

@@ -72,6 +72,7 @@ import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IPersonalService;
 import edu.mx.utdelacosta.service.IPlanEstudioService;
 import edu.mx.utdelacosta.service.IPreguntaService;
+import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.IRespuestaCargaEvaluacionService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionTutorService;
 import edu.mx.utdelacosta.service.IUsuariosService;
@@ -159,6 +160,11 @@ public class AsistenteController {
 	
 	@Autowired
 	private IRespuestaEvaluacionTutorService serviceResEvaTutor;
+	
+	@Autowired
+	private IRemedialAlumnoService remedialAlumnoService;
+	
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 	
 	@GetMapping("/carga")
 	public String carga(Model model, HttpSession session) {
@@ -279,7 +285,7 @@ public class AsistenteController {
 			/////////******** SE HACE EL PROCESO DE DIBUJAR EL HORARIO *******/////////////
 			List<Dia> dias = diaService.buscarDias();
 			//formato para horas
-			DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss");
+			DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 			//Se extrae una lista de las horas que ahi asociadas a cada hora de calse con un disting por hora inicio y hora fin				
 			List<Horario> horas = horarioService.buscarPorProfesorDistinctPorHoraInicio(cveProfesor, usuario.getPreferencias().getIdPeriodo());
 			//se crea una lista vacia para colocarle los datos de las horas de calse				
@@ -436,6 +442,7 @@ public class AsistenteController {
 			List<Actividad> actividades = actividadService.buscarTodas();
 			List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
 			List<Personal> profesores = personalService.buscarProfesores();
+			Grupo grupo = grupoService.buscarPorId(cveGrupo);
 			model.addAttribute("cveGrupo", cveGrupo);
 			model.addAttribute("actividades", actividades);
 			model.addAttribute("alumnos", alumnos);
@@ -444,7 +451,7 @@ public class AsistenteController {
 			/////****** proceso de creacion de horario
 			List<Dia> dias = diaService.buscarDias();
 			model.addAttribute("dias", dias);				
-			DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss"); 
+			DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss"); 
 			//Se extrae una lista de las horas que ahi asociadas a cada hora de calse con un disting por hora inicio y hora fin				
 			List<Horario> horas = horarioService.buscarPorGrupoDistinctPorHoraInicio(cveGrupo);
 			model.addAttribute("horas", horas);
@@ -489,6 +496,9 @@ public class AsistenteController {
 					}
 				}
 			}		
+			model.addAttribute("tutor", grupo.getProfesor().getId() != null ? grupo.getProfesor().getId():0);
+			model.addAttribute("jefeGrupo", grupo.getJefeGrupo().getId() != null ? grupo.getJefeGrupo().getId():0);
+			model.addAttribute("subJefe", grupo.getSubjefeGrupo().getId() != null ? grupo.getSubjefeGrupo().getId():0);
 			model.addAttribute("horasDto", horasDto);
 		}
 		else {
@@ -513,13 +523,21 @@ public class AsistenteController {
 	public String reporteDatosPersonales(Model model, HttpSession session) {
 		int cvePersona = (Integer) session.getAttribute("cvePersona");
 		Persona persona = personaService.buscarPorId(cvePersona);
+		Usuario usuario = usuariosService.buscarPorPersona(persona);
 		if(session.getAttribute("cveCarrera") != null) {
 			int cveCarrera = (Integer) session.getAttribute("cveCarrera");
-			List<Alumno> alumnos = alumnoService.buscarPorCarreraYActivo(cveCarrera);
+			List<Alumno> alumnos = new ArrayList<>();
+			if(cveCarrera == 0) {
+				alumnos = alumnoService.buscarPorPersonaCarreraAndActivo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo());
+			}
+			else {
+				alumnos = alumnoService.buscarPorCarreraAndPeriodoAndActivo(cveCarrera, usuario.getPreferencias().getIdPeriodo());
+			}
 			model.addAttribute("alumnos", alumnos);
 			model.addAttribute("cveCarrera", cveCarrera);
 		}
 		model.addAttribute("carreras", carrerasServices.buscarCarrerasPorIdPersona(persona.getId()));
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteDatosPersonales";
 	}
 	
@@ -546,7 +564,7 @@ public class AsistenteController {
 				/////****** proceso de creacion de horario
 				List<Dia> dias = diaService.buscarDias();
 				model.addAttribute("dias", dias);				
-				DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss"); 
+				DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss"); 
 				//Se extrae una lista de las horas que ahi asociadas a cada hora de calse con un disting por hora inicio y hora fin				
 				List<Horario> horas = horarioService.buscarPorGrupoDistinctPorHoraInicio(cveGrupo);
 				model.addAttribute("horas", horas);
@@ -599,6 +617,7 @@ public class AsistenteController {
 			model.addAttribute("grupos",grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), cveCarrera)); //retorna los grupos de nivel TSU
 		}
 		model.addAttribute("carreras", carreras);
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteHorario";
 	}
 	
@@ -650,6 +669,9 @@ public class AsistenteController {
 								ip.setIdMateria(ch.getMateria().getId());
 								ip.setParcial(c.getId());
 								ip.setPromedio(calificacionTotal);
+								// para guardar si tiene remediales o extraordinarios
+								ip.setRemediales(remedialAlumnoService.buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(alumno.getId(), ch.getId(), c.getId(), 1));
+								ip.setExtraordinarios(remedialAlumnoService.buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(alumno.getId(), ch.getId(), c.getId(), 2));
 								// se agrega el objeto a la lista de indicador parcial
 								indicaroresParcial.add(ip);
 							}
@@ -674,6 +696,7 @@ public class AsistenteController {
 			}
 		}
 		model.addAttribute("carreras", carreras);
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteCalificacionesGenerales";
 	}
 	

@@ -34,6 +34,7 @@ import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.Remedial;
 import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.Testimonio;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoCalificacionDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
@@ -219,8 +220,8 @@ public class CalificacionController {
 
 
 		if (corteActual.getFechaFin().before(fechaHoy)) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoEIdTipoProrrgaYActivo(
-					new CargaHoraria(idCargaHoraria), new CorteEvaluativo(idCorteEvaluativo), 1, true);
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
+					new CargaHoraria(idCargaHoraria), new CorteEvaluativo(idCorteEvaluativo), new TipoProrroga(1), true);
 			if (prorroga != null) {
 				if (prorroga.getFechaLimite().before(fechaHoy)) {
 					return "fechaLimit";
