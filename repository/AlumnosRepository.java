@@ -140,14 +140,18 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 	
 	
 	@Query(value = "SELECT a.id AS idAlumno, a.matricula, CONCAT(p.primer_apellido, ' ',p.segundo_apellido, ' ',p.nombre)AS nombreCompleto,  c.nombre AS carrera, "
-			+ "a.documentos_ingresos AS entregoDocumentos, a.ceneval, COALESCE(("
+			+ "a.documentos_ingresos AS entregoDocumentos, a.ceneval, "
+			+ "COALESCE(( "
 			+ "SELECT MAX(status) FROM pagos_generales pg "
 			+ "INNER JOIN pago_alumno pa ON pa.id_pago =pg.id "
 			+ "WHERE pa.id_alumno=a.id AND pg.id_concepto=12 "
 			+ "), 0)AS pago, p.email, dp.celular, p.fecha_alta AS fechaRegistro, dp.curp, ep.promedio, "
 			+ "e.nombre AS estadoNacimiento, esc.nombre AS nombreBachillerato, eb.nombre AS estadoBachillerato, "
-			+ "esc.municipio AS municipioBachillerato, esc.localidad AS localidadBachillerato "
+			+ "esc.municipio AS municipioBachillerato, esc.localidad AS localidadBachillerato, da.hijos, "
+			+ "da.discapacitado, da.tipo_discapacidad as tipoDiscapacidad, CAST(da.indigena AS INT),"
+			+ "CAST(da.dialecto AS INT) , da.promocion , da.tipo_beca as tipoBeca "
 			+ "FROM alumnos a "
+			+ "INNER JOIN datos_alumno da ON da.id_alumno=a.id "
 			+ "INNER JOIN personas p ON p.id=a.id_persona "
 			+ "INNER JOIN carreras c ON c.id=a.id_carrera "
 			+ "LEFT JOIN datos_personales dp ON dp.id_persona=p.id "
@@ -157,7 +161,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "LEFT JOIN estados eb ON eb.id=esc.id_estado "
 			+ "LEFT JOIN estados e ON e.id=dp.edo_nacimiento "
 			+ "WHERE ag.id_alumno IS NULL AND matricula ILIKE %:generacion% "
-			+ "ORDER BY c.nombre, p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
+			+ "ORDER BY c.nombre, p.primer_apellido, p.segundo_apellido, p.nombre ", nativeQuery = true)
 	List<ProspectoEscolaresDTO> findAllByGeneracion(@Param("generacion") String generacion);
 	
 	@Query(value = "SELECT a.id AS idAlumno,  CONCAT(p.primer_apellido, ' ',p.segundo_apellido, ' ',p.nombre)AS nombreCompleto, a.matricula, "
@@ -291,7 +295,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "INNER JOIN carreras c ON c.id=a.id_carrera "
 			+ "LEFT JOIN datos_personales dp ON dp.id_persona=p.id "
 			+ "LEFT JOIN alumnos_grupos ag ON ag.id_alumno=a.id "
-			+ "WHERE ag.id_alumno IS NULL AND a.estatus = 1 and a.documentos_ingresos = 1"
+			+ "WHERE ag.id_alumno IS NULL AND a.estatus = 1 "
 			+ "ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre, c.nombre  ", nativeQuery = true)
 	List<ProspectoDTO> findAllActiveProspectos();
 	

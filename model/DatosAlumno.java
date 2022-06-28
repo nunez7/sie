@@ -26,6 +26,8 @@ public class DatosAlumno {
 	
 	private Boolean indigena;
 	
+	private Boolean dialecto;
+	
 	private String promocion;
 	
 	private String observaciones;
@@ -78,6 +80,14 @@ public class DatosAlumno {
 		this.indigena = indigena;
 	}
 	
+	public Boolean getDialecto() {
+		return dialecto;
+	}
+
+	public void setDialecto(Boolean dialecto) {
+		this.dialecto = dialecto;
+	}
+
 	public String getTipoBeca() {
 		return tipoBeca;
 	}

@@ -28,7 +28,7 @@ public class CarrerasServiceJpa implements ICarrerasServices{
 
 	@Override
 	public List<Carrera> buscarTodasMenosIngles() {
-		return carrerasRepository.findAllTSUExceptEnglishOrderByNombre();
+		return carrerasRepository.findAllExceptEnglishOrderByNombre();
 	}
 	
 	@Override

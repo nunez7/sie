@@ -38,4 +38,6 @@ public interface IGrupoService {
 	List<Grupo> buscarPorProfesorYPeriodo(Integer idProfesor, Integer idPersona);
 	
 	Grupo buscarPorAlumnoPenultimoGrupo(Integer idAlumno);
+	
+	Grupo buscarUltimoGrupoLibre(Integer idPeriodo, Integer idCarrera);
 }

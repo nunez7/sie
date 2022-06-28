@@ -41,7 +41,7 @@ import edu.mx.utdelacosta.model.dto.AlumnoDTO;
 import edu.mx.utdelacosta.model.dto.CalificacionDTO;
 import edu.mx.utdelacosta.model.dto.MateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.CalificacionInstrumentoDTO;
-import edu.mx.utdelacosta.model.dtoreport.CalificacionParcial;
+import edu.mx.utdelacosta.model.dtoreport.CalificacionParcialDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.ICalendarioEvaluacionService;
@@ -286,9 +286,9 @@ public class CalificacionController {
 						List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(grupoActual);
 						List<MecanismoInstrumento> mecanismoInstrumento = mecanismoService
 								.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(cargaActual, parcialActual, true);
-						List<CalificacionParcial> calificaciones = new ArrayList<>();
+						List<CalificacionParcialDTO> calificaciones = new ArrayList<>();
 						for (Alumno alumno : alumnos) {
-							CalificacionParcial calificacion = new CalificacionParcial();
+							CalificacionParcialDTO calificacion = new CalificacionParcialDTO();
 							calificacion.setMatricula(alumno.getMatricula());
 							calificacion.setNombre(alumno.getPersona().getNombreCompleto());
 							
