@@ -84,15 +84,15 @@ public class LoginController {
 			variables.put("titulo", "Restablecer contraseña");
 			String url = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 			variables.put("cuerpoCorreo",
-					"Para completar el proceso de restablecimiento de contraseña, haga clic <a href='" + url
+					"Alguien solicitó restablecer la contraseña en su cuenta SIE. Si no lo solicitó, ignore este correo electrónico. "
+					+ "Para completar el proceso de restablecimiento de contraseña, haga clic <a href='" + url
 							+ "/siest/reset-password/" + token.getToken() + "' class='btn' target='_blank'>aquí </a>");
 			mail.setVariables(variables);
-
 			try {
 				emailService.sendEmail(mail);
 				model.addAttribute("typemessage", "alert-success");
 				model.addAttribute("message",
-						"Solicitud recibida, verifica tu email para resetear tu contraseña. Sino te aparece en bandeja de Recibidos, verifica la carpeta de Spam.");
+						"Acabamos de enviarle un correo electrónico con instrucciones para restablecer su contraseña. Si no recibe un correo electrónico, intente nuevamente o comuníquese con nosotros.");
 			} catch (MessagingException | IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();

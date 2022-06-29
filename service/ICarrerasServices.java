@@ -14,5 +14,5 @@ public interface ICarrerasServices {
 	
 	List<Carrera> buscarTodasMenosIngles();
 	
-	List<Carrera> buscarTodasTSU();
+	List<Carrera> buscarTodasTSUMenosIngles();
 }

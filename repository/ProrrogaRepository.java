@@ -11,24 +11,19 @@ import org.springframework.data.repository.query.Param;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Prorroga;
+import edu.mx.utdelacosta.model.TipoProrroga;
 
 public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 
-	@Query(value = "SELECT pr.* " + "FROM prorroga pr " + "INNER JOIN cargas_horarias cr ON cr.id=pr.id_carga_horaria "
-			+ "WHERE cr.id_profesor = :id_profesor ", nativeQuery = true)
-	List<Prorroga> findByIdProfesor(@Param("id_profesor") Integer IdProfesor);
-	
-	@Query(value = " SELECT p.* "
-			+ "FROM prorroga p "
-			+ "INNER JOIN cargas_horarias ch on ch.id = p.id_carga_horaria "
+	@Query(value = " SELECT p.* " + "FROM prorroga p " + "INNER JOIN cargas_horarias ch on ch.id = p.id_carga_horaria "
 			+ "WHERE ch.id_periodo=:idPeriodo AND ch.id_profesor= :idPersona AND p.activo=True ", nativeQuery = true)
-	List<Prorroga> findByProfesorAndPeriodoAndActivo(@Param("idPersona") Integer IdProfesor, @Param("idPeriodo") Integer idPeriodo);
-	
-	@Query(value = " SELECT p.* "
-			+ "FROM prorroga p "
-			+ "INNER JOIN cargas_horarias ch on ch.id = p.id_carga_horaria "
+	List<Prorroga> findByProfesorAndPeriodoAndActivo(@Param("idPersona") Integer IdProfesor,
+			@Param("idPeriodo") Integer idPeriodo);
+
+	@Query(value = " SELECT p.* " + "FROM prorroga p " + "INNER JOIN cargas_horarias ch on ch.id = p.id_carga_horaria "
 			+ "WHERE ch.id_periodo=:idPeriodo AND ch.id_profesor=:idPersona ", nativeQuery = true)
-	List<Prorroga> findByProfesorAndPeriodo(@Param("idPersona") Integer IdProfesor, @Param("idPeriodo") Integer idPeriodo);
+	List<Prorroga> findByProfesorAndPeriodo(@Param("idPersona") Integer IdProfesor,
+			@Param("idPeriodo") Integer idPeriodo);
 
 	@Query(value = "SELECT pr.* FROM prorroga pr " + "INNER JOIN cargas_horarias ch ON pr.id_carga_horaria = ch.id "
 			+ "INNER JOIN grupos g ON g.id = ch.id_grupo " + "INNER JOIN carreras c ON c.id = g.id_carrera "
@@ -47,12 +42,26 @@ public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 
 	Optional<Prorroga> findById(Integer id);
 
-	Prorroga findByCargaHorariaAndIdTipoProrrogaAndActivoAndAceptada(CargaHoraria cargaHoraria, Integer idTipo,
+	Prorroga findByCargaHorariaAndTipoProrrogaAndActivoAndAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga,
 			boolean activo, boolean aceptada);
+	
+	Prorroga findByCargaHorariaAndTipoProrrogaAndCorteEvaluativoAndActivoAndAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga,
+			CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada);
 
-	Prorroga findByCargaHorariaAndIdTipoProrrogaAndFechaLimiteGreaterThanEqualAndActivoAndAceptada(
-			CargaHoraria cargaHoraria, Integer idTipoProrroga, Date fecha, Boolean activo, Boolean aceptada);
+	Prorroga findByCargaHorariaAndTipoProrrogaAndFechaLimiteGreaterThanEqualAndActivoAndAceptada(
+			CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, Date fecha, Boolean activo, Boolean aceptada);
 
-	Prorroga findByCargaHorariaAndCorteEvaluativoAndIdTipoProrrogaAndActivo(CargaHoraria cargaHoraria,
-			CorteEvaluativo corteEvaluativo, Integer idTipoProrroga, boolean activo);
+	Prorroga findByCargaHorariaAndCorteEvaluativoAndTipoProrrogaAndActivo(CargaHoraria cargaHoraria,
+			CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, boolean activo);
+
+	// busca las prorrogas autorizadas por personaCarrera
+	@Query(value = "SELECT pr.* FROM prorroga pr "
+			+ "INNER JOIN cargas_horarias ch ON pr.id_carga_horaria = ch.id "
+			+ "INNER JOIN grupos g ON g.id = ch.id_grupo "
+			+ "INNER JOIN carreras c ON c.id = g.id_carrera "
+			+ "WHERE pr.activo = 'True' AND aceptada = 'True' "
+			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona)", nativeQuery = true)
+	List<Prorroga> findByPersonaCarreraAndAccept(@Param("idPersona") Integer idPersona);
+
+	
 }

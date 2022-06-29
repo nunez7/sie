@@ -47,8 +47,9 @@ public class Prorroga {
 	
 	private Boolean aceptada;
 
-	@Column(name = "id_tipo_prorroga")
-	private Integer idTipoProrroga;
+	@OneToOne
+	@JoinColumn(name = "id_tipo_prorroga")
+	private TipoProrroga tipoProrroga;
 	
 	@OneToOne
 	@JoinColumn(name = "id_corte_evaluativo")
@@ -107,12 +108,12 @@ public class Prorroga {
 		this.comentario = comentario;
 	}
 
-	public Integer getIdTipoProrroga() {
-		return idTipoProrroga;
+	public TipoProrroga getTipoProrroga() {
+		return tipoProrroga;
 	}
 
-	public void setIdTipoProrroga(Integer idTipoProrroga) {
-		this.idTipoProrroga = idTipoProrroga;
+	public void setTipoProrroga(TipoProrroga tipoProrroga) {
+		this.tipoProrroga = tipoProrroga;
 	}
 	
 	public Boolean getActivo() {

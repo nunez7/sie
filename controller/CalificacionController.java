@@ -34,6 +34,7 @@ import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.Remedial;
 import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.Testimonio;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoCalificacionDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
@@ -56,6 +57,7 @@ import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
+import edu.mx.utdelacosta.service.ITestimonioCorteService;
 import edu.mx.utdelacosta.service.ITestimonioService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 import edu.mx.utdelacosta.util.ActualizarCalificacion;
@@ -123,6 +125,8 @@ public class CalificacionController {
 	@Autowired
 	private ActualizarRemedial actualizarRemedial;
 	
+	@Autowired
+	private ITestimonioCorteService testimonioCorteService;
 	
 
 	// metodo que devuelve la tabla de calificaciones e instrumentos de una materia
@@ -160,7 +164,7 @@ public class CalificacionController {
 				}
 
 				al.setCalificaciones(calificaciones);
-
+				al.setStatus(testimonioCorteService.validarSDPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(), idCarga, idCorte).toString());
 				al.setCalificacionTotal(
 						calificacionCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(
 								alumno.getId(), idCarga, idCorte).floatValue());
@@ -201,18 +205,10 @@ public class CalificacionController {
 		// se busca el corte y las prorrogas para comprobar que se encuentra en periodo
 		// de calificaciones
 		CorteEvaluativo corteActual = corteEvaluativoService.buscarPorId(idCorteEvaluativo);
-		/*
-		if (corteActual.getInicioEvaluaciones().after(fechaHoy)) {
-			System.out.println("fecha mayor a hoy");
-			return "fechaLimit";
-		}
-		
-		*/
-
 
 		if (corteActual.getFechaFin().before(fechaHoy)) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoEIdTipoProrrgaYActivo(
-					new CargaHoraria(idCargaHoraria), new CorteEvaluativo(idCorteEvaluativo), 1, true);
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
+					new CargaHoraria(idCargaHoraria),corteActual,new TipoProrroga(1), true);
 			if (prorroga != null) {
 				if (prorroga.getFechaLimite().before(fechaHoy)) {
 					return "fechaLimit";
@@ -227,6 +223,7 @@ public class CalificacionController {
 		RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 				new Alumno(idAlumno), new CargaHoraria(idCargaHoraria), new Remedial(1),
 				new CorteEvaluativo(idCorteEvaluativo));
+		
 		if (remedial != null) {
 			return "forbidden";
 		}
@@ -240,7 +237,11 @@ public class CalificacionController {
 		// se obtiene el mecanismo del alumno
 		MecanismoInstrumento mecanismo = mecanismoService.buscarPorIdYActivo(idMecanismo, true); //
 		// se actualiza la calificacion del instrumento en singular
-		actualizarCalificacion.actualizaCalificacionInstrumento(idAlumno, mecanismo, ponderacion);
+		String cali = actualizarCalificacion.actualizaCalificacionInstrumento(idAlumno, mecanismo, ponderacion);
+
+		if (cali.equals("noEdit") || cali.equals("SD")) {
+			return cali;
+		}
 
 		// se actualiza la calificacion del corte y se obtiene la calificacion total del
 		// corte
@@ -293,7 +294,7 @@ public class CalificacionController {
 							for (MecanismoInstrumento meca : mecanismoInstrumento) {
 								CalificacionInstrumentoDTO cali = calificacionService.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual, parcialActual, meca.getInstrumento().getId());
 								mecanismos.add(cali);
-							}		
+							}
 							
 							calificacion.setMecanismos(mecanismos);
 							calificacion.setCalificacionOrdinaria(calificacionCorteService

@@ -33,6 +33,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.TestimonioCorte;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoResultadoDTO;
 import edu.mx.utdelacosta.model.dto.CorteEvaluativoDTO;
@@ -119,7 +120,7 @@ public class AsistenciaController {
 		//se busca que la fecha actual no sobrepase el limite de captura de asistencias 
 		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(fechaHoy, carga.getPeriodo().getId(), carrera.getId());
 		if (corte == null) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaEIdTipoProrrogaYActivoYAceptada(carga, 2, true, true);
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYActivoYAceptada(carga, new TipoProrroga(2), true, true);
 			if (prorroga != null) {
 				if (prorroga.getFechaLimite().before(fechaHoy)) {
 					return "inv";
@@ -130,7 +131,7 @@ public class AsistenciaController {
 				return "inv";
 			}
 		}
-
+		
 		corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
 				fecha, periodo.getId(), carrera.getId());
 		if (corte==null) {
@@ -230,7 +231,6 @@ public class AsistenciaController {
 				fechaSeleccionada, usuario.getPreferencias().getIdPeriodo(), usuario.getPreferencias().getIdCarrera());
 		//CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
 		//		fechaSeleccionada, new Periodo(usuario.getPreferencias().getIdPeriodo()), new Carrera(usuario.getPreferencias().getIdCarrera()));
-		
 		if (corte==null) {
 		}
 		

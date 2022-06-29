@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -118,10 +119,15 @@ public class MecanismoInstrumentoController {
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		List<Instrumento> instrumentos = instrumentoService.buscarTodos();
-		List<CorteEvaluativo> corte = corteService.buscarPorCarreraYPeriodo(carga.getGrupo().getCarrera(),periodo);
+		List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(carga.getGrupo().getCarrera(),periodo);
+		List<Integer> totales = new ArrayList<>();
+		for (CorteEvaluativo corte : cortes) {
+			totales.add(mecanismoService.sumaPonderacionPorIdCargaHorariaEIdCorteEvaluativo(cveCarga, corte.getId()));
+		}
 		List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(cveCarga, true);
 		model.addAttribute("mecanismos", mecanismos);
-		model.addAttribute("cortes", corte);
+		model.addAttribute("cortes", cortes);
+		model.addAttribute("totales", totales);
 		model.addAttribute("instrumentos", instrumentos);
 		model.addAttribute("cActual", new CargaHoraria((Integer) session.getAttribute("cveCarga")));
 

@@ -60,6 +60,12 @@ public class MecanismoInstrumentoServiceJpa implements IMecanismoInstrumentoServ
 			return optional.get();
 		}
 		return null;
+	}
+	
+	@Override
+	public Integer sumaPonderacionPorIdCargaHorariaEIdCorteEvaluativo(Integer idCargaHoraria,
+			Integer idCorteEvaluativo) {
+		return mecanismoRepository.sumPonderacionByIdCargaHorariaAndIdCorteEvaluativo(idCargaHoraria, idCorteEvaluativo);
 	}	
 
 }

@@ -27,6 +27,7 @@ import edu.mx.utdelacosta.model.Materia;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.ProrrogaAutoriza;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.dto.ProrrogasDTO;
 import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
@@ -40,34 +41,34 @@ import edu.mx.utdelacosta.service.IProrrogaService;
 @PreAuthorize("hasRole('Administrador') and hasRole('Rector') and hasRole('Informatica') and hasRole('Director')")
 @RequestMapping("/prorroga")
 public class ProrrogaController {
-	
+
 	@Value("${spring.mail.username}")
 	private String correo;
-	
+
 	@Autowired
 	private IProrrogaService prorrogaService;
-	
+
 	@Autowired
 	private IProrrogaAutoriza prorrogaAutorizaService;
-	
+
 	@Autowired
 	private EmailSenderService emailService;
-	
+
 	@Autowired
 	private IMateriasService materiasService;
-	
+
 	@Autowired
 	private IPersonaService personaService;
-	
+
 	@Autowired
 	private ICargaHorariaService cargaService;
 
 	@Autowired
 	private ICorteEvaluativoService corteService;
 
-	@PostMapping(path= "/aceptar", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(path = "/aceptar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String aceptar(@RequestBody Map<String, String> obj) {		
+	public String aceptar(@RequestBody Map<String, String> obj) {
 		int idProrroga = Integer.valueOf(obj.get("id"));
 		int idPersona = Integer.valueOf(obj.get("idPersona"));
 		int idMateria = Integer.valueOf(obj.get("idMateria"));
@@ -76,23 +77,23 @@ public class ProrrogaController {
 		Prorroga prorroga = prorrogaService.buscarPorId(idProrroga);
 		prorroga.setFechaLimite(fechaLimite);
 		prorroga.setAceptada(true);
-		//se guarda el registro en prorrogaAutoriza
+		// se guarda el registro en prorrogaAutoriza
 		ProrrogaAutoriza prorrogaAutoriza = new ProrrogaAutoriza();
 		prorrogaAutoriza.setIdAutoriza(idPersona);
 		prorrogaAutoriza.setIdProrroga(idProrroga);
 		prorrogaAutoriza.setFechaAlta(new java.util.Date());
-		//se guardan los datos
+		// se guardan los datos
 		prorrogaService.guardar(prorroga);
-		prorrogaAutorizaService.guardar(prorrogaAutoriza); 
+		prorrogaAutorizaService.guardar(prorrogaAutoriza);
 		Persona profesor = personaService.buscarPorId(prorroga.getCargaHoraria().getProfesor().getId());
 		Mail mail = new Mail();
 		String de = correo;
 		String para = profesor.getEmail();
 		mail.setDe(de);
-		mail.setPara(new String[] {para});
-		//Email title
+		mail.setPara(new String[] { para });
+		// Email title
 		mail.setTitulo("¡Solicitud de Prórroga Aceptada!");
-		//Variables a plantilla
+		// Variables a plantilla
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("titulo", "Solicitud de Prórroga Aceptada");
 		variables.put("cuerpoCorreo",
@@ -102,74 +103,98 @@ public class ProrrogaController {
 			emailService.sendEmail(mail);
 			System.out.println("Enviado");
 		} catch (MessagingException | IOException e) {
-			System.out.println("Error "+e);
+			System.out.println("Error " + e);
 		}
 		return "ok";
 	}
-	
+
 	@PatchMapping(path = "/rechazar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String rechazar(@RequestBody Map<String, String> obj) {
-		int idProrroga = Integer.valueOf(obj.get("id")) ;
+		int idProrroga = Integer.valueOf(obj.get("id"));
 		int idMateria = Integer.valueOf(obj.get("idMateria"));
 		String motivo = obj.get("motivo");
 		Materia materia = new Materia(idMateria);
-		//se trae la prorroga decuardo a su id
+		// se trae la prorroga decuardo a su id
 		Prorroga prorroga = prorrogaService.buscarPorId(idProrroga);
-		//se setean los valores necesarios para desactivar y rechazar la solicitud
+		// se setean los valores necesarios para desactivar y rechazar la solicitud
 		prorroga.setAceptada(false);
 		prorroga.setActivo(false);
-		//se guarda la prorroga 
-		//prorrogaService.guardar(prorroga);
-		//envió de correo
+		// se guarda la prorroga
+		prorrogaService.guardar(prorroga);
+		// envió de correo
 		Persona profesor = personaService.buscarPorId(prorroga.getCargaHoraria().getProfesor().getId());
 		Mail mail = new Mail();
 		String de = correo;
 		String para = profesor.getEmail();
 		mail.setDe(de);
-		mail.setPara(new String[] {para});
-		//Email title
+		mail.setPara(new String[] { para });
+		// Email title
 		mail.setTitulo("¡Solicitud de Prórroga Rechazada!");
-		//Variables a plantilla
+		// Variables a plantilla
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("titulo", "Solicitud de Prórroga Rechazada");
-		variables.put("cuerpoCorreo",
-				"Tu solicitud de prórroga de la materia: " + materia.getNombre() +" fue rechaza por el siguiente motivo: " + motivo);
+		variables.put("cuerpoCorreo", "Tu solicitud de prórroga de la materia: " + materia.getNombre()
+				+ " fue rechaza por el siguiente motivo: " + motivo);
 		mail.setVariables(variables);
 		try {
 			emailService.sendEmail(mail);
-			System.out.println("Enviado");
 		} catch (MessagingException | IOException e) {
-			System.out.println("Error "+e);
-		} 
+			System.out.println("Error " + e);
+		}
 		return "ok";
 	}
-	
+
 	@PostMapping(path = "/prorrogasave", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String prorrogasSave(@RequestBody ProrrogasDTO prorrogaDto, Model model, HttpSession session) {
 		CargaHoraria carga = cargaService.buscarPorIdCarga(prorrogaDto.getIdCargaHoraria());
 		CorteEvaluativo corte = corteService.buscarPorId(prorrogaDto.getIdCorteEvaluativo());
 
-		Prorroga existente = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoEIdTipoProrrgaYActivo(carga, corte,
-				prorrogaDto.getIdTipoProrroga(), true);
+		Prorroga existente = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(carga, corte,
+				new TipoProrroga(prorrogaDto.getIdTipoProrroga()), true);
+
 		if (existente == null) {
 			Prorroga prorroga = new Prorroga();
 			prorroga.setCargaHoraria(carga);
 			prorroga.setFechaAlta(new java.util.Date());
 			prorroga.setFechaLimite(prorrogaDto.getFechaLimite());
 			prorroga.setComentario(prorrogaDto.getComentario());
-			prorroga.setIdTipoProrroga(prorrogaDto.getIdTipoProrroga());
+			prorroga.setTipoProrroga(new TipoProrroga(prorrogaDto.getIdTipoProrroga()));
 			prorroga.setActivo(true);
 			prorroga.setAceptada(false);
 			prorroga.setCorteEvaluativo(corte);
+			// se crea el correo
+
+			Persona director = personaService.buscarDirectorPorCarga(carga.getId());
+			Mail mail = new Mail();
+			String de = correo;
+			String para = director.getEmail();
+			mail.setDe(de);
+			mail.setPara(new String[] { para });
+			// Email title
+			mail.setTitulo("Nueva solicitud de prórroga");
+			// Variables a plantilla
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("titulo", "Nueva solicitud de prórroga");
+			variables.put("cuerpoCorreo",
+					"El Profesor(a) " + carga.getProfesor().getNombreCompleto()
+							+ " ha solicitado una prórroga para la materia " + carga.getMateria().getNombre()
+							+ ". <br> " + "Es necesario acceder al panel de Director -> Prórrogas para aprobarla.");
+			mail.setVariables(variables);
+
+			try {
+				emailService.sendEmail(mail);
+			} catch (MessagingException | IOException e) {
+				return "mailErr";
+			}
 			prorrogaService.guardar(prorroga);
 			return "ok";
 		}
 
 		return "dupli";
 	}
-	
+
 	@PostMapping(path = "/prorrogaEliminar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String prorrogaEliminar(@RequestBody Map<String, String> obj, Model model, HttpSession session) {
@@ -181,5 +206,5 @@ public class ProrrogaController {
 		}
 		return "err";
 	}
-	
+
 }

@@ -67,11 +67,11 @@ public class CorteEvaluativoServiceJpa implements ICorteEvaluativoService{
 		return corteEvaluativoRepository.findByFechaInicioLessThanEqualAndFechaAsistenciaGreaterThanEqualAndPeriodoAndCarrera(fecha, periodo, carrera);
 	}
 
-	@Override
+	/*@Override
 	public CorteEvaluativo buscarPorFechaInicioMenorQueYFinEvaluacionesMayorQueYPeriodoYCarrera(Date fechaInicio, Date fechaFin,
 			Periodo periodo, Carrera carrera) {
 		return corteEvaluativoRepository.findByFechaInicioLessThanEqualAndFinEvaluacionesGreaterThanEqualAndPeriodoAndCarrera(fechaInicio, fechaFin, periodo, carrera);
-	}
+	}*/
 
 	@Override
 	public CorteEvaluativo buscarPorInicioRemedialMenorQueYFinRemedialMayorQueYPeriodoYCarrera(Date fechaInicio, Date fechaFin,
@@ -83,5 +83,11 @@ public class CorteEvaluativoServiceJpa implements ICorteEvaluativoService{
 	public CorteEvaluativo buscarPorInicioExtraordinarioMenorQueYFinExtraordinarioMayorQueYPeriodoYCarrera(Date fechaInicio,
 			Date fechaFin, Periodo periodo, Carrera carrera) {
 		return corteEvaluativoRepository.findByInicioExtraordinarioLessThanEqualAndFinExtraordinarioGreaterThanEqualAndPeriodoAndCarrera(fechaInicio, fechaFin, periodo, carrera);
+	}
+
+	@Override
+	public Integer contarPorFechaDosificacionYPeriodoYCarreraYCorteEvaluativo(Date fechaInicio, Integer idPeriodo,
+			Integer idCarrera, Integer idCorteEvaluativo) {
+		return corteEvaluativoRepository.findByFechaDosificacionAndPeriodoAndCarreraAndCorteEvaluativo(fechaInicio, idPeriodo, idCarrera, idCorteEvaluativo);
 	}
 }

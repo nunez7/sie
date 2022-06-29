@@ -40,4 +40,9 @@ public interface CorteEvaluativoRepository extends JpaRepository<CorteEvaluativo
 	
 	CorteEvaluativo findByInicioExtraordinarioLessThanEqualAndFinExtraordinarioGreaterThanEqualAndPeriodoAndCarrera(Date fechaInicio, Date fechaFin, Periodo periodo, Carrera carrera);
 
+	@Query(value = "SELECT COUNT(*) FROM cortes_evaluativos "
+			+ "WHERE fecha_dosificacion >= :fechaDosificacion AND id_periodo = :idPeriodo "
+			+ "AND id_carrera = :idCarrera AND id = :idCorteEvaluativo ", nativeQuery = true)
+	Integer findByFechaDosificacionAndPeriodoAndCarreraAndCorteEvaluativo(@Param("fechaDosificacion") Date fechaDosificacion,@Param("idPeriodo") Integer idPeriodo,@Param("idCarrera") Integer idCarrrera, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
+
 }

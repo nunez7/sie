@@ -319,4 +319,11 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "ORDER BY a.id DESC ", nativeQuery = true)
 	List<Alumno> findAllAceptedProspectos(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo);
 	
+	//Directores y asistentes de carrera
+	@Query(value = "SELECT a.* FROM alumnos a "
+			+ "INNER JOIN personas p ON a.id_persona = p.id "
+			+ "WHERE id_carrera IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) AND estatus = 1 "
+			+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true)
+	List<Alumno> findAllAlumnosByPersonaCarreraAndActivo(@Param("idPersona") Integer idPersona);
+	
 }

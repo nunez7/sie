@@ -3,7 +3,9 @@ package edu.mx.utdelacosta.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Instrumento;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
@@ -20,4 +22,8 @@ public interface MecanismoInstrumentoRepository extends CrudRepository<Mecanismo
 	
 	Optional<MecanismoInstrumento> findByIdAndActivo(Integer id, Boolean activo);
 	
+	@Query(value = "SELECT SUM(ponderacion) FROM mecanismo_instrumento mi "
+			+ "WHERE id_carga_horaria =:idCarga AND id_corte_evaluativo =:idCorte" ,nativeQuery = true)
+	Integer sumPonderacionByIdCargaHorariaAndIdCorteEvaluativo(@Param("idCarga") Integer idCargaHoraria, @Param("idCorte") Integer idCorteEvaluativo);
+
 }

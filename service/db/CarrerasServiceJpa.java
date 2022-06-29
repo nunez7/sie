@@ -45,7 +45,7 @@ public class CarrerasServiceJpa implements ICarrerasServices{
 	}
 
 	@Override
-	public List<Carrera> buscarTodasTSU() {
+	public List<Carrera> buscarTodasTSUMenosIngles() {
 		return carrerasRepository.findAllTSU();
 	}
 
