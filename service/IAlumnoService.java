@@ -72,5 +72,9 @@ public interface IAlumnoService {
 	List<ProspectoDTO> buscarProspectosActivos();
 	
 	List<Alumno> buscarProspectosAceptados(Integer idCarrera, Integer idPeriodo);
+	
+	List<Alumno> buscarPorPersonaCarreraAndActivo(Integer idPersona, Integer idPeriodo);
+
+	List<Alumno> buscarPorCarreraAndPeriodoAndActivo(Integer idCarrera, Integer idPeriodo);
 
 }

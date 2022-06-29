@@ -185,18 +185,7 @@ public class EscolaresController {
 	private String correo;
 
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
-		
-
-	@GetMapping("/aspirantesRegistrados")
-	public String aspirantesRegistrados() {
-		return "escolares/aspirantesRegistrados";
-	}
-
-	@GetMapping("/promedios")
-	public String promedios() {
-		return "escolares/promedios";
-	}
-
+	
 	@GetMapping("/reinscripcion")
 	public String reinscripcion(Model model, HttpSession session) {
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
@@ -265,13 +254,6 @@ public class EscolaresController {
 		}
 		return "ok";
 	}
-
-	@GetMapping("/pagosPorCarrera")
-	public String pagosPorCarrera() {
-		return "escolares/pagosPorCarrera";
-	}
-
-	
 
 	// Escolares
 	@GetMapping("/planEstudio")
@@ -522,7 +504,7 @@ public class EscolaresController {
 		return "escolares/manual1";
 	}
 	
-	@GetMapping("manual-control")
+	@GetMapping("manual2")
 	public String manualControlAlumnos() {
 		return "escolares/manual2";
 	}

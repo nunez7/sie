@@ -95,13 +95,12 @@ public class ProrrogaController {
 		mail.setTitulo("¡Solicitud de Prórroga Aceptada!");
 		// Variables a plantilla
 		Map<String, Object> variables = new HashMap<>();
-		variables.put("titulo", "Solicitud de Prórroga Aceptada");
+		variables.put("titulo", "Solicitud de prórroga aceptada");
 		variables.put("cuerpoCorreo",
 				"Tu solicitud de prórroga de la materia: " + materia.getNombre() + " fue aceptada.");
 		mail.setVariables(variables);
 		try {
 			emailService.sendEmail(mail);
-			System.out.println("Enviado");
 		} catch (MessagingException | IOException e) {
 			System.out.println("Error " + e);
 		}

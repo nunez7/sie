@@ -201,5 +201,15 @@ public class AlumnosServiceJpa implements IAlumnoService{
 		return alumnosRepo.findAllAceptedProspectos(idCarrera, idPeriodo);
 	}
 
+	@Override
+	public List<Alumno> buscarPorPersonaCarreraAndActivo(Integer idPersona, Integer idPeriodo) {
+		return alumnosRepo.findAllAlumnosByPersonaCarreraAndActivoAndPeriodo(idPersona, idPeriodo);
+	}
+
+	@Override
+	public List<Alumno> buscarPorCarreraAndPeriodoAndActivo(Integer idCarrera, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.findAllAlumnosByCarreraAndActivoAndPeriodo(idCarrera, idPeriodo);
+	}
 
 }

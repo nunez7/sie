@@ -208,7 +208,7 @@ public class CalificacionController {
 
 		if (corteActual.getFechaFin().before(fechaHoy)) {
 			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
-					new CargaHoraria(idCargaHoraria),corteActual,new TipoProrroga(1), true);
+					new CargaHoraria(idCargaHoraria), new CorteEvaluativo(idCorteEvaluativo), new TipoProrroga(1), true);
 			if (prorroga != null) {
 				if (prorroga.getFechaLimite().before(fechaHoy)) {
 					return "fechaLimit";

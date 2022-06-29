@@ -96,6 +96,8 @@ public class AsistenciaController {
 	
 	@Autowired
 	private IProrrogaService prorrogaService;
+	
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 
 	@PostMapping(path = "/guardar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
@@ -387,6 +389,7 @@ public class AsistenciaController {
 		
 		// lista de cortesEvalutivos
 		model.addAttribute("grupos", grupos); // retorna los grupos de nivel TSU
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "profesor/reporteAsistencias";
 	}
 	
@@ -490,6 +493,7 @@ public class AsistenciaController {
 	                        mesDTO.setDias(diasDto);                          
 	                    } 
 					}	
+					
 					model.addAttribute("corte", cortesEvaluativosDTO);
 				}
 			}
@@ -502,6 +506,7 @@ public class AsistenciaController {
 		List<CorteEvaluativo> cortesEvaluativos = corteService.buscarPorCarreraYPeriodo(usuario.getPreferencias().getIdCarrera(), usuario.getPreferencias().getIdPeriodo());
 		model.addAttribute("cortes", cortesEvaluativos);
 		model.addAttribute("carreras", carrerasServices.buscarCarrerasPorIdPersona(persona.getId()));
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteAsistencias";
 	}
 }

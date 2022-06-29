@@ -65,6 +65,8 @@ public class AsesoriaController {
 	@Autowired
 	private IAlumnoService alumnoService;
 	
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
+	
 
 	@PostMapping(path = "/guardarAsesoria", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
@@ -116,7 +118,7 @@ public class AsesoriaController {
 		   cveGrupo = 0;
 		  }
 		  if (cveGrupo>0) {
-			  List<AsesoriaDTO> asesorias = asesoriaService.buscarPorIdGrupo(cveGrupo);			
+			  List<AsesoriaDTO> asesorias = asesoriaService.buscarPorIdGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 			  model.addAttribute("asesorias", asesorias);
 			  model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
 		}
@@ -139,12 +141,13 @@ public class AsesoriaController {
 			  if (session.getAttribute("cveGrupo") != null) {
 				  int cveGrupo = (Integer) session.getAttribute("cveGrupo");
 				model.addAttribute("cveGrupo", cveGrupo);
-				  List<AsesoriaDTO> asesorias = asesoriaService.buscarPorIdGrupo(cveGrupo);			
+				  List<AsesoriaDTO> asesorias = asesoriaService.buscarPorIdGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
 				  model.addAttribute("asesorias", asesorias);
 				  model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
 			  }
 		}
 		model.addAttribute("carreras", carreras);
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteAsesorias";
 	 }
 }
