@@ -38,6 +38,9 @@ public class Pregunta {
 	@Transient
 	private List<OpcionRespuestaDTO> OpcionesRespuesta;
 	
+	@Transient
+	private String comentarioRespuesta;
+	
 	public Pregunta() {
 		
 	}
@@ -108,6 +111,14 @@ public class Pregunta {
 
 	public void setOpcionesRespuesta(List<OpcionRespuestaDTO> opcionesRespuesta) {
 		OpcionesRespuesta = opcionesRespuesta;
+	}
+
+	public String getComentarioRespuesta() {
+		return comentarioRespuesta;
+	}
+
+	public void setComentarioRespuesta(String comentarioRespuesta) {
+		this.comentarioRespuesta = comentarioRespuesta;
 	}
 
 }

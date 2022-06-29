@@ -51,6 +51,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Pregunta;
 import edu.mx.utdelacosta.model.ProgramacionTutoria;
+import edu.mx.utdelacosta.model.RespuestaEvaluacionInicial;
 import edu.mx.utdelacosta.model.Servicio;
 import edu.mx.utdelacosta.model.TemaGrupal;
 import edu.mx.utdelacosta.model.TutoriaIndividual;
@@ -60,6 +61,7 @@ import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dto.ComentarioDTO;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
 import edu.mx.utdelacosta.model.dto.HorarioDTO;
+import edu.mx.utdelacosta.model.dto.OpcionRespuestaDTO;
 import edu.mx.utdelacosta.model.dto.PreguntaDTO;
 import edu.mx.utdelacosta.model.dto.PromedioPreguntaDTO;
 import edu.mx.utdelacosta.model.dto.TutoriasProgramadasDTO;
@@ -90,6 +92,7 @@ import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPreguntaService;
 import edu.mx.utdelacosta.service.IProgramacionTutoriaService;
+import edu.mx.utdelacosta.service.IRespuestaEvaluacionInicialService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionTutorService;
 import edu.mx.utdelacosta.service.ITemaGrupalService;
 import edu.mx.utdelacosta.service.ITutoriaIndividualService;
@@ -191,6 +194,9 @@ public class TutorController {
 	
 	@Autowired
 	private IAlumnoGrupoService alumnoGrupoService;
+	
+	@Autowired
+	private IRespuestaEvaluacionInicialService resEvaIniService;
 	
     @GetMapping("/cargar-alumno/{dato}")
    	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato,  Model model, HttpSession session) { 
@@ -1295,15 +1301,52 @@ public class TutorController {
 		return "reportes/reporteCalificacionesPorGrupo"; 
 	}
 	 
-//	@GetMapping("/entrevistaInicial")
-//	public String encuestaEntrevistaInicial() {
-//		return "encuestas/encuestaEntrevistaInicial";
-//	}
-	 
-//	 @GetMapping("/reporte-entrevista-inicial") 
-//	 public String reporteEntrevistaInicial() { 
-//	  return "reportes/reporteEntrevistaInicial"; 
-//	 }  
+	 @GetMapping("/reporte-entrevista-inicial") 
+	 public String reporteEntrevistaInicial(Model model, HttpSession session) { 
+		// extrae el usuario apartir del usuario cargado en cesion.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+					
+		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));
+		Integer cveGrupo = (Integer) session.getAttribute("rei-cveGrupo");
+		Evaluacion evaluacion = evaluacionService.buscar(5);
+		
+		if (cveGrupo != null) {			
+			List<Alumno> alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
+			Integer cvePersonaAl = (Integer) session.getAttribute("rei-cvePersonaAl");
+			if(cvePersonaAl!=null) {
+				//Se inyectan las respuestas asociadas a cada pregunta de la evaluación seleccionada 
+				//asi como su repuesta si es que la ahi.		
+				for (Pregunta pregunta : evaluacion.getPreguntas()) {
+					
+					//Se buscan las opciones de respuesta serrada
+					List<OpcionRespuestaDTO> OpcionesRepuesta =  new ArrayList<OpcionRespuestaDTO>();				
+					OpcionRespuestaDTO OpRes = resEvaIniService.buscarRespuestaPorPregunta(pregunta.getId(), cvePersonaAl, evaluacion.getId(), cveGrupo);
+					OpcionesRepuesta.add(OpRes);
+					pregunta.setOpcionesRespuesta(OpcionesRepuesta);					
+					
+					//Se buscan las opciones de respuesta abierta
+					if(pregunta.getAbierta()==true) {
+						RespuestaEvaluacionInicial respuestaEI = resEvaIniService.buscarRespuestaAbiertaPorPregunta(5, pregunta.getId(), cvePersonaAl, cveGrupo);
+						pregunta.setComentarioRespuesta(respuestaEI != null ? respuestaEI.getRespuestaComentario().getComentario().getComentario() : null);
+					}
+					
+				}	
+			}
+			model.addAttribute("alumnos", alumnos);
+			model.addAttribute("cvePersonaAl", cvePersonaAl);
+		}
+		model.addAttribute("grupos", grupos);
+		model.addAttribute("cveGrupo", cveGrupo);		
+		model.addAttribute("evaluacion", evaluacion);
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "reportes/reporteEntrevistaInicial"; 
+	 }  
 	
 	// consulta	
 	@GetMapping("/informacionEstudiante")

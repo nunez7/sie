@@ -31,6 +31,9 @@ public class Comentario {
 	@Column(name = "fecha_alta")
 	private Date fechaAlta;
 	
+	@Column(name = "fecha_modificacion")
+	private Date fechaModificacion;
+	
 	private Boolean activo;
 
 	public Integer getId() {
@@ -71,6 +74,14 @@ public class Comentario {
 
 	public void setFechaAlta(Date fechaAlta) {
 		this.fechaAlta = fechaAlta;
+	}
+
+	public Date getFechaModificacion() {
+		return fechaModificacion;
+	}
+
+	public void setFechaModificacion(Date fechaModificacion) {
+		this.fechaModificacion = fechaModificacion;
 	}
 
 	public Boolean getActivo() {
