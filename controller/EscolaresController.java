@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
+import edu.mx.utdelacosta.model.CalificacionMateria;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
@@ -51,18 +52,22 @@ import edu.mx.utdelacosta.model.Remedial;
 import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.Testimonio;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.model.dto.AlumnoCalificacionDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
+import edu.mx.utdelacosta.model.dto.CalificacionDTO;
 import edu.mx.utdelacosta.model.dto.MateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoRegularDTO;
 import edu.mx.utdelacosta.model.dtoreport.CalificacionInstrumentoDTO;
-import edu.mx.utdelacosta.model.dtoreport.CalificacionParcial;
+import edu.mx.utdelacosta.model.dtoreport.CalificacionParcialDTO;
+import edu.mx.utdelacosta.model.dtoreport.CalificacionesMateriasParcialesDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
+import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICalificacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
@@ -167,6 +172,9 @@ public class EscolaresController {
 		
 	@Autowired
 	private IRemedialAlumnoService remedialAlumnoService;
+	
+	@Autowired
+	private ICalificacionCorteService calificacionesCorteService;
 	
 	@Value("${siestapp.ruta.docs}")
 	private String rutaDocs;
@@ -669,9 +677,9 @@ public class EscolaresController {
 						List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(grupoActual);
 						List<MecanismoInstrumento> mecanismoInstrumento = mecanismoService
 								.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(cargaActual, parcialActual, true);
-						List<CalificacionParcial> calificaciones = new ArrayList<>();
+						List<CalificacionParcialDTO> calificaciones = new ArrayList<>();
 						for (Alumno alumno : alumnos) {
-							CalificacionParcial calificacion = new CalificacionParcial();
+							CalificacionParcialDTO calificacion = new CalificacionParcialDTO();
 							calificacion.setMatricula(alumno.getMatricula());
 							calificacion.setNombre(alumno.getPersona().getNombreCompleto());
 							
@@ -908,57 +916,107 @@ public class EscolaresController {
 		return map;
 	}
 	
-	@PostMapping(path = "/enviar-correo", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
-	public String enviarCorreo(@RequestBody Map<String, String> obj, HttpSession session) {
-		String mensaje;
-		try {
-			mensaje = obj.get("correo");
-		} catch (Exception e) {
-			mensaje = "";
-		}
-		
-		if (!mensaje.isEmpty()) {
-			Alumno alumno = alumnoService.buscarPorId((Integer)session.getAttribute("cveAlumno"));
-			if (alumno!=null) {
-				
-				if (alumno.getPersona().getEmail()==null || alumno.getPersona().getEmail().isEmpty()) {
-					return "noMail";
-				}			
-				
-				/*
-				Mail mail = new Mail();
-				String de = correo;
-				String para = "nadie";
-				//String para = alumno.getPersona().getEmail();
-				mail.setDe(de);
-				mail.setPara(new String[] {para});
-				
-				//Email title
-				mail.setTitulo("Dosificación pendiente por validar");
-				
-				//Variables a plantilla
-				Map<String, Object> variables = new HashMap<>();
-				variables.put("titulo", "Documento ");
-				variables.put("cuerpoCorreo", "Tienes un comentario sobre un documento ");
-				mail.setVariables(variables);
-				try {
-					emailService.sendEmail(mail);
-					System.out.println("Enviado");
-				}catch (MessagingException | IOException e) {
-					System.out.println("Error "+e);
-				  	}
-				
-				*/
-				
-			}
-			
-		}else {
-			return "blank";
-		}
-		
-		return "ok";
-	}
 	
+	@GetMapping("/reporte-seguimiento")
+	public String reporteSeguimiento(Model model, HttpSession session) {
+		Integer idGrupoActual = 0;
+		idGrupoActual = (Integer)session.getAttribute("cveGrupoEsc");
+
+		if (idGrupoActual == null) {
+			idGrupoActual = 0;
+		}
+		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
+		Usuario usuario = usuarioService.buscarPorPersona(persona);
+		List<Grupo> grupos = grupoService.buscarTodoPorPeriodoOrdenPorId(usuario.getPreferencias().getIdPeriodo());
+
+		if (idGrupoActual>0){
+			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYPeriodo(idGrupoActual,
+					usuario.getPreferencias().getIdPeriodo());
+
+			List<CorteEvaluativo> cortes = corteEvaluativoService
+					.buscarPorCarreraYPeriodo(new Carrera(usuario.getPreferencias().getIdCarrera()),new Periodo(usuario.getPreferencias().getIdPeriodo()));
+
+			List<Alumno> al = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(idGrupoActual);
+			List<AlumnoCalificacionDTO> alumnos = new ArrayList<>();
+
+				for (Alumno a : al) {
+					AlumnoCalificacionDTO alumno = new AlumnoCalificacionDTO();
+					alumno.setMatricula(a.getMatricula());
+					alumno.setNombre(a.getPersona().getNombreCompleto());
+
+					List<CalificacionesMateriasParcialesDTO> calMaterias = new ArrayList<>();
+					for (CargaHoraria carga : cargasHorarias) {
+					//List<CalificacionDTO> cal = new ArrayList<>();
+
+					CalificacionesMateriasParcialesDTO calificaciones = new CalificacionesMateriasParcialesDTO();
+					calificaciones.setNombreMateria(carga.getMateria().getNombre());
+
+					//lista de calificaciones por corte y por materia
+					List<CalificacionDTO> calificacion = new ArrayList<>();
+
+					// se iteran los cortes evaluativos
+					for (CorteEvaluativo corte : cortes) {
+
+						//lista de calificaciones
+
+						//se crea el DTO de calificacion
+						CalificacionDTO cali = new CalificacionDTO();
+
+						//se busca la calificacion del corte y el remedial
+						cali.setCaliCorte(calificacionesCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(a.getId(), carga.getId(), corte.getId()).floatValue());
+						RemedialAlumno remedial = remedialAlumnoService.buscarUltimoPorAlumnoYCargaHorariaYCorteEvaluativo(a.getId(), carga.getId(),corte.getId());
+
+						//se obtiene el estatus del remedial
+						if (remedial != null) {
+							if (remedial.getRemedial().getId() == 1) {
+								cali.setStatus("R");
+							} else {
+								cali.setStatus("E");
+							}
+						} else {
+							cali.setStatus("O");
+						}
+
+						//resultado de calificacion del corte y de materia
+						calificacion.add(cali);
+					}
+
+					calificaciones.setCalificaciones(calificacion);
+
+					// calificacion de la materia en general
+					CalificacionMateria cm = calificacionMateriaService.buscarPorCargayAlumno(carga,
+							a);
+					if (cm != null) {
+						calificaciones.setCalificacionTotal(cm.getCalificacion());
+						calificaciones.setStatus(cm.getEstatus());
+					} else {
+						calificaciones.setCalificacionTotal(0);
+						calificaciones.setStatus("NA");
+					}
+
+						calMaterias.add(calificaciones);
+					}
+
+					//se agrega las calificaciones al alumno
+					alumno.setCalificacionesMaterias(calMaterias);
+
+					//se agrega el alumno a la lista 
+					alumnos.add(alumno);
+				}
+
+
+
+			model.addAttribute("alumnos", alumnos);
+			model.addAttribute("cortes", cortes);
+			model.addAttribute("grupoActual", grupoService.buscarPorId(idGrupoActual));
+			model.addAttribute("cargas", cargasHorarias);
+		}
+		model.addAttribute("utName", NOMBRE_UT);
+		model.addAttribute("grupos", grupos);
+
+
+		return "escolares/reporteSeguimiento";
+	}
+
 	
 }

@@ -37,5 +37,19 @@ public interface ProspectoEscolaresDTO {
 	String getMunicipioBachillerato();
 	
 	String getLocalidadBachillerato();
-
+	
+	String getHijos();
+	
+	String getDiscapacitado();
+	
+	String getTipoDiscapacidad();
+	
+	Integer getIndigena();
+	
+	Integer getDialecto();
+	
+	String getPromocion();
+	
+	String getTipoBeca();
+	
 }

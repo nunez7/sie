@@ -89,7 +89,7 @@ public class PersonaDocumentoController {
 			pdfDTO.setValidado(ch.getValidado());
 			pdfUrl.add(pdfDTO);
 		}
-		if(pdfUrl.isEmpty()) {
+		if (pdfUrl.isEmpty()) {
 			pdfUrl = null;
 		}
 		return ResponseEntity.ok(pdfUrl);
@@ -239,28 +239,36 @@ public class PersonaDocumentoController {
 	@PostMapping(path = "/activar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String activar(@RequestBody Map<String, String> obj, HttpSession session) {
-		String nombreDoc;
+		// se crean las variables
+		Integer idDocumento;
 		String status;
+
+		// se obtienen los valores
 		try {
 			status = (obj.get("valor"));
 		} catch (Exception e) {
-			status = "";
+			status = "vacio";
 		}
 
 		try {
-			nombreDoc = obj.get("documento");
+			idDocumento = Integer.parseInt(obj.get("documento"));
 		} catch (Exception e) {
-			nombreDoc = "";
+			idDocumento = 0;
 		}
 
-		if (!nombreDoc.isEmpty()) {
-			Documento documento = documentoService.buscarPorNombre(nombreDoc);
+		// validacion de datos no vacios
+		if (idDocumento > 0 && !status.equals("vacio")) {
+			Documento documento = documentoService.buscarPorId(idDocumento);
 			Alumno alumno = alumnoService.buscarPorId((Integer) session.getAttribute("cveAlumno"));
+
+			// se valida que tanto el documento como el alumno no sean nulos
 			if (alumno != null || documento != null) {
 
+				// se busca el registro especifico de la persona
 				PersonaDocumento personaDoc = personaDocService.buscarPorPersonaYdocumento(alumno.getPersona(),
 						documento);
 
+				// se determina el estado del documento
 				boolean validado = false;
 				String respuesta = "";
 				if (status.equals("No Entregado")) {
@@ -273,46 +281,40 @@ public class PersonaDocumentoController {
 					respuesta = "off";
 				}
 
+				// se crea/guarda el documento
 				if (personaDoc == null) {
-					personaDoc = new PersonaDocumento();
-					personaDoc.setDocumento(documento);
-					personaDoc.setEntregado(status);
-					personaDoc.setUrlPdf("");
-					personaDoc.setPersona(alumno.getPersona());
-					personaDoc.setValidado(validado);
-					personaDoc.setPrestado(false);
-					personaDoc.setDetalle(0);
-					personaDocService.guardar(personaDoc);
-					return respuesta;
+					return "null";
 				} else {
 					personaDoc.setEntregado(status);
 					personaDoc.setValidado(validado);
 					personaDocService.guardar(personaDoc);
-					return respuesta;
 				}
 
-			}
+				// se buscan los documentos entregados para validar el campo entrado en alumno
+				List<DocumentoDTO> docsExp = personaDocService
+						.buscarActaCurpCerbachiPorPersonaParaDto(alumno.getPersona().getId());
+				List<Boolean> valDoc = new ArrayList<>();
+				for (DocumentoDTO documentoDTO : docsExp) {
+					valDoc.add(documentoDTO.getValidado());
+				}
 
-			List<DocumentoDTO> docsExp = personaDocService
-					.buscarActaCurpCerbachiPorPersonaParaDto(alumno.getPersona().getId());
-
-			// validacion de expediente completo o incompleto
-			List<Boolean> valDoc = new ArrayList<>();
-			for (DocumentoDTO documentoDTO : docsExp) {
-				valDoc.add(documentoDTO.getValidado());
-			}
-
-			// variable para documentos expediente
-			Boolean validados = false;
-			if (new HashSet<Boolean>(valDoc).size() <= 1) {
-				validados = valDoc.get(0);
-				if (validados == true) {
-					alumno.setEstadoDocumentosIngreso(1);
+				// en caso de que los 3 documentos principales esten entregados se valida en
+				// alumno
+				Boolean validados = false;
+				if (new HashSet<Boolean>(valDoc).size() <= 1) {
+					validados = valDoc.get(0);
+					if (validados == true) {
+						alumno.setEstadoDocumentosIngreso(1);
+					} else {
+						alumno.setEstadoDocumentosIngreso(0);
+					}
 				} else {
-					//
+					alumno.setEstadoDocumentosIngreso(0);
 				}
-			} else {
-				//
+				alumnoService.guardar(alumno);
+
+				return respuesta;
+
 			}
 
 		} else {
@@ -327,7 +329,6 @@ public class PersonaDocumentoController {
 	public String prestar(@RequestBody Map<String, String> obj, HttpSession session) {
 		String acta = obj.get("acta");
 		String certificado = obj.get("certificado");
-
 		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
 
 		if (acta == null) {
@@ -427,17 +428,21 @@ public class PersonaDocumentoController {
 	@ResponseBody
 	public String actualizaDetalle(@RequestBody Map<String, String> obj, HttpSession session) {
 		Integer numeroDetalle;
-		String nombreDocumento;
+		Integer idDocumento = 0;
 		try {
 			numeroDetalle = Integer.parseInt(obj.get("valor"));
-			nombreDocumento = obj.get("documento");
 		} catch (Exception e) {
 			numeroDetalle = 0;
-			nombreDocumento = "";
+		}
+		
+		try {
+			idDocumento = Integer.parseInt(obj.get("documento"));
+		} catch (Exception e) {
+			idDocumento = 0;
 		}
 
-		if (!nombreDocumento.isEmpty()) {
-			Documento documento = documentoService.buscarPorNombre(nombreDocumento);
+		if (idDocumento!=0 && numeroDetalle!=0) {
+			Documento documento = documentoService.buscarPorId(idDocumento);
 
 			if (documento == null) {
 				return "null";
@@ -449,15 +454,26 @@ public class PersonaDocumentoController {
 			personaDocService.guardar(docPersona);
 
 		} else {
-			return "null";
+			return "err";
 		}
 
 		return "ok";
 	}
 
 	@GetMapping("/ver-escolares/{idDocumento}")
-	public String verEscolares(@PathVariable("idDocumento") Integer idPersonaDocumento, Model model) {
-		PersonaDocumento documento = personaDocService.buscarPorId(idPersonaDocumento);
+	public String verEscolares(@PathVariable("idDocumento") Integer idDocumento, Model model, HttpSession session) {
+		Alumno alumno = alumnoService.buscarPorId((Integer)session.getAttribute("cveAlumno"));		
+		PersonaDocumento documento = personaDocService.buscarPorPersonaYdocumento(alumno.getPersona(), new Documento(idDocumento));
+		if (documento==null) {
+			documento = new PersonaDocumento();
+			documento.setEntregado("No Entregado");
+			documento.setDocumento(documentoService.buscarPorId(idDocumento));
+			documento.setPrestado(false);
+			documento.setUrlPdf(null);
+			documento.setValidado(false);
+			documento.setPersona(alumno.getPersona());
+			personaDocService.guardar(documento);
+		}
 		model.addAttribute("personaDocumento", documento);
 		return "fragments/control-alumnos :: subirArchivo";
 	}

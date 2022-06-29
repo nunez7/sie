@@ -42,6 +42,8 @@ public class DatosAlumno {
 	@Column(name="ext_2")
 	private Integer ext2;
 	
+	private Boolean dialecto;
+	
 	@OneToOne
     @JoinColumn(name = "id_alumno")
 	private Alumno alumno;
@@ -140,6 +142,14 @@ public class DatosAlumno {
 
 	public void setAlumno(Alumno alumno) {
 		this.alumno = alumno;
+	}
+	
+	public Boolean getDialecto() {
+		return dialecto;
+	}
+
+	public void setDialecto(Boolean dialecto) {
+		this.dialecto = dialecto;
 	}
 	
 }

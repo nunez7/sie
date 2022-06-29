@@ -60,7 +60,6 @@ public class GruposController {
 			grupo.setJefeGrupo(new Persona(8167));
 			grupo.setSubjefeGrupo(new Persona(8167));
 			grupo.setHorario("");
-			grupo.setCapacidadMaxima(30);
 			//Estos no se deben modificar
 			grupo.setCarrera(new Carrera(datos.getIdCarrera()));
 			grupo.setCuatrimestre(new Cuatrimestre(datos.getIdCuatrimestre()));

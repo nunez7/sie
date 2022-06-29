@@ -109,9 +109,8 @@ public class CaptacionAlumnoController {
 		Periodo periodo = periodosService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		//List<Carrera> carreras = carreraService.buscarTodasMenosIngles();
 		List<Carrera> carreras = carreraService.buscarTodasTSUMenosIngles();
-		List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), usuario.getPreferencias().getIdCarrera());
+		List <Grupo> grupos = grupoService.buscarPorCuatrimestreCarreraYPeriodo(1, idCarrera, usuario.getPreferencias().getIdPeriodo());
 		//List<Alumno> alumnos = alumnoService.buscarTodoAceptarPorCarreraYPeriodo(carIni.getId(), periodo.getId());
-		System.err.println("carrera: "+carIni.getId()+" periodo: "+periodo.getId());
 		List<Alumno> alumnos = alumnoService.buscarProspectosAceptados(carIni.getId(), periodo.getId());
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("alumnos", alumnos);

@@ -34,6 +34,10 @@ public class Alumno {
 	@JoinColumn(name="id_carrera", referencedColumnName = "id")
 	private Carrera carreraInicio;
 	
+	@OneToOne
+	@JoinColumn(name = "id_turno")
+	private Turno turno;
+	
 	@Column(name="estatus")
 	private Integer estatusGeneral;
 	
@@ -174,5 +178,12 @@ public class Alumno {
 		this.ultimoGrupo = ultimoGrupo;
 	}
 	
+	public Turno getTurno() {
+		return turno;
+	}
+
+	public void setTurno(Turno turno) {
+		this.turno = turno;
+	}
 	
 }

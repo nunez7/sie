@@ -2,6 +2,8 @@ package edu.mx.utdelacosta.model.dto;
 
 import java.util.List;
 
+import edu.mx.utdelacosta.model.dtoreport.CalificacionesMateriasParcialesDTO;
+
 public class AlumnoCalificacionDTO {
 	private Integer id;
 	
@@ -10,6 +12,8 @@ public class AlumnoCalificacionDTO {
 	private String matricula;
 	
 	List<CalificacionDTO> calificaciones;
+	
+	List<CalificacionesMateriasParcialesDTO> calificacionesMaterias;
 	
 	private float calificacionTotal;
 	
@@ -68,8 +72,12 @@ public class AlumnoCalificacionDTO {
 	}
 	
 	
-	
-	
-	
+	public List<CalificacionesMateriasParcialesDTO> getCalificacionesMaterias() {
+		return calificacionesMaterias;
+	}
+
+	public void setCalificacionesMaterias(List<CalificacionesMateriasParcialesDTO> calificacionesMaterias) {
+		this.calificacionesMaterias = calificacionesMaterias;
+	}	
 	
 }
