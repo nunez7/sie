@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
+import edu.mx.utdelacosta.model.AlumnoReingreso;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Concepto;
@@ -42,6 +43,7 @@ import edu.mx.utdelacosta.model.dto.DocumentoDTO;
 import edu.mx.utdelacosta.model.dto.MateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
+import edu.mx.utdelacosta.service.IAlumnoReingresoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
@@ -103,6 +105,9 @@ public class ControlAlumnoController {
 
 	@Autowired
 	private IConceptoService conceptoService;
+	
+	@Autowired
+	private IAlumnoReingresoService alumnoReingresoService;
 
 	@Value("${siestapp.ruta.docs}")
 	private String rutaDocs;
@@ -155,6 +160,13 @@ public class ControlAlumnoController {
 
 			// calificaciones pendientes
 			Grupo grupoAnterior = grupoService.buscarPorAlumnoPenultimoGrupo(cveAlumno);
+			if(grupoAnterior.getId() == null) {
+				//para cuando no tenga grupo anterior no tomar datos de él
+				model.addAttribute("grupoAnterior", 0);
+			}
+			else {
+				model.addAttribute("grupoAnterior", grupoAnterior);
+			}
 			// lista de materias
 			Boolean calificacionPendiente = false;
 			// para verificar si hay grupo anterior sino enviamos la calificacion pendiente
@@ -311,13 +323,13 @@ public class ControlAlumnoController {
 	@PreAuthorize("hasAnyAuthority('Administrador', 'Servicios Escolares')")
 	@PostMapping(path = "/inscripcion-alumno", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String inscripcionAlumno(@RequestBody Map<String, Integer> obj, HttpSession session) {
+	public String inscripcionAlumno(@RequestBody Map<String, String> obj, HttpSession session) {
 		AlumnoGrupo grupoBuscar;
 		// PagoGeneral pGeneral = null;
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 
-		Integer idAlumno = obj.get("idAlumno");
-		Integer cveGrupo = obj.get("idGrupo");
+		Integer idAlumno = Integer.parseInt(obj.get("idAlumno"));
+		Integer cveGrupo = Integer.parseInt(obj.get("idGrupo"));
 
 		Grupo grupoNuevo = grupoService.buscarPorId(cveGrupo);
 		grupoNuevo.setId(cveGrupo);
@@ -337,6 +349,24 @@ public class ControlAlumnoController {
 			grupoBuscar.setActivo(true);
 			alumnoGrService.guardar(grupoBuscar);
 
+			String generacion = obj.get("generacion");
+			int ultimoPeriodo = 0;
+			if(generacion != null) {
+				ultimoPeriodo = Integer.parseInt(obj.get("ultimoPeriodo"));
+				//se inserta el registro de alumnoReingreso
+				AlumnoReingreso ar = new AlumnoReingreso();
+				ar.setAlumno(alumno);
+				ar.setGrupo(grupoNuevo);//grupo a ingresar
+				ar.setGeneracion(generacion);
+				ar.setPeriodoReingreso(grupoNuevo.getPeriodo());
+				ar.setUltimoPeriodo(new Periodo(ultimoPeriodo));
+				alumnoReingresoService.guardar(ar);
+				//se le cambia el estatus al alumno a alta
+				Alumno alumno = alumnoService.buscarPorId(idAlumno);
+				alumno.setEstatusGeneral(1);
+				alumnoService.guardar(alumno);
+			}
+			
 			// Insertamos el adeudo
 			PagoGeneral pGeneral = new PagoGeneral();
 			pGeneral.setCantidad(1);
@@ -346,36 +376,20 @@ public class ControlAlumnoController {
 			// gastronomia tsu
 			if (grupoNuevo.getCarrera().getNivelEstudio().getId() == 1 && grupoNuevo.getCarrera().getId() == 9) {
 				concepto = conceptoService.buscarPorId(7);
-				pGeneral.setConcepto(concepto);
-				pGeneral.setMonto(concepto.getMonto());
-				pGeneral.setMontoUnitario(concepto.getMonto());
+			}// carreras tsu excepto gastronomia
+			else if (grupoNuevo.getCarrera().getNivelEstudio().getId() == 1 && grupoNuevo.getCarrera().getId() != 9) {
+				concepto = conceptoService.buscarPorId(10);
 			}
 			// gastronomia lic
 			else if (grupoNuevo.getCarrera().getNivelEstudio().getId() == 2 && grupoNuevo.getCarrera().getId() == 22) {
 				concepto = conceptoService.buscarPorId(9);
-				pGeneral.setConcepto(concepto);
-				pGeneral.setMonto(concepto.getMonto());
-				pGeneral.setMontoUnitario(concepto.getMonto());
-			}
-			// carreras tsu excepto gastronomia
-			else if (grupoNuevo.getCarrera().getNivelEstudio().getId() == 1 && grupoNuevo.getCarrera().getId() != 9) {
-				concepto = conceptoService.buscarPorId(10);
-				pGeneral.setConcepto(concepto);
-				pGeneral.setMonto(concepto.getMonto());
-				pGeneral.setMontoUnitario(concepto.getMonto());
-			}
-			// carreras ing/lic excepto gastronomia
-			else if (grupoNuevo.getCarrera().getNivelEstudio().getId() == 2 && grupoNuevo.getCarrera().getId() != 22) {
+			}else{
 				concepto = conceptoService.buscarPorId(8);
-				pGeneral.setConcepto(concepto);
-				pGeneral.setMonto(concepto.getMonto());
-				pGeneral.setMontoUnitario(concepto.getMonto());
-			} else {
-				concepto = conceptoService.buscarPorId(10);
-				pGeneral.setConcepto(concepto);
-				pGeneral.setMonto(concepto.getMonto());
-				pGeneral.setMontoUnitario(concepto.getMonto());
-			}
+			} 
+
+			pGeneral.setConcepto(concepto);
+			pGeneral.setMonto(concepto.getMonto());
+			pGeneral.setMontoUnitario(concepto.getMonto());
 			Periodo periodo = periodosService.buscarPorId(grupoNuevo.getPeriodo().getId());
 			pGeneral.setDescripcion(concepto.getConcepto() + " " + periodo.getNombre());
 			pGeneral.setFechaAlta(new Date());
@@ -390,6 +404,36 @@ public class ControlAlumnoController {
 			pa.setAlumno(alumno);
 			pa.setPagoGeneral(pGeneral);
 			pagoAlumnoService.guardar(pa);
+			//pago de reinscripción
+			PagoGeneral pg = new PagoGeneral();
+			pg.setCantidad(1);
+			pg.setDescuento(0.0); 
+			Concepto con = new Concepto();
+			if(grupoNuevo.getCarrera().getNivelEstudio().getId() == 1) {
+				con = conceptoService.buscarPorId(21);//reinscripcion TSU
+				pg.setConcepto(con);
+				pg.setMonto(con.getMonto());
+				pg.setMontoUnitario(con.getMonto());
+			}
+			else {
+				con = conceptoService.buscarPorId(20);//reinscripcion ING/LIC
+				pg.setConcepto(con);
+				pg.setMonto(con.getMonto());
+				pg.setMontoUnitario(con.getMonto());
+			}
+			pg.setDescripcion(con.getConcepto()+" "+periodo.getNombre());
+			pg.setFechaAlta(new Date()); 
+			pg.setCliente(0);
+			pg.setFolio("");
+			pg.setStatus(0); 
+			pg.setTipo(0); 
+			pg.setReferencia("");
+			pg.setActivo(true);
+
+			PagoAlumno pAl = new PagoAlumno();
+			pAl.setAlumno(alumno);
+			pAl.setPagoGeneral(pg);
+			pagoAlumnoService.guardar(pAl);
 		}
 		return "ok";
 	}

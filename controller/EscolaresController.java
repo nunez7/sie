@@ -151,41 +151,41 @@ public class EscolaresController {
 
 	@Autowired
 	private ITestimonioService testimonioService;
-	
+
 	@Autowired
 	private ITestimonioCorteService testimonioCorteService;
 
 	@Autowired
 	private IPeriodoInscripcionService periodoInscripcionService;
-	
+
 	@Autowired
 	private ICargaHorariaService cargaService;
-	
+
 	@Autowired
 	private IMecanismoInstrumentoService mecanismoService;
-	
+
 	@Autowired
 	private ICalificacionService calificacionService;
-	
+
 	@Autowired
 	private ICorteEvaluativoService corteEvaluativoService;
-		
+
 	@Autowired
 	private IRemedialAlumnoService remedialAlumnoService;
-	
+
 	@Autowired
 	private ICalificacionCorteService calificacionesCorteService;
-	
+
 	@Value("${siestapp.ruta.docs}")
 	private String rutaDocs;
 
 	private Alumno alumno;
-		
+
 	@Value("${spring.mail.username}")
 	private String correo;
 
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
-	
+
 	@GetMapping("/reinscripcion")
 	public String reinscripcion(Model model, HttpSession session) {
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
@@ -219,7 +219,7 @@ public class EscolaresController {
 	public String reinscripcion(@RequestBody String body, HttpSession session) {
 		JSONObject jsonObject = new JSONObject(body);
 		AlumnoGrupo grupoBuscar;
-		//PagoGeneral pGeneral = null;
+		// PagoGeneral pGeneral = null;
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cveGrupo;
 		try {
@@ -384,37 +384,38 @@ public class EscolaresController {
 		model.addAttribute("fechaHoy", new Date());
 		return "reportes/escolares/boleta22";
 	}
-	
+
 	@GetMapping("/boleta-alumno/{alumno}/{grupo}")
-	public String boletaAlumno(@PathVariable("alumno") int idAlumno, @PathVariable("grupo") int idGrupo, Model model, HttpSession session) {
-		//Carrera carrera = carreraService.bus
+	public String boletaAlumno(@PathVariable("alumno") int idAlumno, @PathVariable("grupo") int idGrupo, Model model,
+			HttpSession session) {
+		// Carrera carrera = carreraService.bus
 		Grupo grupo = grupoService.buscarPorId(idGrupo);
 		List<AlumnoDTO> alumnos = new ArrayList<AlumnoDTO>();
 		AlumnoDTO alumno;
 		List<MateriaDTO> materiasDT;
 		// Si no hay ID, son todos
-			Alumno al = alumnoService.buscarPorId(idAlumno);
-			alumno = new AlumnoDTO();
-			alumno.setId(al.getId());
-			alumno.setNombre(al.getPersona().getNombreCompletoPorApellido());
-			alumno.setMatricula(al.getMatricula());
-			// Construimos las materias
-			materiasDT = new ArrayList<MateriaDTO>();
-			for (MateriaPromedioDTO cm : calificacionMateriaService.buscarPorGrupoAlumno(idGrupo, al.getId())) {
-				// Agregamos todos los promedios de las materias del alumno
-				MateriaDTO mNew = new MateriaDTO();
-				int numero = Math.round(cm.getCalificacion());
-				Testimonio test = testimonioService.buscarPorNumeroIntegradora(numero, cm.getIntegradora());
-				mNew.setEscala(test.getAbreviatura());
-				mNew.setIntegradora(cm.getIntegradora());
-				mNew.setNombre(cm.getNombre());
-				mNew.setPromedio(cm.getCalificacion());
-				mNew.setEstatusPromedio(cm.getEstatus());
-				materiasDT.add(mNew);
-			}
-			// Agregamos las materias al alumno
-			alumno.setMaterias(materiasDT);
-			alumnos.add(alumno);
+		Alumno al = alumnoService.buscarPorId(idAlumno);
+		alumno = new AlumnoDTO();
+		alumno.setId(al.getId());
+		alumno.setNombre(al.getPersona().getNombreCompletoPorApellido());
+		alumno.setMatricula(al.getMatricula());
+		// Construimos las materias
+		materiasDT = new ArrayList<MateriaDTO>();
+		for (MateriaPromedioDTO cm : calificacionMateriaService.buscarPorGrupoAlumno(idGrupo, al.getId())) {
+			// Agregamos todos los promedios de las materias del alumno
+			MateriaDTO mNew = new MateriaDTO();
+			int numero = Math.round(cm.getCalificacion());
+			Testimonio test = testimonioService.buscarPorNumeroIntegradora(numero, cm.getIntegradora());
+			mNew.setEscala(test.getAbreviatura());
+			mNew.setIntegradora(cm.getIntegradora());
+			mNew.setNombre(cm.getNombre());
+			mNew.setPromedio(cm.getCalificacion());
+			mNew.setEstatusPromedio(cm.getEstatus());
+			materiasDT.add(mNew);
+		}
+		// Agregamos las materias al alumno
+		alumno.setMaterias(materiasDT);
+		alumnos.add(alumno);
 		List<Materia> materias = materiasService.buscarPorCargaActivaEnGrupo(idGrupo, grupo.getCarrera().getId());
 		model.addAttribute("materias", materias);
 		model.addAttribute("grupo", grupo);
@@ -423,33 +424,29 @@ public class EscolaresController {
 		model.addAttribute("fechaHoy", new Date());
 		return "reportes/escolares/boleta22";
 	}
-	
-	//para reinscribir alumno
-		@PreAuthorize("hasAnyAuthority('Administrador', 'Servicios Escolares')")
-		@PostMapping(path = "/reinscripcion-alumno", consumes = MediaType.APPLICATION_JSON_VALUE)
-		@ResponseBody
-		public String reinscripcionAlumno(@RequestBody Map<String, Integer> obj, HttpSession session) {
-			Usuario usuario = (Usuario) session.getAttribute("usuario");
-			Integer idAlumno = obj.get("idAlumno");
-			AlumnoGrupo ag;
-			ag = alumnoGrService.checkInscrito(idAlumno, usuario.getPreferencias().getIdPeriodo());
-			if(ag == null) {
-				//para indicarle al usuario que el alumno no tiene grupo inscrito
-				return "fail";
-			}
-			else if(ag.getFechaInscripcion() != null) {
-				//para indicarle al usuario que ya fue reinscrito
-				return "reinscrito";
-			}
-			else {
-				ag.setFechaInscripcion(new Date());
-				alumnoGrService.guardar(ag);
-			}
-			return "ok";
+
+	// para reinscribir alumno
+	@PreAuthorize("hasAnyAuthority('Administrador', 'Servicios Escolares')")
+	@PostMapping(path = "/reinscripcion-alumno", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String reinscripcionAlumno(@RequestBody Map<String, Integer> obj, HttpSession session) {
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		Integer idAlumno = obj.get("idAlumno");
+		AlumnoGrupo ag;
+		ag = alumnoGrService.checkInscrito(idAlumno, usuario.getPreferencias().getIdPeriodo());
+		if (ag == null) {
+			// para indicarle al usuario que el alumno no tiene grupo inscrito
+			return "fail";
+		} else if (ag.getFechaInscripcion() != null) {
+			// para indicarle al usuario que ya fue reinscrito
+			return "reinscrito";
+		} else {
+			ag.setFechaInscripcion(new Date());
+			alumnoGrService.guardar(ag);
 		}
-		
-		
-		
+		return "ok";
+	}
+
 	@GetMapping("/grupos")
 	public String grupos(Model model, HttpSession session) {
 
@@ -503,12 +500,12 @@ public class EscolaresController {
 		model.addAttribute("manual", "servicios_escolares.pdf");
 		return "escolares/manual1";
 	}
-	
+
 	@GetMapping("manual2")
 	public String manualControlAlumnos() {
 		return "escolares/manual2";
 	}
-	
+
 	@GetMapping("manualProspectos")
 	public String manualProspecto(Model model) {
 		model.addAttribute("manual", "servicios_escolares.pdf");
@@ -545,7 +542,7 @@ public class EscolaresController {
 				int n = 0;
 				String matricula = "";
 				String folio = "";
-				//String fechaRegistro = null;
+				// String fechaRegistro = null;
 				FolioCeneval folioC = null;
 				Alumno alu = null;
 				FolioCeneval fNuevo = null;
@@ -560,7 +557,7 @@ public class EscolaresController {
 							folio = cellValue;
 							break;
 						case 13:
-							//fechaRegistro = cellValue;
+							// fechaRegistro = cellValue;
 							break;
 						}
 						n++;
@@ -650,8 +647,9 @@ public class EscolaresController {
 			if (session.getAttribute("cargaActual") != null) {
 				int cargaActual = (Integer) session.getAttribute("cargaActual");
 
-				List<CorteEvaluativo> cortes = corteEvaluativoService
-						.buscarPorCarreraYPeriodo(new Carrera(usuario.getPreferencias().getIdCarrera()),new Periodo(usuario.getPreferencias().getIdPeriodo()));
+				List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(
+						new Carrera(usuario.getPreferencias().getIdCarrera()),
+						new Periodo(usuario.getPreferencias().getIdPeriodo()));
 				if (session.getAttribute("parcialActual") != null) {
 					int parcialActual = (Integer) session.getAttribute("parcialActual");
 
@@ -664,14 +662,16 @@ public class EscolaresController {
 							CalificacionParcialDTO calificacion = new CalificacionParcialDTO();
 							calificacion.setMatricula(alumno.getMatricula());
 							calificacion.setNombre(alumno.getPersona().getNombreCompleto());
-							
+
 							List<CalificacionInstrumentoDTO> mecanismos = new ArrayList<>();
 							for (MecanismoInstrumento meca : mecanismoInstrumento) {
-								CalificacionInstrumentoDTO cali = calificacionService.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual, parcialActual, meca.getInstrumento().getId());
+								CalificacionInstrumentoDTO cali = calificacionService
+										.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual,
+												parcialActual, meca.getInstrumento().getId());
 								mecanismos.add(cali);
 							}
 							calificacion.setMecanismos(mecanismos);
-							
+
 							RemedialAlumno rem = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 									alumno, new CargaHoraria(cargaActual), new Remedial(1),
 									new CorteEvaluativo(parcialActual));
@@ -709,7 +709,7 @@ public class EscolaresController {
 
 	@GetMapping("rindicadores")
 	public String rindicadores(HttpSession session, Model model) {
-		Persona persona = new Persona((Integer)session.getAttribute("cvePersona"));
+		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		int cveCarrera;
 		try {
@@ -717,7 +717,8 @@ public class EscolaresController {
 		} catch (Exception e) {
 			cveCarrera = 500;
 		}
-		List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(new Carrera(cveCarrera),new Periodo(usuario.getPreferencias().getIdPeriodo()));
+		List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(new Carrera(cveCarrera),
+				new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		List<IndicadorProfesorDTO> indicadoresSD = new ArrayList<>();
 		List<IndicadorProfesorDTO> indicadoresRemedial = new ArrayList<>();
 		List<IndicadorProfesorDTO> indicadoresExtra = new ArrayList<>();
@@ -729,82 +730,83 @@ public class EscolaresController {
 		Integer numExt = 0;
 		Integer alumnos = alumnoService.countAlumnosByCarrera(cveCarrera, usuario.getPreferencias().getIdPeriodo());
 		for (CorteEvaluativo corte : cortes) {
-			
+
 			IndicadorProfesorDTO indicadorExt = new IndicadorProfesorDTO();
 			IndicadorProfesorDTO indicadorSD = new IndicadorProfesorDTO();
 			IndicadorProfesorDTO indicadorRem = new IndicadorProfesorDTO();
 
 			numSD = testimonioCorteService.countAlumnosSDByCarrera(cveCarrera, corte.getId());
-			indicadorSD.setNumero(numSD); //se busca el numero de alumnos en SD y se agrega al indicador
-			indicadorSD.setPromedio((numSD*100)/alumnos); //se promedia en base al alumno
-			totalSD = totalSD+numSD; //se suma el numero de SD para la variable general
-			indicadoresSD.add(indicadorSD); //se agrega el indicador a la lista correspondiente
-			
-			numRem = remedialAlumnoService.countByCarreraAndCorteEvaluativo(cveCarrera, 1, corte.getId());
-			indicadorRem.setNumero(numRem); //se obtiene el numero de remediales					
-			indicadorRem.setPromedio((numRem*100)/alumnos); //se promedia					
-			totalRemedial =  totalRemedial + numRem; //se suma a la lista general
-			indicadoresRemedial.add(indicadorRem); //se agrega a la lista
+			indicadorSD.setNumero(numSD); // se busca el numero de alumnos en SD y se agrega al indicador
+			indicadorSD.setPromedio((numSD * 100) / alumnos); // se promedia en base al alumno
+			totalSD = totalSD + numSD; // se suma el numero de SD para la variable general
+			indicadoresSD.add(indicadorSD); // se agrega el indicador a la lista correspondiente
 
-			
+			numRem = remedialAlumnoService.countByCarreraAndCorteEvaluativo(cveCarrera, 1, corte.getId());
+			indicadorRem.setNumero(numRem); // se obtiene el numero de remediales
+			indicadorRem.setPromedio((numRem * 100) / alumnos); // se promedia
+			totalRemedial = totalRemedial + numRem; // se suma a la lista general
+			indicadoresRemedial.add(indicadorRem); // se agrega a la lista
+
 			numExt = remedialAlumnoService.countByCarreraAndCorteEvaluativo(cveCarrera, 2, corte.getId());
-			indicadorExt.setNumero(numExt); //se obtiene el numero de remediales					
-			indicadorExt.setPromedio((numExt*100)/alumnos); //se promedia			
-			totalExtra = totalExtra + numExt; //se suma a la lista general
-			indicadoresExtra.add(indicadorExt); //se agrega a la lista
+			indicadorExt.setNumero(numExt); // se obtiene el numero de remediales
+			indicadorExt.setPromedio((numExt * 100) / alumnos); // se promedia
+			totalExtra = totalExtra + numExt; // se suma a la lista general
+			indicadoresExtra.add(indicadorExt); // se agrega a la lista
 
 		}
 		IndicadorMateriaProfesorDTO indicadores = new IndicadorMateriaProfesorDTO();
-		Integer noAlumnos = alumnoService.countInscritosByCarreraAndPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo());
-		indicadores.setNumeroAlumnos(noAlumnos);	
+		Integer noAlumnos = alumnoService.countInscritosByCarreraAndPeriodo(cveCarrera,
+				usuario.getPreferencias().getIdPeriodo());
+		indicadores.setNumeroAlumnos(noAlumnos);
 		try {
-			indicadores.setPorcentajeAlumnos((noAlumnos*100)/alumnos);
+			indicadores.setPorcentajeAlumnos((noAlumnos * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeAlumnos(0);
 		}
-		
+
 		noAlumnos = alumnoService.countBajaByCarreraAndPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo());
 		indicadores.setNumeroBajas(noAlumnos);
 		try {
-			indicadores.setPorcentajeBajas((noAlumnos*100)/alumnos);
+			indicadores.setPorcentajeBajas((noAlumnos * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeBajas(0);
 		}
-		
-		noAlumnos = alumnoService.obtenerRegularesByCarreraPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo()).size();
+
+		noAlumnos = alumnoService.obtenerRegularesByCarreraPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo())
+				.size();
 		indicadores.setNumeroRegulares(noAlumnos);
-		
+
 		try {
-			indicadores.setPorcentajeRegulares((noAlumnos*100)/alumnos);
+			indicadores.setPorcentajeRegulares((noAlumnos * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeRegulares(0);
 		}
 		indicadores.setNumeroSD(totalSD);
 		try {
-			indicadores.setPorcentajeSD((totalSD*100)/alumnos);
+			indicadores.setPorcentajeSD((totalSD * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeSD(0);
 		}
 		indicadores.setIndicadoresSD(indicadoresSD);
-		
+
 		indicadores.setNumeroRemediales(totalRemedial);
 		try {
-			indicadores.setPorcentajeRemediales((totalRemedial*100)/alumnos);
+			indicadores.setPorcentajeRemediales((totalRemedial * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeRemediales(0);
 		}
 		indicadores.setIndicadoresRemediales(indicadoresRemedial);
-		
+
 		indicadores.setNumeroExtra(totalExtra);
 		try {
-			indicadores.setPorcentajeExtra((totalExtra*100)/alumnos);
+			indicadores.setPorcentajeExtra((totalExtra * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeExtra(0);
 		}
 		indicadores.setIndicadoresExtra(indicadoresExtra);
 		List<Carrera> carreras = carreraService.buscarTodasMenosIngles();
 		model.addAttribute("indicadores", indicadores);
-		model.addAttribute("cortes", cortes);	
+		model.addAttribute("cortes", cortes);
 		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("cveCarrera", cveCarrera);
@@ -897,12 +899,11 @@ public class EscolaresController {
 		map.put("carrera", grupo);
 		return map;
 	}
-	
-	
+
 	@GetMapping("/reporte-seguimiento")
 	public String reporteSeguimiento(Model model, HttpSession session) {
 		Integer idGrupoActual = 0;
-		idGrupoActual = (Integer)session.getAttribute("cveGrupoEsc");
+		idGrupoActual = (Integer) session.getAttribute("cveGrupoEsc");
 
 		if (idGrupoActual == null) {
 			idGrupoActual = 0;
@@ -911,44 +912,49 @@ public class EscolaresController {
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		List<Grupo> grupos = grupoService.buscarTodoPorPeriodoOrdenPorId(usuario.getPreferencias().getIdPeriodo());
 
-		if (idGrupoActual>0){
+		if (idGrupoActual > 0) {
 			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYPeriodo(idGrupoActual,
 					usuario.getPreferencias().getIdPeriodo());
 
-			List<CorteEvaluativo> cortes = corteEvaluativoService
-					.buscarPorCarreraYPeriodo(new Carrera(usuario.getPreferencias().getIdCarrera()),new Periodo(usuario.getPreferencias().getIdPeriodo()));
+			List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(
+					new Carrera(usuario.getPreferencias().getIdCarrera()),
+					new Periodo(usuario.getPreferencias().getIdPeriodo()));
 
 			List<Alumno> al = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(idGrupoActual);
 			List<AlumnoCalificacionDTO> alumnos = new ArrayList<>();
 
-				for (Alumno a : al) {
-					AlumnoCalificacionDTO alumno = new AlumnoCalificacionDTO();
-					alumno.setMatricula(a.getMatricula());
-					alumno.setNombre(a.getPersona().getNombreCompleto());
+			for (Alumno a : al) {
+				AlumnoCalificacionDTO alumno = new AlumnoCalificacionDTO();
+				alumno.setMatricula(a.getMatricula());
+				alumno.setNombre(a.getPersona().getNombreCompleto());
 
-					List<CalificacionesMateriasParcialesDTO> calMaterias = new ArrayList<>();
-					for (CargaHoraria carga : cargasHorarias) {
-					//List<CalificacionDTO> cal = new ArrayList<>();
+				List<CalificacionesMateriasParcialesDTO> calMaterias = new ArrayList<>();
+				for (CargaHoraria carga : cargasHorarias) {
+					// List<CalificacionDTO> cal = new ArrayList<>();
 
 					CalificacionesMateriasParcialesDTO calificaciones = new CalificacionesMateriasParcialesDTO();
 					calificaciones.setNombreMateria(carga.getMateria().getNombre());
 
-					//lista de calificaciones por corte y por materia
+					// lista de calificaciones por corte y por materia
 					List<CalificacionDTO> calificacion = new ArrayList<>();
 
 					// se iteran los cortes evaluativos
 					for (CorteEvaluativo corte : cortes) {
 
-						//lista de calificaciones
+						// lista de calificaciones
 
-						//se crea el DTO de calificacion
+						// se crea el DTO de calificacion
 						CalificacionDTO cali = new CalificacionDTO();
 
-						//se busca la calificacion del corte y el remedial
-						cali.setCaliCorte(calificacionesCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(a.getId(), carga.getId(), corte.getId()).floatValue());
-						RemedialAlumno remedial = remedialAlumnoService.buscarUltimoPorAlumnoYCargaHorariaYCorteEvaluativo(a.getId(), carga.getId(),corte.getId());
+						// se busca la calificacion del corte y el remedial
+						cali.setCaliCorte(calificacionesCorteService
+								.buscarPorAlumnoCargaHorariaYCorteEvaluativo(a.getId(), carga.getId(), corte.getId())
+								.floatValue());
+						RemedialAlumno remedial = remedialAlumnoService
+								.buscarUltimoPorAlumnoYCargaHorariaYCorteEvaluativo(a.getId(), carga.getId(),
+										corte.getId());
 
-						//se obtiene el estatus del remedial
+						// se obtiene el estatus del remedial
 						if (remedial != null) {
 							if (remedial.getRemedial().getId() == 1) {
 								cali.setStatus("R");
@@ -959,15 +965,14 @@ public class EscolaresController {
 							cali.setStatus("O");
 						}
 
-						//resultado de calificacion del corte y de materia
+						// resultado de calificacion del corte y de materia
 						calificacion.add(cali);
 					}
 
 					calificaciones.setCalificaciones(calificacion);
 
 					// calificacion de la materia en general
-					CalificacionMateria cm = calificacionMateriaService.buscarPorCargayAlumno(carga,
-							a);
+					CalificacionMateria cm = calificacionMateriaService.buscarPorCargayAlumno(carga, a);
 					if (cm != null) {
 						calificaciones.setCalificacionTotal(cm.getCalificacion());
 						calificaciones.setStatus(cm.getEstatus());
@@ -976,17 +981,15 @@ public class EscolaresController {
 						calificaciones.setStatus("NA");
 					}
 
-						calMaterias.add(calificaciones);
-					}
-
-					//se agrega las calificaciones al alumno
-					alumno.setCalificacionesMaterias(calMaterias);
-
-					//se agrega el alumno a la lista 
-					alumnos.add(alumno);
+					calMaterias.add(calificaciones);
 				}
 
+				// se agrega las calificaciones al alumno
+				alumno.setCalificacionesMaterias(calMaterias);
 
+				// se agrega el alumno a la lista
+				alumnos.add(alumno);
+			}
 
 			model.addAttribute("alumnos", alumnos);
 			model.addAttribute("cortes", cortes);
@@ -996,9 +999,14 @@ public class EscolaresController {
 		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);
 
-
 		return "escolares/reporteSeguimiento";
 	}
 
-	
+	// solicitudes de bajas
+	@GetMapping("/bajas")
+	public String bajas(Model model) {
+		model.addAttribute("utName", NOMBRE_UT);
+		return "escolares/bajas";
+	}
+
 }
