@@ -32,7 +32,6 @@ public interface RespuestaEvaluacionInicialRepository extends CrudRepository<Res
 			+ "INNER JOIN respuesta_evaluacion_inicial rei ON r.id=rei.id_respuesta "
 			+ "INNER JOIN evaluacion_tutor et ON et.id=rei.id_evaluacion_tutor "
 			+ "WHERE r.activo = true AND r.id_pregunta=:idPregunta "
-			+ "WHERE r.activo = true AND r.id_pregunta=:idPregunta "
 			+ "AND r.id_persona=:idPersona AND r.id_evaluacion=:idEvaluacion "
 			+ "AND et.id_grupo=:idGrupo AND et.id_evaluacion=:idEvaluacion", nativeQuery = true)
 	RespuestaEvaluacionInicial findRespuestaCerradaByPregunta(@Param("idEvaluacion") Integer idEvaluacion, @Param("idPregunta") Integer idPregunta, @Param("idPersona") Integer idPersona, @Param("idGrupo") Integer idGrupo);

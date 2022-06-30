@@ -1501,14 +1501,33 @@ public class EscolaresController {
 		
 		@PostMapping(path="/rechazar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
 		@ResponseBody
-		public String rechazarBaja(@RequestBody Map<String, String> obj, HttpSession session) {
-//			Date fechaHoy = new Date();	
+		public String rechazarBaja(@RequestBody Map<String, String> obj, HttpSession session) {	
 			String cveBaja = obj.get("id");	
-//			String motivo = obj.get("motivo");	
+			String motivo = obj.get("motivo");	
 			if(cveBaja!=null){
 				Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
 				baja.setEstatus(2);
 				bajaService.guardar(baja);
+				//correo
+				Mail mail = new Mail();
+				String de = correo;
+				//String para = baja.getPersona().getEmail();
+				String para = "brayan.bg499@gmail.com";
+				mail.setDe(de);
+				mail.setPara(new String[] {para});		
+				//Email title
+				mail.setTitulo("Rechazo de solicitud de baja.");		
+				//Variables a plantilla
+				Map<String, Object> variables = new HashMap<>();
+				variables.put("titulo", "Baja rechazada por escolares.");						
+				variables.put("cuerpoCorreo","La solicitud de baja fue rechazada por escolares, debido al siguiente motivo: "+motivo);
+				mail.setVariables(variables);			
+				try {							
+					emailService.sendEmail(mail);													
+				}catch (MessagingException | IOException e) {
+					return "errorMen";
+			  	}
+				
 				return "ok";
 			}
 			return "error";

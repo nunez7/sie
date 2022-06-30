@@ -443,7 +443,7 @@ public class TutorController {
 						emailService.sendEmail(mail);
 						return "ok";
 					}catch (MessagingException | IOException e) {
-						return "error";
+						return "errorCorre";
 				  	}
 				}				
 				return "noTuto";

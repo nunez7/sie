@@ -1,16 +1,20 @@
 package edu.mx.utdelacosta.controller;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,6 +39,7 @@ import edu.mx.utdelacosta.model.Dia;
 import edu.mx.utdelacosta.model.Dosificacion;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Horario;
+import edu.mx.utdelacosta.model.Mail;
 import edu.mx.utdelacosta.model.Materia;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
 import edu.mx.utdelacosta.model.Periodo;
@@ -55,6 +60,7 @@ import edu.mx.utdelacosta.model.dto.ProfesorProrrogaDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.DosificacionPendienteDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
+import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IActividadService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
@@ -151,6 +157,12 @@ public class DirectorController {
 	
 	@Autowired
 	private IBajaAutorizadaService bajaAutorizaService;
+	
+	@Autowired
+	private EmailSenderService emailService;
+	
+	@Value("${spring.mail.username}")
+	private String correo;
 	
 	@GetMapping("/dosificacion")
 	public String dosificacion(Model model, HttpSession session) {
@@ -654,13 +666,31 @@ public class DirectorController {
 	@PostMapping(path="/rechazar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String rechazarBaja(@RequestBody Map<String, String> obj, HttpSession session) {
-//		Date fechaHoy = new Date();	
 		String cveBaja = obj.get("id");	
-//		String motivo = obj.get("motivo");	
+		String motivo = obj.get("motivo");	
 		if(cveBaja!=null){
 			Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
 			baja.setEstatus(1);
 			bajaService.guardar(baja);
+			//correo
+			Mail mail = new Mail();
+			String de = correo;
+			//String para = baja.getPersona().getEmail();
+			String para = "brayan.bg499@gmail.com";
+			mail.setDe(de);
+			mail.setPara(new String[] {para});		
+			//Email title
+			mail.setTitulo("Rechazo de solicitud de baja.");		
+			//Variables a plantilla
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("titulo", "Baja rechazada por el director de la carrera.");						
+			variables.put("cuerpoCorreo","La solicitud de baja fue rechazada por el director de la carrera, debido al siguiente motivo: "+motivo);
+			mail.setVariables(variables);			
+			try {							
+				emailService.sendEmail(mail);													
+			}catch (MessagingException | IOException e) {
+				return "errorMen";
+		  	}
 			return "ok";
 		}
 		return "error";
