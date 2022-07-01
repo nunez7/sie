@@ -114,10 +114,13 @@ public class MateriasController {
 				materia.setCurricular(materiaDTO.isCurricular());
 				materia.setExtracurricular(false);
 				materia.setFechaAlta(new Date());
-				materia.setHorasPractica(null);
-				materia.setHorasSemanales(null);
-				materia.setHorasTeoria(null);
-				materia.setHorasTotales(null);
+				materia.setHorasPractica(materiaDTO.getHorasPracticas());
+				materia.setHorasSemanales(materiaDTO.getHorasSemanales());
+				materia.setHorasTeoria(materiaDTO.getHorasTeoria());
+				// proceso para sumar horas totales
+				int horasTotales = 0;
+				horasTotales = materiaDTO.getHorasPracticas() + materiaDTO.getHorasTeoria();
+				materia.setHorasTotales(horasTotales);
 				materia.setIntegradora(materiaDTO.isIntegradora());
 				materia.setNombre(materiaDTO.getNombre());
 				materia.setObjetivo(null);
@@ -163,10 +166,13 @@ public class MateriasController {
 		materia.setCurricular(materiaDTO.isCurricular());
 		materia.setExtracurricular(false);
 		materia.setFechaAlta(new Date());
-		materia.setHorasPractica(null);
-		materia.setHorasSemanales(null);
-		materia.setHorasTeoria(null);
-		materia.setHorasTotales(null);
+		materia.setHorasPractica(materiaDTO.getHorasPracticas());
+		materia.setHorasSemanales(materiaDTO.getHorasSemanales());
+		materia.setHorasTeoria(materiaDTO.getHorasTeoria());
+		// proceso para sumar horas totales
+		int horasTotales = 0;
+		horasTotales = materiaDTO.getHorasPracticas() + materiaDTO.getHorasTeoria();
+		materia.setHorasTotales(horasTotales);
 		materia.setIntegradora(materiaDTO.isIntegradora());
 		materia.setNombre(materiaDTO.getNombre());
 		// buscamos y construimos el plan de estudio

@@ -548,7 +548,14 @@ public class AsistenteController {
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(persona.getId());
 		int cveCarrera = 0;
-		if(session.getAttribute("cveCarrera") != null) {
+		int cve = 0;
+
+		try {
+			cve = (int) session.getAttribute("cveCarrera");
+		} catch (Exception e) {
+
+		}
+		if(session.getAttribute("cveCarrera") != null && cve > 0) {
 			cveCarrera = (Integer) session.getAttribute("cveCarrera");
 			model.addAttribute("cveCarrera", cveCarrera);
 			int cveGrupo = 0;
