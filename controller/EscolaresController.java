@@ -1,7 +1,6 @@
 package edu.mx.utdelacosta.controller;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -9,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -36,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
+import edu.mx.utdelacosta.model.AlumnoReingreso;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Concepto;
@@ -47,7 +46,6 @@ import edu.mx.utdelacosta.model.Estado;
 import edu.mx.utdelacosta.model.FolioCeneval;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Localidad;
-import edu.mx.utdelacosta.model.Mail;
 import edu.mx.utdelacosta.model.Materia;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
 import edu.mx.utdelacosta.model.Municipio;
@@ -75,6 +73,7 @@ import edu.mx.utdelacosta.model.dtoreport.IndicadorProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
+import edu.mx.utdelacosta.service.IAlumnoReingresoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
@@ -85,7 +84,6 @@ import edu.mx.utdelacosta.service.ICicloService;
 import edu.mx.utdelacosta.service.IConceptoService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.ICuatrimestreService;
-import edu.mx.utdelacosta.service.IDocumentosService;
 import edu.mx.utdelacosta.service.IEscuelaService;
 import edu.mx.utdelacosta.service.IEstadoCivilService;
 import edu.mx.utdelacosta.service.IEstadoService;
@@ -194,9 +192,6 @@ public class EscolaresController {
 	private IPersonaDocumentoService personaDocumentoService;
 	
 	@Autowired
-	private IDocumentosService documentoService;
-	
-	@Autowired
 	private IPrestamoDocumentoService prestamoDocumento;
 
 	@Autowired
@@ -224,6 +219,9 @@ public class EscolaresController {
 	
 	@Autowired
 	private EmailSenderService emailService;
+	
+	@Autowired
+	private IAlumnoReingresoService alumnoReingresoService;
 	
 	@Value("${spring.mail.username}")
 	private String correo;
@@ -338,6 +336,13 @@ public class EscolaresController {
 			
 			//calificaciones pendientes
 			Grupo grupoAnterior = grupoService.buscarPorAlumnoPenultimoGrupo(cveAlumno);
+			if(grupoAnterior.getId() == null) {
+				//para cuando no tenga grupo anterior no tomar datos de él
+				model.addAttribute("grupoAnterior", 0);
+			}
+			else {
+				model.addAttribute("grupoAnterior", grupoAnterior);
+			}
 			//lista de materias
 			Boolean calificacionPendiente = false;
 			//para verificar si hay grupo anterior sino enviamos la calificacion pendiente en false(por ser aspirante)
@@ -699,8 +704,6 @@ public class EscolaresController {
 	
 	@GetMapping("/boleta-alumno/{alumno}/{grupo}")
 	public String boletaAlumno(@PathVariable("alumno") int idAlumno, @PathVariable("grupo") int idGrupo, Model model, HttpSession session) {
-		Usuario usuario = (Usuario) session.getAttribute("usuario");
-		//Carrera carrera = carreraService.bus
 		Grupo grupo = grupoService.buscarPorId(idGrupo);
 		List<AlumnoDTO> alumnos = new ArrayList<AlumnoDTO>();
 		AlumnoDTO alumno;
@@ -765,14 +768,14 @@ public class EscolaresController {
 		@PreAuthorize("hasAnyAuthority('Administrador', 'Servicios Escolares')")
 		@PostMapping(path = "/inscripcion-alumno", consumes = MediaType.APPLICATION_JSON_VALUE)
 		@ResponseBody
-		public String inscripcionAlumno(@RequestBody Map<String, Integer> obj, HttpSession session) {
+		public String inscripcionAlumno(@RequestBody Map<String, String> obj, HttpSession session) {
 			AlumnoGrupo grupoBuscar;
 			//PagoGeneral pGeneral = null;
 			Usuario usuario = (Usuario) session.getAttribute("usuario");
 			
-			Integer idAlumno = obj.get("idAlumno");
-			Integer cveGrupo = obj.get("idGrupo");
-					
+			Integer idAlumno = Integer.parseInt(obj.get("idAlumno"));
+			Integer cveGrupo = Integer.parseInt(obj.get("idGrupo"));
+		
 			Grupo grupoNuevo = grupoService.buscarPorId(cveGrupo);
 			grupoNuevo.setId(cveGrupo);
 			alumno = alumnoService.buscarPorId(idAlumno);
@@ -784,6 +787,25 @@ public class EscolaresController {
 					alumnoGrService.guardar(grupoBuscar);
 				}
 			} else {
+				//para cuando sea reingreso
+				String generacion = obj.get("generacion");
+				int ultimoPeriodo = 0;
+				if(generacion != null) {
+					ultimoPeriodo = Integer.parseInt(obj.get("ultimoPeriodo"));
+					//se inserta el registro de alumnoReingreso
+					AlumnoReingreso ar = new AlumnoReingreso();
+					ar.setAlumno(alumno);
+					ar.setGrupo(grupoNuevo);//grupo a ingresar
+					ar.setGeneracion(generacion);
+					ar.setPeriodoReingreso(grupoNuevo.getPeriodo());
+					ar.setUltimoPeriodo(new Periodo(ultimoPeriodo));
+					alumnoReingresoService.guardar(ar);
+					//se le cambia el estatus al alumno a alta
+					Alumno alumno = alumnoService.buscarPorId(idAlumno);
+					alumno.setEstatusGeneral(1);
+					alumnoService.guardar(alumno);
+				}
+				
 				grupoBuscar = new AlumnoGrupo();
 				grupoBuscar.setAlumno(alumno);
 				grupoBuscar.setGrupo(grupoNuevo);
@@ -845,6 +867,37 @@ public class EscolaresController {
 				pa.setAlumno(alumno);
 				pa.setPagoGeneral(pGeneral);
 				pagoAlumnoService.guardar(pa);
+				
+				//pago de reinscripción
+				PagoGeneral pg = new PagoGeneral();
+				pg.setCantidad(1);
+				pg.setDescuento(0.0); 
+				Concepto con = new Concepto();
+				if(grupoNuevo.getCarrera().getNivelEstudio().getId() == 1) {
+					con = conceptoService.buscarPorId(21);//reinscripcion TSU
+					pg.setConcepto(con);
+					pg.setMonto(con.getMonto());
+					pg.setMontoUnitario(con.getMonto());
+				}
+				else {
+					con = conceptoService.buscarPorId(20);//reinscripcion ING/LIC
+					pg.setConcepto(con);
+					pg.setMonto(con.getMonto());
+					pg.setMontoUnitario(con.getMonto());
+				}
+				pg.setDescripcion(con.getConcepto()+" "+periodo.getNombre());
+				pg.setFechaAlta(new Date()); 
+				pg.setCliente(0);
+				pg.setFolio("");
+				pg.setStatus(0); 
+				pg.setTipo(0); 
+				pg.setReferencia("");
+				pg.setActivo(true);
+				
+				PagoAlumno pAl = new PagoAlumno();
+				pAl.setAlumno(alumno);
+				pAl.setPagoGeneral(pg);
+				pagoAlumnoService.guardar(pAl);
 			}
 			return "ok";
 		}
@@ -1419,6 +1472,12 @@ public class EscolaresController {
 		}
 		
 		return "ok";
+	}
+	
+	//solicitudes de bajas
+	@GetMapping("/bajas")
+	public String bajas(Model model) {
+		return "escolares/bajas";
 	}
 	
 	
