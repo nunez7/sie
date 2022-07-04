@@ -26,9 +26,14 @@ public class DatosAlumno {
 	
 	private Boolean indigena;
 	
+	private Boolean dialecto;
+	
 	private String promocion;
 	
 	private String observaciones;
+	
+	@Column(name = "tipo_beca")
+	private String tipoBeca;
 	
 	@Column(name="otra_ut")
 	private Boolean otraUt;
@@ -74,6 +79,23 @@ public class DatosAlumno {
 	public void setIndigena(Boolean indigena) {
 		this.indigena = indigena;
 	}
+	
+	public Boolean getDialecto() {
+		return dialecto;
+	}
+
+	public void setDialecto(Boolean dialecto) {
+		this.dialecto = dialecto;
+	}
+
+	public String getTipoBeca() {
+		return tipoBeca;
+	}
+
+	public void setTipoBeca(String tipoBeca) {
+		this.tipoBeca = tipoBeca;
+	}
+
 	public String getObservaciones() {
 		return observaciones;
 	}

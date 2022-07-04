@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
-import org.hibernate.internal.build.AllowSysOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -35,6 +34,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Pregunta;
 import edu.mx.utdelacosta.model.Prorroga;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.ComentarioDTO;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
@@ -65,6 +65,7 @@ import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.IRespuestaCargaEvaluacionService;
 import edu.mx.utdelacosta.service.ITestimonioCorteService;
+import edu.mx.utdelacosta.service.ITipoProrrogaService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
@@ -143,6 +144,11 @@ public class ProfesorController {
 	
 	@Autowired
 	private IEvaluacionComentarioService serviceEvaCom;
+	
+	@Autowired
+	private ITipoProrrogaService tipoProrroService;
+
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 
 	@GetMapping("/dosificacion")
 	public String dosificacion(Model model, HttpSession session) {
@@ -262,7 +268,7 @@ public class ProfesorController {
 		   List<Dia> dias = diaService.buscarDias();
 		   model.addAttribute("dias", dias);
 		   //formato para horas
-		   DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss");
+		   DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 		   //Se extrae una lista de las horas que ahi asociadas a cada hora de calse con un disting por hora inicio y hora fin    
 		   List<Horario> horas = horarioService.buscarPorProfesorDistinctPorHoraInicio(persona.getId(), usuario.getPreferencias().getIdPeriodo());
 		   model.addAttribute("horas", horas);
@@ -369,9 +375,11 @@ public class ProfesorController {
 			cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera() , cargaActual.getPeriodo());
 		}
 
+		List<TipoProrroga> tipos = tipoProrroService.buscarTodos();
 		List<CargaHoraria> cargas = cargaService.buscarPorProfesorYPeriodo(usuario.getPersona(), new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		List<Prorroga> prorrogas = prorrogaService.buscarPorProfesorYPeriodoYActivo(persona.getId(), usuario.getPreferencias().getIdPeriodo());
 		model.addAttribute("cargas", cargas);
+		model.addAttribute("tipos", tipos);
 		model.addAttribute("prorrogas", prorrogas);
 		model.addAttribute("cActual", cargaActual);
 		model.addAttribute("cortes", cortes);
@@ -409,7 +417,7 @@ public class ProfesorController {
 		
 		if (session.getAttribute("grupoActual")!=null) {
 			grupoActual= (Integer) session.getAttribute("grupoActual");
-			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYPeriodo(grupoActual, usuario.getPreferencias().getIdPeriodo());
+			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(grupoActual,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 			
 			if (session.getAttribute("cargaActual")!=null) {
 				//se crea la carga
@@ -494,6 +502,7 @@ public class ProfesorController {
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
 			model.addAttribute("cargas", cargasHorarias);
 		}
+		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);
 		return "profesor/reporteIndicadores";
 	}
@@ -591,6 +600,7 @@ public class ProfesorController {
 			
 		}
 		
+		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("usuario", usuario);
 		model.addAttribute("periodo", periodo);
 		model.addAttribute("aluEncuestados", aluEncuestados);			

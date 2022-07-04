@@ -33,6 +33,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.TestimonioCorte;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoResultadoDTO;
 import edu.mx.utdelacosta.model.dto.CorteEvaluativoDTO;
@@ -119,7 +120,7 @@ public class AsistenciaController {
 		//se busca que la fecha actual no sobrepase el limite de captura de asistencias 
 		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(fechaHoy, carga.getPeriodo().getId(), carrera.getId());
 		if (corte == null) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaEIdTipoProrrogaYActivoYAceptada(carga, 2, true, true);
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYActivoYAceptada(carga, new TipoProrroga(2), true, true);
 			if (prorroga != null) {
 				if (prorroga.getFechaLimite().before(fechaHoy)) {
 					return "inv";
@@ -176,7 +177,6 @@ public class AsistenciaController {
 				boolean SD = false;
 				
 				if (noFaltas >= (asistenciasTotales * .15)) {
-//				if (noFaltas >= (Math.round(asistenciasTotales * .15))) {
 					SD = true;
 				}
 
@@ -228,8 +228,6 @@ public class AsistenciaController {
 		//se compara que la fecha pertenezca a algun corte
 		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
 				fechaSeleccionada, usuario.getPreferencias().getIdPeriodo(), usuario.getPreferencias().getIdCarrera());
-		//CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
-		//		fechaSeleccionada, new Periodo(usuario.getPreferencias().getIdPeriodo()), new Carrera(usuario.getPreferencias().getIdCarrera()));
 		
 		if (corte==null) {
 		}
@@ -306,7 +304,7 @@ public class AsistenciaController {
 			
 			//se obtienen las cargas (materias) del maestro
 			List<CargaHoraria> cargasHorarias = null;	
-			cargasHorarias = cargaService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(cveGrupo,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 			List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cveGrupo);
 			
 			if (session.getAttribute("cargaActual")!=null) {
@@ -386,6 +384,7 @@ public class AsistenciaController {
 		}
 		
 		// lista de cortesEvalutivos
+		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos); // retorna los grupos de nivel TSU
 		return "profesor/reporteAsistencias";
 	}

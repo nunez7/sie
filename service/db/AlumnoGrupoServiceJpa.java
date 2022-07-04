@@ -69,6 +69,11 @@ public class AlumnoGrupoServiceJpa implements IAlumnoGrupoService{
 	  // TODO Auto-generated method stub
 	  return agRepositorio.findByIdAlumnoAndIdPeriodo(idAlumno, idPeriodo);
 	 }
+
+	 @Override
+	public Integer contarAlumnosGruposPorGrupo(Integer idGrupo) {
+		return agRepositorio.countAlumnosByGrupo(idGrupo);
+	}
 	
 
 }

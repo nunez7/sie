@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Prorroga;
+import edu.mx.utdelacosta.model.TipoProrroga;
 
 public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 
@@ -47,12 +48,15 @@ public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 
 	Optional<Prorroga> findById(Integer id);
 
-	Prorroga findByCargaHorariaAndIdTipoProrrogaAndActivoAndAceptada(CargaHoraria cargaHoraria, Integer idTipo,
+	Prorroga findByCargaHorariaAndTipoProrrogaAndActivoAndAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga,
 			boolean activo, boolean aceptada);
+	
+	Prorroga findByCargaHorariaAndTipoProrrogaAndCorteEvaluativoAndActivoAndAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga,
+			CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada);
 
-	Prorroga findByCargaHorariaAndIdTipoProrrogaAndFechaLimiteGreaterThanEqualAndActivoAndAceptada(
-			CargaHoraria cargaHoraria, Integer idTipoProrroga, Date fecha, Boolean activo, Boolean aceptada);
+	Prorroga findByCargaHorariaAndTipoProrrogaAndFechaLimiteGreaterThanEqualAndActivoAndAceptada(
+			CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, Date fecha, Boolean activo, Boolean aceptada);
 
-	Prorroga findByCargaHorariaAndCorteEvaluativoAndIdTipoProrrogaAndActivo(CargaHoraria cargaHoraria,
-			CorteEvaluativo corteEvaluativo, Integer idTipoProrroga, boolean activo);
+	Prorroga findByCargaHorariaAndCorteEvaluativoAndTipoProrrogaAndActivo(CargaHoraria cargaHoraria,
+			CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, boolean activo);
 }
