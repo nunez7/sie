@@ -25,7 +25,7 @@ import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Usuario;
-import edu.mx.utdelacosta.model.dto.AsesoriaDTO;
+import edu.mx.utdelacosta.model.dtoreport.AsesoriaDTO;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAsesoriaAlumnoService;
 import edu.mx.utdelacosta.service.IAsesoriaService;
