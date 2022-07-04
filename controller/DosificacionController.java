@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.mx.utdelacosta.model.CalendarioEvaluacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
-import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Dosificacion;
 import edu.mx.utdelacosta.model.DosificacionCarga;
@@ -147,19 +146,14 @@ public class DosificacionController {
 				Integer.parseInt(obj.get("idCorteEvaluativo")));
 
 		if (existeCorte == 0) {
-			System.err.println("inicio de prorroga");
 			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(
 					carga, new TipoProrroga(3), new CorteEvaluativo(Integer.parseInt(obj.get("idCorteEvaluativo"))),
 					true, true);
-			System.err.println("Se busco la prorroga");
 			if (prorroga != null) {
-				System.err.println("Se encontro la prorroga");
 				if (prorroga.getFechaLimite().before(new Date())) {
 					return "limit";
 				}
-				System.err.println("la fecha es valida");
 			} else {
-				System.err.println("no se encontro ninguna prorroga");
 				return "limit";
 			}
 		}
@@ -177,60 +171,27 @@ public class DosificacionController {
 			dosificacion = new Dosificacion();
 			dosificacion.setIdCorteEvaluativo(corte.getId());
 			dosificacion.setPersona(profesor);
-			dosificacion.setCompetenciaDesarrollar("");
-			dosificacion.setActividadApertura("");
-			dosificacion.setActividadCierre("");
-			dosificacion.setActividadDesarrollo("");
 			dosificacion.setFechaAlta(new Date());
-			dosificacion.setAvanceObservaciones("");
 			dosificacion.setValidaDirector(false);
 			dosificacion.setTerminada(false);
 			dosificacion.setActivo(true);
 
-			// se guarda la dosificacion
-			dosificacionService.guardar(dosificacion);
+			DosificacionCarga dosiCargas = new DosificacionCarga();
+			dosiCargas.setCargaHoraria(carga);
+			dosiCargas.setActivo(true);
+			dosiCargas.setDosificacion(dosificacion);
+			dosiCargaService.guardar(dosiCargas);
 
-			// se toma la ultima dosificacion
-			dosificacion = null;
-			dosificacion = dosificacionService.encontrarUltimaDosificacion();
-
-			// se crea la dosificacion carga
-			DosificacionCarga dosiCarga = dosiCargaService.buscarPorDosificacionYCargaHoraria(dosificacion, carga);
-			if (dosiCarga == null) {
-				dosiCarga = new DosificacionCarga();
-				dosiCarga.setDosificacion(dosificacion);
-				dosiCarga.setCargaHoraria(carga);
-				dosiCarga.setActivo(true);
-				dosiCargaService.guardar(dosiCarga);
-			}
-
-			// en de que la dosificacion no este vacia
-		} else {
-
-			if (!dosificacion.getPersona().getId().equals(idPersona)) {
-				return "dif";
-			}
+		// en caso de que la dosificacion no este vacia
+		}  else {
 
 			// si la dosificacion ya esta validada
 			if (dosificacion.getValidaDirector() == true && AvanceYObservaciones != null) {
-				dosificacion.setAvanceObservaciones("");
 				dosificacion.setTerminada(true);
 				dosificacionService.guardar(dosificacion);
 				return "up";
+			} 
 
-				// si la dosificacion ya esta terminadad
-			} else if (dosificacion.getTerminada() == true) {
-				return "end";
-
-				// si la dosificacion no esta validada ni terminada
-			} else {
-				dosificacion.setActividadApertura("");
-				dosificacion.setActividadCierre("");
-				dosificacion.setActividadDesarrollo("");
-				dosificacion.setCompetenciaDesarrollar("");
-			}
-
-			dosificacionService.guardar(dosificacion);
 		}
 
 		List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHorariaYCorteEvaluativo(carga, corte);
@@ -261,7 +222,8 @@ public class DosificacionController {
 
 		Mail mail = new Mail();
 		String de = correo;
-		String para = carga.getGrupo().getCarrera().getEmailCarrera();
+//		String para = carga.getGrupo().getCarrera().getEmailCarrera();
+		String para = "rhekhienth.reality@gmail.com";
 		mail.setDe(de);
 		mail.setPara(new String[] { para });
 
@@ -276,9 +238,7 @@ public class DosificacionController {
 		mail.setVariables(variables);
 		try {
 			emailService.sendEmail(mail);
-			System.out.println("Enviado");
 		} catch (MessagingException | IOException e) {
-			System.out.println("Error " + e);
 		}
 
 		return "ok";
@@ -338,27 +298,58 @@ public class DosificacionController {
 
 	@PostMapping(path = "/importar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String importarDosificacion(@RequestBody Map<String, String> obj) {
+	public String importarDosificacion(@RequestBody Map<String, String> obj, HttpSession session) {
 		Integer idCargaHoraria = Integer.parseInt(obj.get("idCargaHoraria"));
 		Integer idCargaCompartida = Integer.parseInt(obj.get("idDosificacion"));
 		if (idCargaHoraria != null && idCargaCompartida != null) {
 			CargaHoraria cargaHoraria = new CargaHoraria(idCargaHoraria);
 			CargaHoraria cargaCompartida = new CargaHoraria(idCargaCompartida);
 
+			// SE COMPARA QUE TANTO LAS UNIDADES COMO LOS INSTRUMENTOS ESTÉN VACÍOS
+			List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHoraria(cargaHoraria);
+			if (calendarios.size()>0) {
+				return "calInv";
+			}
+			
+			List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(cargaHoraria.getId(),
+					true);
+			if (mecanismos.size()>0) {
+				return "mecInv";
+			}
+			
 			// SE OBTIENEN LAS DOSIFICACIONES Y SE GUARDAN COMO NUEVAS USANDO LA CARGA
 			// COMPARTIDA
 			List<DosificacionCarga> dosificacionesCargas = dosiCargaService.buscarPorCargaHoraria(cargaCompartida);
-			System.err.println("lista de dosificaciones: " + dosificacionesCargas.size());
 			for (DosificacionCarga dosificacionCarga : dosificacionesCargas) {
 				DosificacionCarga nuevaDC = new DosificacionCarga();
+				Dosificacion dosificacion = new Dosificacion();
+				dosificacion.setIdCorteEvaluativo(dosificacionCarga.getDosificacion().getIdCorteEvaluativo());
+				dosificacion.setPersona(new Persona((Integer) session.getAttribute("cvePersona")));
+				dosificacion.setFechaAlta(new Date());
+				dosificacion.setValidaDirector(false);
+				dosificacion.setTerminada(false);
+				dosificacion.setActivo(true);
+				
 				nuevaDC.setCargaHoraria(cargaHoraria);
-				nuevaDC.setDosificacion(dosificacionCarga.getDosificacion());
+				nuevaDC.setDosificacion(dosificacion);
 				nuevaDC.setActivo(true);
 				dosiCargaService.guardar(nuevaDC);
+				
+				List<DosificacionTema> dosificacionTemas = dosiTemaService.buscarPorDosificacion(dosificacionCarga.getDosificacion());
+				for (DosificacionTema dosiTema : dosificacionTemas) {
+					DosificacionTema dosiTemaCopia = new DosificacionTema();
+					dosiTemaCopia.setFechaFin(dosiTema.getFechaFin());
+					dosiTemaCopia.setFechaInicio(dosiTema.getFechaInicio());
+					dosiTemaCopia.setHorasPracticas(dosiTema.getHorasPracticas());
+					dosiTemaCopia.setHorasTeoricas(dosiTema.getHorasTeoricas());
+					dosiTemaCopia.setTema(dosiTema.getTema());
+					dosiTemaCopia.setDosificacion(dosificacion);
+					dosiTemaService.guardar(dosiTemaCopia);
+				}
 			}
-
-			List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHoraria(cargaCompartida);
-			System.err.println("lista de calendarios: " + calendarios.size());
+			
+			
+			calendarios = calendarioService.buscarPorCargaHoraria(cargaCompartida);
 			for (CalendarioEvaluacion calendario : calendarios) {
 				CalendarioEvaluacion calen = new CalendarioEvaluacion();
 				calen.setCargaHoraria(cargaHoraria);
@@ -367,9 +358,8 @@ public class DosificacionController {
 				calendarioService.guarda(calen);
 			}
 
-			List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCargaCompartida,
+			mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCargaCompartida,
 					true);
-			System.err.println("lista de mecanismos: " + mecanismos.size());
 			for (MecanismoInstrumento mecanismo : mecanismos) {
 				MecanismoInstrumento meca = new MecanismoInstrumento();
 				meca.setActivo(true);
@@ -579,10 +569,12 @@ public class DosificacionController {
 				+ " fue rechazada por el siguiente motivo: " + comentario + ".");
 		mail.setVariables(variables);
 
-		/*
-		 * try { emailService.sendEmail(mail); System.out.println("Enviado"); } catch
-		 * (MessagingException | IOException e) { System.out.println("Error "+e); }
-		 */
+		try {
+			emailService.sendEmail(mail);
+		} catch (MessagingException | IOException e) {
+			System.out.println("Error " + e);
+		}
+		 
 
 		return "ok";
 	}
@@ -609,18 +601,24 @@ public class DosificacionController {
 		dosificacionValidaService.guardar(dosificacionValida);
 		// se envia correo al profesor
 
-		/*
-		 * Mail mail = new Mail(); String de = correo; //se deberá enviar el correo al
-		 * profesor String para = profesor.getEmail(); mail.setDe(de); mail.setPara(new
-		 * String[] {para}); //Email title mail.setTitulo("¡Dosificación validada!");
-		 * //Variables a plantilla Map<String, Object> variables = new HashMap<>();
-		 * variables.put("titulo", "Dosificación validada");
-		 * variables.put("cuerpoCorreo", "Tu dosificación de la materia: " +
-		 * cargaHoraria.getMateria().getNombre() + " fue validada.");
-		 * mail.setVariables(variables); try { emailService.sendEmail(mail);
-		 * System.out.println("Enviado"); } catch (MessagingException | IOException e) {
-		 * System.out.println("Error "+e); }
-		 */
+		Mail mail = new Mail(); String de = correo; //se deberá enviar el correo al profesor 
+		String para = profesor.getEmail(); 
+		mail.setDe(de); mail.setPara(new String[] {para}); 
+		//Email title 
+		mail.setTitulo("¡Dosificación validada!");
+		//Variables a plantilla 
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("titulo", "Dosificación validada");
+		variables.put("cuerpoCorreo", "Tu dosificación de la materia: " +
+		cargaHoraria.getMateria().getNombre() + " fue validada.");
+		mail.setVariables(variables); 
+		
+		try { 
+			emailService.sendEmail(mail);
+		} catch (MessagingException | IOException e) {
+		System.out.println("Error "+e); 
+		}
+		
 
 		return "ok";
 	}
