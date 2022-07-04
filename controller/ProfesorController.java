@@ -417,8 +417,7 @@ public class ProfesorController {
 		
 		if (session.getAttribute("grupoActual")!=null) {
 			grupoActual= (Integer) session.getAttribute("grupoActual");
-			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYPeriodo(grupoActual, usuario.getPreferencias().getIdPeriodo());
-			
+			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(grupoActual,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 			if (session.getAttribute("cargaActual")!=null) {
 				//se crea la carga
 				CargaHoraria cargaActual = cargaService.buscarPorIdCarga((Integer)session.getAttribute("cargaActual"));

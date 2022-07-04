@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import edu.mx.utdelacosta.model.Asesoria;
-import edu.mx.utdelacosta.model.dto.AsesoriaDTO;
+import edu.mx.utdelacosta.model.dtoreport.AsesoriaDTO;
 import edu.mx.utdelacosta.repository.AsesoriaRepository;
 import edu.mx.utdelacosta.service.IAsesoriaService;
 

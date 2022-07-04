@@ -29,5 +29,10 @@ public class DosificacionComentarioServiceJpa implements IDosificacionComentario
 	public void guardar(DosificacionComentario dosificacionComentario) {
 		dosiComenRepo.save(dosificacionComentario);
 	}
+	
+	@Override
+	public Integer contarPorProfesorYPeriodo(Integer idProfesor, Integer idPeriodo) {
+		return dosiComenRepo.countByProfesorAndPeriodo(idPeriodo, idProfesor);
+	}
 
 }

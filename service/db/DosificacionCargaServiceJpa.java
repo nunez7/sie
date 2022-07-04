@@ -31,5 +31,10 @@ public class DosificacionCargaServiceJpa implements IDosificacionCargaService{
 	public List<DosificacionCarga> buscarPorCargaHoraria(CargaHoraria cargaHoraria) {
 		return dosiCargaRepository.findByCargaHoraria(cargaHoraria);
 	}
+	
+	@Override
+	public Integer contarNoEntregadas(Integer idProfesor, Integer idPeriodo) {
+		return dosiCargaRepository.countNoEntregadas(idProfesor, idPeriodo);
+	}
 
 }
