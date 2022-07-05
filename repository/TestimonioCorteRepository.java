@@ -22,4 +22,9 @@ public interface TestimonioCorteRepository extends CrudRepository<TestimonioCort
 			+ "INNER JOIN grupos g ON g.id=ch.id_grupo "
 			+ "WHERE tc.sin_derecho=true AND ch.activo='True' AND g.id_carrera=:idCarrera AND tc.id_corte_evaluativo=:idCorteEvaluativo ", nativeQuery = true)
 	Integer countAlumnosSDByCarrera(@Param("idCarrera") Integer idCarrera, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
+	
+	@Query(value = "SELECT CAST(sin_derecho AS INT) "
+			+ "FROM testimonio_corte tc "
+			+ "WHERE id_alumno=:idAlumno AND id_carga_horaria=:idCargaHoraria AND id_corte_evaluativo=:idCorteEvaluativo", nativeQuery = true)
+	Integer checkSDByAlumnoAndCargaHorariaAndCorteEvaluativo(@Param("idAlumno") Integer idAlumno, @Param("idCargaHoraria") Integer idCargaHoraria, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
 }

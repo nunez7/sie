@@ -14,6 +14,11 @@ public interface CarrerasRepository extends JpaRepository<Carrera, Integer>{
 			+ "ORDER BY nombre ", nativeQuery = true)
 	List<Carrera> findAllExceptEnglishOrderByNombre();
 	
+	@Query(value = "SELECT * FROM carreras "
+			+ "WHERE id NOT IN(26, 14) AND id_nivel_estudio = 1 "
+			+ "ORDER BY nombre ", nativeQuery = true)
+	List<Carrera> findAllTSUExceptEnglishOrderByNombre();
+	
 	@Query(value = "SELECT * FROM carreras c "
 			+ "INNER JOIN persona_carrera pc on c.id = pc.id_carrera "
 			+ "WHERE pc.id_persona = :idPersona ORDER BY c.nombre " , nativeQuery = true)

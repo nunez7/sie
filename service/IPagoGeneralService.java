@@ -41,4 +41,6 @@ public interface IPagoGeneralService {
 	
 	//lista de pagos para reporte detallado con fechas de inicio, fin y todos los cajeros
 	List<PagoGeneral> buscarPorFechaInicioYFechaFinYTodosCajeros(Date fechaInicio, Date fechaFin);
+
+	Integer validarPagoExamenAdmision(Integer idPersona);
 }

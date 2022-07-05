@@ -7,4 +7,5 @@ public interface ITestimonioCorteService {
 	void guardar (TestimonioCorte testimonioCorte);
 	Integer contarAlumnoSD(Integer idCargaHoraria, Integer idCorteEvaluativo);
 	Integer countAlumnosSDByCarrera(Integer idCarrera, Integer idCorteEvaluativo);
+	Integer validarSDPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria, Integer idCorteEvaluativo);
 }

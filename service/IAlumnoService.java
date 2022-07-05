@@ -7,6 +7,7 @@ import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoRegularDTO;
+import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.model.dtoreport.ProspectoEscolaresDTO;
 
 public interface IAlumnoService {
@@ -65,4 +66,11 @@ public interface IAlumnoService {
 	List<Alumno> buscarPorNombreOMatricula(String nombre);
 	
 	List<Alumno> buscarTodos();
+
+	Integer contarAlumnosRegularesPorGrupo(Integer idGrupo);
+	
+	// busca prospectos activos --modulo de captacion de prospectos
+	List<ProspectoDTO> buscarProspectosActivos();
+	
+	List<Alumno> buscarProspectosAceptados(Integer idCarrera, Integer idPeriodo);
 }

@@ -94,4 +94,14 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 			+ "ORDER BY id_grupo DESC LIMIT 2", nativeQuery = true)
 	List<Grupo> findByAlumnoPenultimoGrupo(@Param("alumno") Integer idAlumno);
 	
+	@Query(value = "SELECT g.* "
+			+ "FROM grupos g "
+			+ "WHERE g.id_carrera = :idCarrera AND g.id_periodo = :idPeriodo "
+			+ "AND g.id_cuatrimestre = 1 AND g.activo = 'True' "
+			+ "AND g.capacidad_maxima > (SELECT count(ag.*) "
+			+ "FROM alumnos_grupos ag "
+			+ "INNER JOIN grupos g2 on ag.id_grupo=g2.id "
+			+ "WHERE g2.id=g.id) ORDER BY g.id LIMIT 1 ", nativeQuery = true)
+	Grupo findLastEmptyGrupo(@Param("idPeriodo") Integer idPeriodo, @Param("idCarrera") Integer idCarrera);
+	
 }

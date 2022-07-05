@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 import edu.mx.utdelacosta.model.Sesion;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.service.IDosificacionCargaService;
+import edu.mx.utdelacosta.service.IDosificacionComentarioService;
 import edu.mx.utdelacosta.service.IModuloService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.ISesionesService;
@@ -43,6 +45,12 @@ public class HomeController {
 	
 	@Autowired
 	private IPeriodosService periodosService;
+	
+	@Autowired
+	private IDosificacionComentarioService dosiComentaService;
+	
+	@Autowired
+	private IDosificacionCargaService dosiCargaService;
 
 	@GetMapping("/index")
 	public String mostrarHome(Model model, HttpSession session) {
@@ -100,6 +108,8 @@ public class HomeController {
 		}
 		usuario = (Usuario) session.getAttribute("usuario");
 		int rol = usuario.getRoles().get(0).getId();
+		model.addAttribute("observacionesP", dosiComentaService.contarPorProfesorYPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()));
+		model.addAttribute("dosificacionesP", dosiCargaService.contarNoEntregadas(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()));
 		model.addAttribute("modulos", modulosService.buscarModulosPorRol(rol));
 		model.addAttribute("periodos", periodosService.buscarTodos());
 	}
