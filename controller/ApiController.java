@@ -202,7 +202,7 @@ public class ApiController {
 		datosA.setDiscapacitado(datos.getDiscapacitado());
 		datosA.setTipoDiscapacidad(datos.getTipoDiscapacidad());
 		datosA.setIndigena(datos.getIndigena());
-		datosA.setDialecto(datos.getDialecto()!=null ? datos.getDialecto() : false);		
+		datosA.setDialecto(datos.getDialecto()!=null ? datos.getDialecto() : false);	
 		datosA.setTipoBeca(datos.getTipoBeca());
 		datosA.setPromocion(datos.getPromocion());
 		datosA.setAlumno(alumno);
@@ -306,13 +306,12 @@ public class ApiController {
 						+ "<a style ='color:white' href='"+url+"/login' class='btn' target='_blank'>Link de acceso a sistema</a><br>"
 						+ "NOTA: En el documento adjunto encontrarás tu ficha para el depósito bancario.");
 		mail.setVariables(variables);
-		try {
+		try {			
 			emailService.sendEmailWithFichaPago(mail, pdfname);
+			return "ok";
 		} catch (MessagingException | IOException e) {
-			System.out.println("Error "+e);
+			return "error-"+e.getLocalizedMessage();
 		}
-		
-		return "ok";
 	}
 	
 	@PostMapping("/verificar-email")

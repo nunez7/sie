@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import edu.mx.utdelacosta.model.Asesoria;
-import edu.mx.utdelacosta.model.dto.AsesoriaDTO;
+import edu.mx.utdelacosta.model.dtoreport.AsesoriaDTO;
 import edu.mx.utdelacosta.repository.AsesoriaRepository;
 import edu.mx.utdelacosta.service.IAsesoriaService;
 
@@ -18,19 +18,19 @@ public class AsesoriaServiceJpa implements IAsesoriaService{
 	
 	@Override
 	public void guardar(Asesoria asesoria) {
-	asesoriaRepository.save(asesoria);
-		
+		asesoriaRepository.save(asesoria);
 	}
 
 	@Override
-	public List<AsesoriaDTO> buscarPorIdGrupo(Integer idGrupo) {
-		return asesoriaRepository.findByIdGrupo(idGrupo);
-	}
-
-	@Override
-	public List<AsesoriaDTO> buscarPorPersonaCarrera(Integer idPersona) {
+	public List<AsesoriaDTO> buscarPorIdGrupoYPeriodo(Integer idGrupo, Integer idPeriodo) {
 		// TODO Auto-generated method stub
-		return asesoriaRepository.findByPersonaCarrera(idPersona);
+		return asesoriaRepository.findByIdGrupo(idGrupo, idPeriodo);
+	}
+
+	@Override
+	public List<AsesoriaDTO> buscarPorPersonaCarreraAndPeriodo(Integer idPersona, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return asesoriaRepository.findByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
 	}
 
 }

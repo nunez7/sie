@@ -200,6 +200,7 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	@Override
 	public Integer contarAlumnosRegularesPorGrupo(Integer idGrupo) {
 		return alumnosRepo.countAlumnosRegularesByGrupo(idGrupo);
+	}
 	
 	@Override
 	public List<ProspectoDTO> buscarProspectosActivos() {

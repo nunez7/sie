@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.service.db;
 
+import java.util.Date;
 import java.util.List;
 
 import java.util.Optional;
@@ -40,6 +41,16 @@ public class PeriodosServiceJpa implements IPeriodosService{
 	public void guardar(Periodo periodo) {
 		// TODO Auto-generated method stub
 		periodosRepository.save(periodo);
+	}
+
+	@Override
+	public List<Date> buscarDiasPorFechaInicioYFechafin(String fechaInicio, String fechaFin) {
+		return periodosRepository.findDiasByFechaInicioAndFechafin(fechaInicio, fechaFin);
+	}
+
+	@Override
+	public Periodo buscarUltimo() {
+		return periodosRepository.findTopByOrderByIdDesc();
 	}
 	
 

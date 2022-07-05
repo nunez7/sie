@@ -1,7 +1,6 @@
 package edu.mx.utdelacosta.controller;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -121,7 +120,6 @@ public class MecanismoInstrumentoController {
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		List<Instrumento> instrumentos = instrumentoService.buscarTodos();
 		List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(carga.getGrupo().getCarrera(),periodo);
-		
 		List<Integer> totales = new ArrayList<>();
 		for (CorteEvaluativo corte : cortes) {
 			totales.add(mecanismoService.sumaPonderacionPorIdCargaHorariaEIdCorteEvaluativo(cveCarga, corte.getId()));
@@ -374,7 +372,7 @@ public class MecanismoInstrumentoController {
 		if (idInstrumento != null) {
 			mecanismo = mecanismoService.buscarPorIdYActivo(idInstrumento, true);
 			SubirArchivo.borrarArchivo(rutaDocs + "/profesor/instrumento/" + mecanismo.getArchivo());
-			mecanismo.setArchivo((null));
+			mecanismo.setArchivo(null);
 			mecanismoService.guardar(mecanismo);
 		}
 		return "ok";

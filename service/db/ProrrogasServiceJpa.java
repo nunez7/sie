@@ -89,7 +89,8 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 	@Override
 	public Integer contarProrrogasPendientesPorPersonaYPeriodo(Integer idPersona, Integer idPeriodo) {
 		return prorrogaRepository.countPendientesByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
-
+	}
+	
 	public Prorroga buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(CargaHoraria cargaHoraria,
 			TipoProrroga tipoProrroga, CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada) {
 		return prorrogaRepository.findByCargaHorariaAndTipoProrrogaAndCorteEvaluativoAndActivoAndAceptada(cargaHoraria, tipoProrroga, corteEvaluativo, activo, aceptada);

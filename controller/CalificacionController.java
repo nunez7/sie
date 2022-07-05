@@ -118,16 +118,15 @@ public class CalificacionController {
 
 	@Autowired
 	private ITestimonioService testimonioService;
-	
-	@Autowired
-	private ITestimonioCorteService testimonioCorteService;
-	
+		
 	@Autowired
 	private ActualizarCalificacion actualizarCalificacion;
 	
 	@Autowired
 	private ActualizarRemedial actualizarRemedial;
 	
+	@Autowired
+	private ITestimonioCorteService testimonioCorteService;
 	
 
 	// metodo que devuelve la tabla de calificaciones e instrumentos de una materia
@@ -208,7 +207,8 @@ public class CalificacionController {
 		CorteEvaluativo corteActual = corteEvaluativoService.buscarPorId(idCorteEvaluativo);
 
 		if (corteActual.getFechaFin().before(fechaHoy)) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(new CargaHoraria(idCargaHoraria), new CorteEvaluativo(idCorteEvaluativo), new TipoProrroga(1), true);
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
+					new CargaHoraria(idCargaHoraria), new CorteEvaluativo(idCorteEvaluativo), new TipoProrroga(1), true);
 			if (prorroga != null) {
 				if (prorroga.getFechaLimite().before(fechaHoy)) {
 					return "fechaLimit";
@@ -223,6 +223,7 @@ public class CalificacionController {
 		RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 				new Alumno(idAlumno), new CargaHoraria(idCargaHoraria), new Remedial(1),
 				new CorteEvaluativo(idCorteEvaluativo));
+		
 		if (remedial != null) {
 			return "forbidden";
 		}
@@ -232,8 +233,6 @@ public class CalificacionController {
 		if (ponderacion < 0 || ponderacion > 10) {
 			return "plimit";
 		}
-		
-		
 
 		// se obtiene el mecanismo del alumno
 		MecanismoInstrumento mecanismo = mecanismoService.buscarPorIdYActivo(idMecanismo, true); //
@@ -243,7 +242,7 @@ public class CalificacionController {
 		if (cali.equals("noEdit") || cali.equals("SD")) {
 			return cali;
 		}
-		
+
 		// se actualiza la calificacion del corte y se obtiene la calificacion total del
 		// corte
 		float calificacionTotal = actualizarCalificacion.actualizaCalificacionCorte(idAlumno, idCargaHoraria,
@@ -270,7 +269,8 @@ public class CalificacionController {
 
 		if (session.getAttribute("grupoActual") != null) {
 			grupoActual = (Integer) session.getAttribute("grupoActual");
-			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(grupoActual,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
+			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYPeriodo(grupoActual,
+					usuario.getPreferencias().getIdPeriodo());
 
 			if (session.getAttribute("cargaActual") != null) {
 				int cargaActual = (Integer) session.getAttribute("cargaActual");
@@ -294,7 +294,7 @@ public class CalificacionController {
 							for (MecanismoInstrumento meca : mecanismoInstrumento) {
 								CalificacionInstrumentoDTO cali = calificacionService.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual, parcialActual, meca.getInstrumento().getId());
 								mecanismos.add(cali);
-							}		
+							}
 							
 							calificacion.setMecanismos(mecanismos);
 							calificacion.setCalificacionOrdinaria(calificacionCorteService
@@ -331,7 +331,6 @@ public class CalificacionController {
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
 			model.addAttribute("cargas", cargasHorarias);
 		}
-		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);
 		return "profesor/reporteCalificaciones";
 	}
@@ -346,7 +345,8 @@ public class CalificacionController {
 
 		if (session.getAttribute("grupoActual") != null) {
 			grupoActual = (Integer) session.getAttribute("grupoActual");
-			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(grupoActual,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
+			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYPeriodo(grupoActual,
+					usuario.getPreferencias().getIdPeriodo());
 
 			if (session.getAttribute("cargaActual") != null && (Integer) session.getAttribute("cargaActual") > 0) {
 				int cargaActual = (Integer) session.getAttribute("cargaActual");
@@ -401,7 +401,6 @@ public class CalificacionController {
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
 			model.addAttribute("cargas", cargasHorarias);
 		}
-		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);
 		return "profesor/reporteSeguimiento";
 	}
@@ -477,7 +476,9 @@ public class CalificacionController {
 		List<Testimonio> testimonios = testimonioService.buscarTodosPorIntegradora(carga.getMateria().getIntegradora());
 		
 		List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(carga.getGrupo().getCarrera(), carga.getPeriodo());
-				
+		
+		//List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(carga.getGrupo().getCarrera(), periodo);
+		
 		for (CorteEvaluativo corte : cortes) {
 			RemedialAlumno remedial =  remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(alumno,carga, new Remedial(1), corte);
 			if (remedial!=null) {				

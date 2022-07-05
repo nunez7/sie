@@ -96,9 +96,9 @@ public class AsistenciaController {
 	
 	@Autowired
 	private IProrrogaService prorrogaService;
-
-	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 	
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
+
 	@PostMapping(path = "/guardar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String guardarAsistencia(@RequestBody Map<String, String> obj, Model model, HttpSession session) {
@@ -106,6 +106,7 @@ public class AsistenciaController {
 		// --------------- PROCESO DE OBTENCION DE DATOS ---------------
 		Integer grupo = Integer.parseInt(obj.get("idGrupo"));
 		Integer idCargaHoraria = Integer.parseInt(obj.get("idCargaHoraria"));
+		CargaHoraria carga = cargaService.buscarPorIdCarga(idCargaHoraria);
 		Date fecha = java.sql.Date.valueOf(obj.get("fecha"));
 		Date fechaHoy = new Date();
 		String valor = null;
@@ -132,7 +133,7 @@ public class AsistenciaController {
 				return "inv";
 			}
 		}
-
+		
 		corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
 				fecha, periodo.getId(), carrera.getId());
 		if (corte==null) {
@@ -141,8 +142,8 @@ public class AsistenciaController {
 
 		// CorteEvaluativo corte = (CorteEvaluativo)session.getAttribute("corte");
 		Integer noAsistencias = asistenciaService.contarPorFechaInicioYFechaFindYCargaHoraria(corte.getFechaInicio(),
-				corte.getFechaFin(), idCargaHoraria);
-		CargaHoraria cargas = new CargaHoraria(idCargaHoraria);
+				corte.getFechaFin(), carga.getId());
+		//CargaHoraria cargas = new CargaHoraria(idCargaHoraria);
 
 		// --------------- PROCESO DE GUARDADO DE ASISTENCIAS ---------------
 		for (Alumno alumno : alumnos) {
@@ -168,23 +169,24 @@ public class AsistenciaController {
 
 				// *************** PROCESO DE CALCULO DEL ESTADO DEL ALUMNO ***************
 				List<Asistencia> faltas = asistenciaService.buscarFaltasPorIdAlumnoYIdCargaHoraria(alumno.getId(),
-						idCargaHoraria, corte.getFechaInicio(), corte.getFechaAsistencia());
+						carga.getId(), corte.getFechaInicio(), corte.getFechaAsistencia());
 				List<Asistencia> retardos = asistenciaService.buscarRetardosPorIdAlumnoYIdCargaHoraria(alumno.getId(),
-						idCargaHoraria);
+						carga.getId());
 				Integer noFaltas = faltas.size() + (retardos.size()/3);
 				TestimonioCorte testimonio = testimonioCorteService.buscarPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(),
-						cargas.getId(), corte.getId());
+						carga.getId(), corte.getId());
 
 				boolean SD = false;
 				
 				if (noFaltas >= (asistenciasTotales * .15)) {
+//				if (noFaltas >= (Math.round(asistenciasTotales * .15))) {
 					SD = true;
 				}
 
 				if (testimonio == null) {
 					testimonio = new TestimonioCorte();
 					testimonio.setAlumno(alumno.getId());
-					testimonio.setCargaHoraria(cargas.getId());
+					testimonio.setCargaHoraria(carga.getId());
 					testimonio.setCorteEvaluativo(corte.getId());
 					testimonio.setEditable(true);
 					testimonio.setFechaUltimaEdicion(fechaHoy);
@@ -202,7 +204,7 @@ public class AsistenciaController {
 					testimonioCorteService.guardar(testimonio);
 				}
 				
-				actualizaCalificacion.actualizaTestimonioCalificacion(alumno.getId(), idCargaHoraria, corte.getId(), SD);
+				actualizaCalificacion.actualizaTestimonioCalificacion(alumno.getId(), carga.getId(), corte.getId(), SD);
 				
 			}
 
@@ -229,7 +231,8 @@ public class AsistenciaController {
 		//se compara que la fecha pertenezca a algun corte
 		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
 				fechaSeleccionada, usuario.getPreferencias().getIdPeriodo(), usuario.getPreferencias().getIdCarrera());
-		
+		//CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
+		//		fechaSeleccionada, new Periodo(usuario.getPreferencias().getIdPeriodo()), new Carrera(usuario.getPreferencias().getIdCarrera()));
 		if (corte==null) {
 		}
 		
@@ -305,7 +308,7 @@ public class AsistenciaController {
 			
 			//se obtienen las cargas (materias) del maestro
 			List<CargaHoraria> cargasHorarias = null;	
-			cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(cveGrupo,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
+			cargasHorarias = cargaService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 			List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cveGrupo);
 			
 			if (session.getAttribute("cargaActual")!=null) {
@@ -385,8 +388,8 @@ public class AsistenciaController {
 		}
 		
 		// lista de cortesEvalutivos
-		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos); // retorna los grupos de nivel TSU
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "profesor/reporteAsistencias";
 	}
 	
@@ -490,6 +493,7 @@ public class AsistenciaController {
 	                        mesDTO.setDias(diasDto);                          
 	                    } 
 					}	
+					
 					model.addAttribute("corte", cortesEvaluativosDTO);
 				}
 			}

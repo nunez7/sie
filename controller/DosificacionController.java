@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -106,7 +105,7 @@ public class DosificacionController {
 
 	@Autowired
 	private IDosificacionValida dosificacionValidaService;
-
+	
 	@Autowired
 	private IProrrogaService prorrogaService;
 
@@ -163,7 +162,6 @@ public class DosificacionController {
 		Persona profesor = personaService.buscarPorId(Integer.parseInt(obj.get("idProfesor")));
 		Dosificacion dosificacion = dosificacionService.buscarPorIdCargaHorariaEIdCorteEvaluativo(carga.getId(),
 				corte.getId());
-		Integer idPersona = (Integer) session.getAttribute("cvePersona");
 		// si la dosificacion es nueva
 		if (dosificacion == null) {
 
@@ -187,7 +185,6 @@ public class DosificacionController {
 
 			// si la dosificacion ya esta validada
 			if (dosificacion.getValidaDirector() == true && AvanceYObservaciones != null) {
-				dosificacion.setAvanceObservaciones(AvanceYObservaciones);
 				dosificacion.setTerminada(true);
 				dosificacionService.guardar(dosificacion);
 				return "up";
@@ -224,6 +221,7 @@ public class DosificacionController {
 		Mail mail = new Mail();
 		String de = correo;
 		String para = carga.getGrupo().getCarrera().getEmailCarrera();
+		//String para = "rhekhienth.reality@gmail.com";
 		mail.setDe(de);
 		mail.setPara(new String[] { para });
 
@@ -370,30 +368,10 @@ public class DosificacionController {
 				meca.setPonderacion(mecanismo.getPonderacion());
 				mecanismoService.guardar(meca);
 			}
-			
-			List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHoraria(cargaCompartida);
-			for (CalendarioEvaluacion calendario : calendarios) {
-				CalendarioEvaluacion calen = new CalendarioEvaluacion();
-				calen.setCargaHoraria(cargaHoraria);
-				calen.setCorteEvaluativo(calendario.getCorteEvaluativo());
-				calen.setUnidadTematica(calendario.getUnidadTematica());
-				calendarioService.guarda(calen);
-			}
-			
-			List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCargaCompartida, true);
-			for (MecanismoInstrumento mecanismo : mecanismos) {
-				MecanismoInstrumento meca = new MecanismoInstrumento();
-				meca.setActivo(true);
-				meca.setArchivo(mecanismo.getArchivo());
-				meca.setIdCargaHoraria(idCargaHoraria);
-				meca.setIdCorteEvaluativo(mecanismo.getIdCorteEvaluativo());
-				meca.setInstrumento(mecanismo.getInstrumento());
-				meca.setPonderacion(mecanismo.getPonderacion());
-				mecanismoService.guardar(meca);
-			}
 		}
 		return "ok";
 	}
+
 
 	@PostMapping(path = "/validar-comentario", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
@@ -571,11 +549,10 @@ public class DosificacionController {
 		dosificacionComentario.setSolucionado(false);
 		dosificacionComentario.setComentario(comentario);
 		dosificacionComentarioService.guardar(dosificacionComentario);
-		
 		// se envia correo al profesor
 		Persona profesor = personaService.buscarPorId(idProfesor);
 		CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(idCargaHoraria);
-		
+
 		Mail mail = new Mail();
 		String de = correo;
 		// se deberá enviar el correo al profesor
@@ -590,13 +567,10 @@ public class DosificacionController {
 		variables.put("cuerpoCorreo", "Tu dosificación de la materia: " + cargaHoraria.getMateria().getNombre()
 				+ " fue rechazada por el siguiente motivo: " + comentario + ".");
 		mail.setVariables(variables);
-
 		try {
 			emailService.sendEmail(mail);
 		} catch (MessagingException | IOException e) {
-			System.out.println("Error " + e);
 		}
-		 
 
 		return "ok";
 	}
@@ -623,24 +597,22 @@ public class DosificacionController {
 		dosificacionValidaService.guardar(dosificacionValida);
 		// se envia correo al profesor
 
-		Mail mail = new Mail(); String de = correo; //se deberá enviar el correo al profesor 
-		String para = profesor.getEmail(); 
-		mail.setDe(de); mail.setPara(new String[] {para}); 
-		//Email title 
+		Mail mail = new Mail();
+		String de = correo; // se deberá enviar el correo al profesor
+		String para = profesor.getEmail();
+		mail.setDe(de);
+		mail.setPara(new String[] { para }); // Email title
 		mail.setTitulo("¡Dosificación validada!");
-		//Variables a plantilla 
+		// Variables a plantilla
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("titulo", "Dosificación validada");
-		variables.put("cuerpoCorreo", "Tu dosificación de la materia: " +
-		cargaHoraria.getMateria().getNombre() + " fue validada.");
-		mail.setVariables(variables); 
-		
-		try { 
+		variables.put("cuerpoCorreo",
+				"Tu dosificación de la materia: " + cargaHoraria.getMateria().getNombre() + " fue validada.");
+		mail.setVariables(variables);
+		try {
 			emailService.sendEmail(mail);
 		} catch (MessagingException | IOException e) {
-		System.out.println("Error "+e); 
 		}
-		
 
 		return "ok";
 	}

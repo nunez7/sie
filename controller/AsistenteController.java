@@ -163,7 +163,7 @@ public class AsistenteController {
 	
 	@Autowired
 	private IRemedialAlumnoService remedialAlumnoService;
-	
+
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 	
 	@GetMapping("/carga")
@@ -451,7 +451,7 @@ public class AsistenteController {
 			/////****** proceso de creacion de horario
 			List<Dia> dias = diaService.buscarDias();
 			model.addAttribute("dias", dias);				
-			DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss"); 
+			DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");  
 			//Se extrae una lista de las horas que ahi asociadas a cada hora de calse con un disting por hora inicio y hora fin				
 			List<Horario> horas = horarioService.buscarPorGrupoDistinctPorHoraInicio(cveGrupo);
 			model.addAttribute("horas", horas);
@@ -549,13 +549,14 @@ public class AsistenteController {
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(persona.getId());
 		int cveCarrera = 0;
 		int cve = 0;
-
+	
 		try {
 			cve = (int) session.getAttribute("cveCarrera");
 		} catch (Exception e) {
-
+			
 		}
-		if(session.getAttribute("cveCarrera") != null && cve > 0) {
+		
+		if(session.getAttribute("cveCarrera") != null && cve>0) {
 			cveCarrera = (Integer) session.getAttribute("cveCarrera");
 			model.addAttribute("cveCarrera", cveCarrera);
 			int cveGrupo = 0;
@@ -702,8 +703,8 @@ public class AsistenteController {
 				}
 			}
 		}
-		model.addAttribute("carreras", carreras);
 		model.addAttribute("nombreUT", NOMBRE_UT);
+		model.addAttribute("carreras", carreras);
 		return "asistente/reporteCalificacionesGenerales";
 	}
 	
@@ -815,6 +816,7 @@ public class AsistenteController {
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("profesores", profesores);
 		model.addAttribute("materias", materias);
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteEvaluacionDocente";
 	}
 	
@@ -898,7 +900,8 @@ public class AsistenteController {
 		model.addAttribute("aluEncuestados", aluEncuestados);			
 		model.addAttribute("cveCarrera", cveCarrera);
 		model.addAttribute("cveGrupo", cveGrupo);		
-		model.addAttribute("evaluacion", evaluacion);			
+		model.addAttribute("evaluacion", evaluacion);		
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteEvaluacionTutor";
 	}
 	
