@@ -19,10 +19,16 @@ public interface TutoriaIndividualRepository extends CrudRepository<TutoriaIndiv
 	
 	List<TutoriaIndividual> findByAlumnoOrderByFechaRegistroDesc(Alumno alumno);
 	
+	List<TutoriaIndividual> findByAlumnoAndValidadaOrderByFechaRegistroDesc(Alumno alumno, Boolean validada);
+	
 	TutoriaIndividual findTopByOrderByIdDesc();
 	
 	@Query(value = "SELECT * FROM tutoria_individual where id_grupo =:idGrupo And id_alumno=:idAlumno "
 			+ "AND fecha_tutoria >=:fechaInicio AND fecha_tutoria <=:fechaFin", nativeQuery = true)
 	List<TutoriaIndividual> findByGrupoAndPersonaAndFechaTutoria(@Param("idGrupo") Integer idGrupo, @Param("idAlumno") Integer idAlumno, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
-			
+	
+	@Query(value = "SELECT * FROM tutoria_individual where id_grupo =:idGrupo "
+			+ "AND fecha_tutoria >=:fechaInicio AND fecha_tutoria <=:fechaFin", nativeQuery = true)
+	List<TutoriaIndividual> findByGrupoAndFechaTutoria(@Param("idGrupo") Integer idGrupo, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
+	
 }

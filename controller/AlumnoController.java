@@ -58,6 +58,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.PersonaDocumento;
 import edu.mx.utdelacosta.model.RemedialAlumno;
+import edu.mx.utdelacosta.model.TutoriaIndividual;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
 import edu.mx.utdelacosta.model.dto.CorteEvaluativoDTO;
@@ -86,6 +87,7 @@ import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaDocumentoService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
+import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.util.CodificarTexto;
 import edu.mx.utdelacosta.util.NumberToLetterConverter;
 import edu.mx.utdelacosta.util.ReferenciaFondos;
@@ -169,6 +171,9 @@ public class AlumnoController {
 	@Autowired
 	private EmailSenderService emailService;
 	
+	@Autowired
+	private ITutoriaIndividualService tutoriaIndService;
+	
 	@PreAuthorize("hasAnyAuthority('Administrador', 'Servicios Escolares','Informatica', 'Rector')")
 	@GetMapping("/search/{id}")
 	public ResponseEntity<AlumnoDTO> leer(@PathVariable("id") int id) {
@@ -203,7 +208,7 @@ public class AlumnoController {
 	
 	@GetMapping("/asistencias")
 	public String asistencias(Model model, HttpSession session, Authentication authentication) {
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Carga el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -218,9 +223,9 @@ public class AlumnoController {
 			List<Grupo> grupos = serviceGrupo.buscarTodosDeAlumnosOrdenPorPeriodoDesc(alumno.getId());
 			model.addAttribute("grupos", grupos);
 			
-			// Extrae el id del grupo a partir del cveGrupo guardado en cesion
+			// Extrae él id del grupo a partir del cveGrupo guardado en sesión
 			Integer cveGrupo = (Integer) session.getAttribute("cveGrupo");
-			// Envía el id del grupo para validar si ya se a seleccionado un grupo
+			// Envía el id del grupo para validar si ya se ha seleccionado un grupo
 			model.addAttribute("cveGrupo", cveGrupo);
 			
 			//----------------			
@@ -259,10 +264,10 @@ public class AlumnoController {
 					    fecha.set (Calendar.DAY_OF_MONTH, 1); // Establecido en el 1, la fecha actual es el primer día del mes 
 					    String primerDia = sdf.format(fecha.getTime());	
 					    
-					    //extraigo el primer dia del mes lo guardo como string y le doy formato de mes para el dto					    						
+					    // Se extrae el primer día del mes lo guardo como string y le doy formato de mes para el dto					    						
 						String mesLetra = sdfM.format(fecha.getTime());
 						
-					    // Obtener el último día del mes actual					     
+					    // Se obtiene el último día del mes actual			     
 					    fecha.set(Calendar.DAY_OF_MONTH, fecha.getActualMaximum(Calendar.DAY_OF_MONTH));  
 					    String ultimoDia = sdf.format(fecha.getTime());
 					    
@@ -305,7 +310,7 @@ public class AlumnoController {
 				}
 				//----------------
 				
-				// Se extraen la carga horaria a partir del grupo seleccinado				
+				// Se extraen la carga horaria a partir del grupo seleccionado			
 				List<CargaHoraria> cargasHor = serviceCargaHor.buscarPorGrupo(grupo);				
 
 				List<Asistencia> asistencias = serviceAsistencia.buscarPorGrupoYalumno(cveGrupo, alumno.getId());
@@ -324,7 +329,7 @@ public class AlumnoController {
 	public String AprobarInstrumento(@PathVariable(name = "carga", required = true) String idCarga,
 	Model model, HttpSession session) {
 		Integer cargaID = Integer.parseInt(idCarga);
-		// carga de los grupos asociados al usuario(alumno).
+		// Carga de los grupos asociados al usuario(alumno).
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		
@@ -336,14 +341,14 @@ public class AlumnoController {
 		
 		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
 
-		// extraer los obgetos cargaHoraria del id recividos
+		// Se busca la carga Horaria del correspondiente al ID recibido
 		CargaHoraria cargaHoraria = serviceCargaHor.buscarPorIdCarga(cargaID);
 
-		// extrae los datos del mecanismo alumno para validar el mecanismo de evaluasion
-		// ya a sido aseptado por el alumno
+		// Se extrae los datos del mecanismo alumno para validar el mecanismo de evaluación
+		// ya ha sido aceptado por el alumno
 		MecanismoAlumno mecanismo = serviceMecaAlum.buscarPorAlumnoYCargaHoraria(alumno, cargaHoraria);
 
-		// Valida si validar mecanismo ya existe para aseptarlo
+		// Válida si validar mecanismo ya existe para aceptarlo
 		if (mecanismo != null) {
 			boolean acepto = true;
 			Date fecha = new Date();
@@ -355,18 +360,18 @@ public class AlumnoController {
 			List<CalificacionCorte> calificacionesCorte = serviceCalCorte.buscarPorCargaYAlumno(cargaHoraria, alumno);
 			model.addAttribute("CalCortes", calificacionesCorte);
 			
-			// extrae las calificaciones por intrumento
+			// extrae las calificaciones por instrumento
 			List<Calificacion> calInstrumento = serviceCalificacion.buscarPorAlumnoYCargaH(alumno.getId(), cargaID);
 			model.addAttribute("calInstru", calInstrumento);
 					
-			// Se extraen el grupo a partir del grupo cargado en cesion
+			// Se extraen el grupo a partir del grupo cargado en sesión
 			Integer cveGrupo = (Integer) session.getAttribute("cveGrupo");
 			Grupo grupo = serviceGrupo.buscarPorId(cveGrupo);
 
-			// Lista de cortes asociados a la carga horaria seleccinada y a la carrera
+			// Lista de cortes asociados a la carga horaria seleccionada y a la carrera
 			List<CorteEvaluativo> cortes = serviceCorte.buscarPorPeridoYCarreraFechaInicioAsc(cargaHoraria.getPeriodo(),grupo.getCarrera());
 			
-			//defincion del nivel de cada corte evaluativo		
+			//Definición del nivel de cada corte evaluativo		
 			String nivel1 = "";
 			String nivel2 = "";
 			for(CorteEvaluativo corte : cortes) {			
@@ -402,10 +407,10 @@ public class AlumnoController {
 	@GetMapping(path = "/cargar-calificacion-corte/{carga}")
 	public String cargarCalificacionCorte(@PathVariable(name = "carga", required = true) String idCarga,
 	Model model, HttpSession session) {
-		// Gurda los datos enviados de la vista en variables;
+		// Guarda los datos enviados de la vista en variable
 		Integer cargaID = Integer.parseInt(idCarga);
 		
-		// se genera el obgeto usuario a partir del usuario cargado en cesion.
+		// Se genera el objeto usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		
@@ -417,11 +422,11 @@ public class AlumnoController {
 		
 		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
 
-		// extraer la carga Horaria apartir del id recivido
+		// Extrae la carga Horaria a partir del id recibido
 		CargaHoraria cargaHoraria = serviceCargaHor.buscarPorIdCarga(cargaID);		
 
-		// extrae los datos del mecanismo alumno para validar el mecanismo de evaluasion
-		// ya a sido aseptado por el alumno
+		// Extrae los datos del mecanismo alumno para validar el mecanismo de evaluación
+		// ya ha sido aceptado por el alumno
 		MecanismoAlumno validarMecanismo = serviceMecaAlum.buscarPorAlumnoYCargaHoraria(alumno, cargaHoraria);
 
 		// Valida si el mecanismo ya tiene un registro en "mecanismo alumno"
@@ -439,12 +444,12 @@ public class AlumnoController {
 			serviceMecaAlum.guardar(validarMecanismo);
 		}
 
-		// valida si el mecanismo ya ha sido aseptado
+		// válida si el mecanismo ya ha sido aceptado
 		if (validarMecanismo.getAcepto() == true) {
 			// Carga las calificaciones de los dos cortes que puede haber por carga
 			List<CalificacionCorte> calificacionesCorte = serviceCalCorte.buscarPorCargaYAlumno(cargaHoraria, alumno);
 
-			// extrae las calificaciones por intrumento
+			// extrae las calificaciones por instrumento
 			List<Calificacion> calInstrumento = serviceCalificacion.buscarPorAlumnoYCargaH(alumno.getId(), cargaID);
 
 			model.addAttribute("calInstru", calInstrumento);
@@ -454,7 +459,7 @@ public class AlumnoController {
 			model.addAttribute("idCarga", cargaID);
 		}
 
-		// Se extrae el grupo cargado en cesion
+		// Se extrae el grupo cargado en sesión
 		Integer cveGrupo = (Integer) session.getAttribute("cveGrupo");
 		Grupo grupo = serviceGrupo.buscarPorId(cveGrupo);
 
@@ -494,7 +499,7 @@ public class AlumnoController {
 
 	@GetMapping("/calificaciones")
 	public String calificaciones(Model model, HttpSession session, Authentication authentication) {
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Carga el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		
@@ -510,12 +515,12 @@ public class AlumnoController {
 			List<Grupo> grupos = serviceGrupo.buscarTodosDeAlumnosOrdenPorPeriodoDesc(alumno.getId());
 			model.addAttribute("grupos", grupos);
 			
-			// Se extrae el id del grupo a partir del id del grupo guardado en cesion			
+			// Se extrae el id del grupo a partir del id del grupo guardado en sesión			
 			Integer cveGrupo = (Integer) session.getAttribute("cveGrupo");			
 			// Envía el id del grupo a la vista para validar si ya se a seleccionado un grupo
 			model.addAttribute("cveGrupo", cveGrupo);		
 			if (cveGrupo != null) {					
-				// Se extraen la carga horaria a partir del grupo seleccinado				
+				// Se extraen la carga horaria a partir del grupo seleccionado				
 				List<CargaHoraria> cargasHor = serviceCargaHor.buscarPorGrupo(new Grupo(cveGrupo));
 				model.addAttribute("cargasHor", cargasHor);			
 			}
@@ -527,7 +532,7 @@ public class AlumnoController {
 	@PatchMapping(path = "/enviar-documento", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseBody	
 	public String guardarDocumento(@RequestParam("documento") MultipartFile multiPart, @RequestParam("idDocumento") String idDocumento, HttpSession session) {				 
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Carga el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;		
 		Integer cveDocumento = Integer.parseInt(idDocumento);		
@@ -592,7 +597,7 @@ public class AlumnoController {
 					
 					String archivo = SubirArchivo.guardarArchivo(multiPart, ruta+"/alumnos/inscripcion/"+cvePersona+"-"+perDoc.getId());
 					if (archivo != null) {				
-						//actualizar la ruta del archivo y se canvia el estado en entregado
+						//Actualiza la ruta del archivo y se cambia el estado en entregado
 						perDoc.setUrlPdf(cvePersona+"-"+perDoc.getId()+archivo);
 						perDoc.setEntregado("Entregado");
 						servicePersonaDoc.guardar(perDoc);
@@ -604,7 +609,7 @@ public class AlumnoController {
 					SubirArchivo.borrarArchivo(ruta+"/alumnos/inscripcion/"+perDoc.getUrlPdf());
 					String archivo = SubirArchivo.guardarArchivo(multiPart, ruta+"/alumnos/inscripcion/"+cvePersona+"-"+perDoc.getId());
 					if (archivo != null) {				
-						//actualizar la ruta del archivo y se canvia el estado en entregado
+						//Actualiza la ruta del archivo y se cambia el estado en entregado
 						perDoc.setUrlPdf(cvePersona+"-"+perDoc.getId()+archivo);
 						perDoc.setEntregado("Entregado");
 						servicePersonaDoc.guardar(perDoc);
@@ -620,7 +625,7 @@ public class AlumnoController {
 		
 	@GetMapping("/documentacion")
 	public String documentacion(Model model, HttpSession session, Authentication authentication) {
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Carga el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		
@@ -634,13 +639,13 @@ public class AlumnoController {
 		
 		if (alumno != null) {
 			
-			//extrae los 3 docuemtos basicos asociados al alumno 1=acta, 2=CURP, 3=Certificado de bachillerato
+			//Extrae los 3 documentos básicos asociados al alumno 1=acta, 2=CURP, 3=Certificado de bachillerato
 			List<PersonaDocumento> documentos = servicePersonaDoc.buscarActaCurpCerbachiPorPersona(cvePersona);						
 			if (documentos == null || documentos.size() == 0) {	
 				model.addAttribute("estadoDocs", null);
 			}else{				
-				//Se generar una lista de los estados de los documentos para validar si todos estan validados
-				//y comprobar asi si tiene su expediente completo			
+				//Sé genera una lista de los estados de los documentos para validar si todos están validados
+				//y comprobar así si tiene su expediente completo			
 				List<Boolean> docValidado = new ArrayList<>();			
 				for (PersonaDocumento personaDocumento : documentos) {				
 					docValidado.add(personaDocumento.getValidado());
@@ -666,7 +671,7 @@ public class AlumnoController {
 
 	@GetMapping("/horarios")
 	public String horarios(Model model, HttpSession session, Authentication authentication) {
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Carga el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		
@@ -682,32 +687,32 @@ public class AlumnoController {
 			List<Grupo> grupos = serviceGrupo.buscarTodosDeAlumnosOrdenPorPeriodoDesc(alumno.getId());
 			model.addAttribute("grupos", grupos);
 		
-			// Extrae el id del grupo a partir del cveGrupo guardado en cesion
+			// Extrae el id del grupo a partir del cveGrupo guardado en sesión
 			Integer cveGrupo = (Integer) session.getAttribute("cveGrupo");
 			// Envía el id del grupo para validar si ya se a seleccionado un grupo
 			model.addAttribute("cveGrupo", cveGrupo);
 			
 			if (cveGrupo != null) {					
-				//se extrae la lista de dias guardados en la BD				
+				//Se extrae la lista de días guardados en la BD				
 				List<Dia> dias = serviceDia.buscarDias();				
 				model.addAttribute("dias", dias);			
 				
 				//formato de hora 				
 				DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss"); 
 				
-				//Se extrae una lista de las horas unicas de la lista de horas asociadas al grupo			
+				//Se extrae una lista de las horas únicas de la lista de horas asociadas al grupo		
 				List<Horario> horas = serviceHorario.buscarPorGrupoDistinctPorHoraInicio(cveGrupo);
 				model.addAttribute("horas", horas);
 				
-				//se crea una lista vacia para colocarle los datos de las horas de calse				
+				//Se crea una lista vacía para colocarle los datos de las horas de clase				
 				List<HorarioDTO> horasDto = new ArrayList<>();
 				
-				//crea el horario con las horarios vinculados al grupo				
+				//Crea el horario con el horario vinculado al grupo				
 				for (Horario hora : horas) {
 															
 					for (Dia dia : dias) {
 						String horaI = dateFormat.format(hora.getHoraInicio());				
-						//se genera el horario al compara la lista de horas unicas y la lista de dias 						
+						//Se genera el horario al comparar la lista de horas únicas y la lista de días 						
 						List<Horario> horario = serviceHorario.buscarPorHoraInicioDiaYGrupo(horaI, dia.getId(), cveGrupo);						
 						for(Horario hr : horario) {
 							HorarioDTO horaDto = new HorarioDTO();						
@@ -751,7 +756,7 @@ public class AlumnoController {
 		// Guarda los datos enviados de la vista en variables;
 		Integer grupoID = Integer.parseInt(idGrupo);
 		
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Carga el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		
@@ -763,7 +768,7 @@ public class AlumnoController {
 		
 		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
 		
-		//Extrae la lista de remediales del alumno por grupo 		
+		//Extrae la lista de remediarles del alumno por grupo	
 		List<RemedialAlumno> remediales = serviceRemAlum.buscarPorGrupoYAlumno(grupoID, alumno.getId());
 		model.addAttribute("remediales", remediales);
 		return "fragments/remediales-alumno :: remedialesAlumno";
@@ -771,7 +776,7 @@ public class AlumnoController {
 
 	@GetMapping("/informacionGeneral")
 	public String informacionGeneral(Model model, HttpSession session) {
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Carga el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -783,7 +788,7 @@ public class AlumnoController {
 		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
 
 		if (alumno != null) {
-			// Extrae el ultimo grupo del alumno y se envia al modelo de grupo
+			// Extrae el último grupo del alumno y se envía al modelo de grupo
 			Grupo ultimoGrupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());
 			
 			alumno.setUltimoGrupo(ultimoGrupo);
@@ -793,7 +798,7 @@ public class AlumnoController {
 			DecimalFormat df = new DecimalFormat("###.##");
 			
 			List<GrupoDTO> gruposDTO = new ArrayList<>();
-			// se Calcula el promedio de cada grupo
+			// Se calcula el promedio de cada grupo
 			for (Grupo grupo : grupos) {
 				
 				double promedio = serviceGrupo.obtenerPromedioAlumn(alumno.getId(), grupo.getId());				
@@ -809,15 +814,15 @@ public class AlumnoController {
 				
 			}
 			
-			//Validasion de los documentos del expediente alumno acta, curp y sertificado																
+			//Validación de los documentos del expediente alumno acta, CURP y certificado															
 			List<DocumentoDTO> docsExp = servicePersonaDoc.buscarActaCurpCerbachiPorPersonaParaDto(cvePersona);		
 			
-			// validasion del estado del los documentos			
+			// Validación del estado del los documentos			
 			List<Boolean> valDoc = new ArrayList<>();			
 			for(DocumentoDTO documentoDTO : docsExp){
 				valDoc.add(documentoDTO.getValidado());
 			}
-			//Validasion de los ducumentos del expediente  
+			//Validación de los documentos del expediente  
 			boolean estadoDocs = false;			
 			if(new HashSet<Boolean>(valDoc).size() <= 1) {
 				boolean validado = valDoc.get(0);
@@ -834,7 +839,7 @@ public class AlumnoController {
 				Boolean reincripsion = null;
 				boolean FechaInscripcion = false;
 				Date fechaHoy = new Date();	
-				//se valida que el alumno no este incrito en el grupo actual			
+				//Se valida que el alumno no esté inscrito en el grupo actual		
 				if(ultimoGrupo.getPeriodo().getFinInscripcion()!=null && ultimoGrupo.getPeriodo().getFinInscripcion().after(fechaHoy)) {
 					reincripsion = false;
 					if(alumnoGrupo!=null && alumnoGrupo.getFechaInscripcion() == null) {									
@@ -848,7 +853,7 @@ public class AlumnoController {
 							double promedio = serviceGrupo.obtenerPromedioAlumn(alumno.getId(), penultimoGrupo.getId());				
 							int promedioRed = (int) Math.round(promedio);
 							
-							//Se valida si ahi un convenio para alguno que extiende el palso de entrega de documetos
+							//Se valida si hay un convenio para alguno que extiende el paso de entrega de documentos
 							boolean convenio = false; 
 							for(DocumentoDTO doc :docsExp) {	
 								if (doc.getConvenio()!=null) {
@@ -859,13 +864,13 @@ public class AlumnoController {
 								}
 							}	
 							
-							//Validacion de los requisitos de reinscripcion
+							//Validación de los requisitos de reinscripción
 							if(ultimoGrupo.getPeriodo().getId() >= 10 || convenio == true) {											
 								if((alumnoGrupo.getFechaInscripcion() == null) && (cantidadAdeudos == 0) && (promedioRed >= 8)) {							
 									reincripsion = true;
 								}						
 							}else{						
-								//Validasion de los requisitos para la reincripsion
+								//Validación de los requisitos para la reinscripción
 								if((alumnoGrupo.getFechaInscripcion() == null) && (estadoDocs == true) && (cantidadAdeudos == 0) && (promedioRed >= 8)) {							
 									reincripsion = true;
 								}													
@@ -888,7 +893,7 @@ public class AlumnoController {
 
 	@GetMapping("/adeudos")
 	public String adeudos(Model model, HttpSession session, Authentication authentication) {
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Carga el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -910,7 +915,6 @@ public class AlumnoController {
 			
 			Boolean periodoAct = false;
 			Date fechaHoy = new Date();	
-
 			Periodo periodo = periodoService.buscarUltimo();
 			
 			if(periodo.getFinInscripcion()!=null && periodo.getFinInscripcion().after(fechaHoy)) {
@@ -928,7 +932,7 @@ public class AlumnoController {
 
 	@GetMapping("/pagos")
 	public String pagos(Model model, HttpSession session, Authentication authentication) {
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Carga el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -963,7 +967,7 @@ public class AlumnoController {
 	
 	@GetMapping("/referencia-pago")
 	public String referenciaPago(Model model, HttpSession session, Authentication authentication) {
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Carga el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -974,12 +978,12 @@ public class AlumnoController {
 		
 		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
 		
-		// Extrae el adeudo seleccinado que se cargo en cecion
+		// Extrae el adeudo seleccionado que se cargó en sesión
 		Integer idAdeudo = (Integer) session.getAttribute("cveAdeudo");
 		PagoGeneral adeudo = servicePagoGeneral.buscarPorId(idAdeudo);
 		Date fechaHoy = new Date();
 		
-		// valida si la refensia fondos esta vacia		
+		// Válida si la referencia fondos está vacía	
 		if (adeudo.getReferenciaFondos() == null || adeudo.getReferenciaFondos().isEmpty()) {			
 			
 			ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
@@ -994,10 +998,10 @@ public class AlumnoController {
 			
 		}
 		
-		//Se valida si el adeudo ya tienen una referencia vancaria		 
+		//Se valida si el adeudo ya tienen una referencia bancaria		 
 		if (adeudo.getReferencia() == null || adeudo.getReferencia().isEmpty()) {							
 			
-			//extrae la fecha actual y le suma 	7 dias
+			//Extrae la fecha actual y le suma 3 días
 			SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");				
 			Date dt = new Date();		        		        
 	        Calendar c = Calendar.getInstance();
@@ -1020,7 +1024,7 @@ public class AlumnoController {
 		}else{
 			//Se valida si la fecha limite de pago			
 			if (adeudo.getFechaLimite().before(fechaHoy)) {										
-				//extrae la fecha actual y le suma 	7 dias
+				//Extrae la fecha actual y le suma 3 días
 				SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");				
 				Date dt = new Date();		        		        
 		        Calendar c = Calendar.getInstance();
@@ -1044,7 +1048,7 @@ public class AlumnoController {
 			
 		}
 		
-		// extrae el monto del adeudo y lo comvierte a letras
+		// Extrae el monto del adeudo y lo convierte a letras
 		String montoLetras = NumberToLetterConverter.convertNumberToLetter(adeudo.getMonto());
 		model.addAttribute("montoLetras", montoLetras);
 		
@@ -1063,7 +1067,7 @@ public class AlumnoController {
 
 	@GetMapping("/referencia-multiple-pago")
 	public String referenciaMultiplePago(Model model, HttpSession session, Authentication authentication) {
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Carga el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -1075,17 +1079,17 @@ public class AlumnoController {
 		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
 		
 		Date fechaHoy = new Date();		
-		try {
+		
 		if (alumno != null) {
 			List<PagoGeneral> adeudos = servicePagoGeneral.buscarPorAlumno(alumno.getId(), 0);
 			
-			//Se recorrere la lista de  adeudos para extraer las referesias fondos y comparar todas son iguales			
+			//Se recorre la lista de  adeudos para extraer las referencias fondos y comparar todas son iguales			
 			List<String> referenciasFondos = new ArrayList<>();			
 			for (PagoGeneral pagoGeneral : adeudos) {				
 				referenciasFondos.add(pagoGeneral.getReferenciaFondos());
 			}
 			
-			//valida que todas las refencias de fodos sean iguales			
+			//válida que todas las regencias de fondos sean iguales			
 			if (new HashSet<String>(referenciasFondos).size() <= 1) {
 				
 				PagoGeneral adeudo = adeudos.get(0);
@@ -1119,7 +1123,7 @@ public class AlumnoController {
 				
 			}
 			
-			//Se recorrere la lista de  adeudos para extraer las referesias de pago y comparar todas son iguales			
+			//Se recorre la lista de  adeudos para extraer las referencias de pago y comparar todas son iguales			
 			List<String> referencias = new ArrayList<>();			
 			for (PagoGeneral pagoGeneral : adeudos) {				
 				referencias.add(pagoGeneral.getReferencia());
@@ -1127,8 +1131,8 @@ public class AlumnoController {
 			
 			//se valida si todos los adeudos tiene la misma referencia de pago 			
 			if (new HashSet<String>(referencias).size() <= 1) {
-				//extrae uno de los adeudos para determinar la fecha de pago y referencia 
-				//ya que todos los adeudos comparter la misma referencia de pago
+				//Extrae uno de los adeudos para determinar la fecha de pago y referencia 
+				//ya que todos los adeudos comparten la misma referencia de pago
 				PagoGeneral adeudo = adeudos.get(0);
 				
 				if (adeudo.getFechaLimite() == null || adeudo.getFechaLimite().before(fechaHoy)) {																				
@@ -1138,7 +1142,7 @@ public class AlumnoController {
 						suma = suma + pagoGeneral.getMonto();
 					}
 					
-					//extrae la fecha actual y le suma 	7 dias
+					//extrae la fecha actual y le suma 3 dias
 					SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");				
 					Date dt = new Date();		        		        
 			        Calendar c = Calendar.getInstance();
@@ -1169,7 +1173,7 @@ public class AlumnoController {
 					suma = suma + pagoGeneral.getMonto();
 				}
 				
-				//extrae la fecha actual y le suma 	7 dias
+				//extrae la fecha actual y le suma 3 dias
 				SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");				
 				Date dt = new Date();		        		        
 		        Calendar c = Calendar.getInstance();
@@ -1193,7 +1197,7 @@ public class AlumnoController {
 												
 			}	
 			
-			//buelbe a consultar la lista de adeudos por si estos fueron actulizados 			
+			//vuelve a consultar la lista de adeudos por si estos fueron actualizados			
 			List<PagoGeneral> adeudosActulizado = servicePagoGeneral.buscarPorAlumno(alumno.getId(), 0);
 			
 			PagoGeneral adeudo = adeudosActulizado.get(0);
@@ -1208,7 +1212,7 @@ public class AlumnoController {
 				suma = suma + pagoGeneral.getMonto();
 			}
 	
-			// extrae el monto del adeudo y lo comvierte a letras
+			// extrae el monto del adeudo y lo convierte a letras
 			String montoLetras = NumberToLetterConverter.convertNumberToLetter(suma);
 			model.addAttribute("montoLetras", montoLetras);
 	
@@ -1217,17 +1221,14 @@ public class AlumnoController {
 			model.addAttribute("adeudos", adeudos);	
 									
 		}
-		}catch (NullPointerException e) {
-			// TODO: handle exception
-			System.out.println("WTF"+ e.getMessage());
-		}
+		
 		model.addAttribute("alumno", alumno);
 		return "alumno/referencia-multiple-pago";
 	}
 
 	@GetMapping("/recibo")
 	public String recibopago(Model model, HttpSession session, Authentication authentication) {
-		// carga el usuario apartir del usuario cargado en cesion.
+		// Extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -1238,24 +1239,24 @@ public class AlumnoController {
 		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
 		
 		if (alumno != null) {
-			// Extrae el pago seleccinado a partir del cvePago guardado en cesion
+			// Extrae el pago seleccionado a partir del cvePago guardado en sesión
 			Integer idPago = (Integer) session.getAttribute("cvePago");			
 			PagoGeneral pago = servicePagoGeneral.buscarPorId(idPago);			
 			model.addAttribute("pagoSeleccionado", pago);
 			
-			// Extrae el ultmi grupo
+			// Extrae el último grupo
 			Grupo ultimoGrupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());
 			model.addAttribute("ultimoGrupo", ultimoGrupo);
 			
-			// se actulisa decuerdo a si ahi uno o mas adeudos asociados al folio
+			// Se actualiza de acuerdo a si ahí uno o más adeudos asociados al folio
 			Double totalPago = 0.0;
 			String folioCifrado = "";
 			if(pago.getFolio() == null) {
-				//como el folio es null solo se carga el pago seleccinado 
-				//ya que otra forma traeria todos los pagos cullo folio sea null 							
+				//Como el folio es null solo se carga el pago seleccionado 
+				//ya que otra forma traería todos los pagos cuyo folio sea null 							
 				model.addAttribute("pagosFolio", pago);				
 				totalPago = pago.getMonto();	
-				//el folio sifrado no se actuliza ya que es null y no se puede sifrar				
+				//El folio cifrado no se actualiza, ya que es null y no se puede cifrar				
 			}else {
 				//extrae la lista de pagos con el mismo folio			
 				List<PagoGeneral> pagosFolio = servicePagoGeneral.buscarPorAlumnoYFolio(alumno.getId(), pago.getFolio(), 1);
@@ -1273,7 +1274,7 @@ public class AlumnoController {
 					e.printStackTrace();
 				}
 			}			
-			// extrae el monto del adeudo y lo comvierte a letras
+			//extrae el monto del adeudo y lo convierte a letras la lista de pagos con el mismo folio
 			String montoLetras = NumberToLetterConverter.convertNumberToLetter(totalPago);
 			List<String> dos = new ArrayList<>();
 			dos.add("");
@@ -1372,39 +1373,71 @@ public class AlumnoController {
 	  return "ok";
 	 }
 	 
-	 @PostMapping(path = "/reinscripcion-alumno", consumes = MediaType.APPLICATION_JSON_VALUE)
-		@ResponseBody
-		public String reinscripcionAlumno(@RequestBody Map<String, Integer> obj, HttpSession session) {
-			// carga el usuario apartir del usuario cargado en cesion.
-			Usuario usuario = (Usuario) session.getAttribute("usuario");
-			int cvePersona;
-			try {
-				cvePersona = (Integer) session.getAttribute("cvePersona");
-			} catch (Exception e) {
-				cvePersona = usuario.getPersona().getId();
-			}
-			
-			Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));		
-			Integer idGrupo = obj.get("idGrupo");
-			Grupo ultimoGrupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());
-			
-			System.err.println("ultimo grupo: "+ ultimoGrupo.getId());
-			System.err.println("grupo actaul: "+ idGrupo );
-			
-			if(ultimoGrupo.getId().toString().equals(idGrupo.toString())) {				
-//			if(ultimoGrupo.getId() == idGrupo) {			
-				AlumnoGrupo ag = alumnoGrService.checkInscrito(alumno.getId(), ultimoGrupo.getPeriodo().getId());		
-				System.out.println("alumno: "+alumno.getId()+", periodo: "+ultimoGrupo.getPeriodo().getId() + ", idGrupo: "+ultimoGrupo.getId());
-				if(ag == null) {
-					return "inv";
-				}
-				else {
-					ag.setFechaInscripcion(new Date());
-					alumnoGrService.guardar(ag);
-				}
-				return "ok";
-			}
-			return "fail";
+	@PostMapping(path = "/reinscripcion-alumno", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String reinscripcionAlumno(@RequestBody Map<String, Integer> obj, HttpSession session) {
+		// Extrae el usuario a partir del usuario cargado en sesión.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
 		}
-
+		
+		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));		
+		Integer idGrupo = obj.get("idGrupo");
+		Grupo ultimoGrupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());
+		
+		if(ultimoGrupo.getId().toString().equals(idGrupo.toString())) {						
+			AlumnoGrupo ag = alumnoGrService.checkInscrito(alumno.getId(), ultimoGrupo.getPeriodo().getId());		
+			System.out.println("alumno: "+alumno.getId()+", periodo: "+ultimoGrupo.getPeriodo().getId() + ", idGrupo: "+ultimoGrupo.getId());
+			if(ag == null) {
+				return "inv";
+			}
+			else {
+				ag.setFechaInscripcion(new Date());
+				alumnoGrService.guardar(ag);
+			}
+			return "ok";
+		}
+		return "fail";
+	}
+	
+	@GetMapping("/cargar-tutorias-no-aprobadas")
+	public String tutoriasNoAprobadas(Model model, HttpSession session) {
+		// Extrae el usuario a partir del usuario cargado en sesión.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
+		
+		List<TutoriaIndividual> tutorias = tutoriaIndService.buscarPorAlumnoYValidada(alumno, false);
+		model.addAttribute("alumno", alumno);
+		model.addAttribute("tutorias", tutorias);
+		return "alumno/aprobarTutoria";		
+	}
+	
+	@PostMapping(path="/aprobar-tutoria", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String aprobarTutoria(@RequestBody Map<String, String> obj, HttpSession session) {
+		Integer cveTutoria = 0;
+		try {
+			cveTutoria = Integer.parseInt(obj.get("id"));
+		} catch (Exception e) {
+			cveTutoria = 0;
+		}
+		
+		if(cveTutoria!=0) {
+			TutoriaIndividual tutoria = tutoriaIndService.buscarPorId(cveTutoria);
+			tutoria.setValidada(true);
+			tutoriaIndService.guardar(tutoria);
+			return "ok";
+		}
+		return "error";
+	}
 }

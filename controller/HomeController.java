@@ -17,13 +17,16 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Sesion;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.IModuloService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.ISesionesService;
 import edu.mx.utdelacosta.service.ISubmoduloService;
+import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
@@ -47,7 +50,13 @@ public class HomeController {
 	
 	@Autowired
 	private IBajaService bajaService;
-
+	
+	@Autowired
+	private ITutoriaIndividualService tutoriaIndService;
+	
+	@Autowired
+	private IAlumnoService alumnoService;
+	
 	@GetMapping("/index")
 	public String mostrarHome(Model model, HttpSession session) {
 		// Como el usuario ya ingreso, ya podemos agregar a la session el objeto
@@ -107,6 +116,7 @@ public class HomeController {
 		//notificaciones 
 		model.addAttribute("bajasDirector", rol == 3 ? bajaService.buscarPorPersonaYEstatus(usuario.getPersona().getId(), 0).size():0);
 		model.addAttribute("bajasEscolares", rol == 5 ? bajaService.buscarPorTipoYStatus(1, 1).size():0);
+		model.addAttribute("apTutorias", rol == 1 ? tutoriaIndService.buscarPorAlumnoYValidada(alumnoService.buscarPorPersona(new Persona(usuario.getPersona().getId())), false).size():0);
 		
 		model.addAttribute("periodos", periodosService.buscarTodos());
 		model.addAttribute("modulos", modulosService.buscarModulosPorRol(rol));

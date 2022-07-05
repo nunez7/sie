@@ -22,13 +22,18 @@ public class CanalizacionServiceJpa implements ICanalizacionService{
 	}
 
 	@Override
+	public List<Canalizacion> buscarPorAlumno(Alumno alumno) {
+		return canlizacionRepo.findByAlumno(alumno);
+	}
+	
+	@Override
 	public List<Canalizacion> buscarPorGrupoPeriodoYAlumno(Integer idGrupo, Integer idPeriodo, Integer idAlumno) {
 		return canlizacionRepo.findByGrupoAndPeriodoAndAlumno(idGrupo, idPeriodo, idAlumno);
 	}
 
 	@Override
-	public List<Canalizacion> buscarPorAlumno(Alumno alumno) {
-		return canlizacionRepo.findByAlumno(alumno);
+	public List<Canalizacion> buscarPorGrupoPeriodo(Integer idGrupo, Integer idPeriodo) {
+		return canlizacionRepo.findByGrupoAndPeriodo(idGrupo, idPeriodo);
 	}
 
 }

@@ -42,7 +42,12 @@ public class TutoriaIndividualServiceJpa implements ITutoriaIndividualService{
 	public List<TutoriaIndividual> buscarUltimas5PorAlumno(Alumno alumno) {
 		return tutoriaIndRepo.findFirst5ByAlumnoOrderByFechaRegistroDesc(alumno);
 	}
-
+	
+	@Override
+	public List<TutoriaIndividual> buscarPorAlumnoYValidada(Alumno alumno, Boolean validada) {
+		return tutoriaIndRepo.findByAlumnoAndValidadaOrderByFechaRegistroDesc(alumno, validada);
+	}
+	
 	@Override
 	public TutoriaIndividual ultimoRegistro() {
 		return tutoriaIndRepo.findTopByOrderByIdDesc();
@@ -57,5 +62,10 @@ public class TutoriaIndividualServiceJpa implements ITutoriaIndividualService{
 	public List<TutoriaIndividual> buscarPorAlumno(Alumno alumno) {
 		return tutoriaIndRepo.findByAlumnoOrderByFechaRegistroDesc(alumno);
 	}
-	
+
+	@Override
+	public List<TutoriaIndividual> buscarEntreFechasPorGrupo(Integer idGrupo, Date fechaInicio, Date fechaFin) {
+		return tutoriaIndRepo.findByGrupoAndFechaTutoria(idGrupo, fechaInicio, fechaFin);
+	}
+
 }

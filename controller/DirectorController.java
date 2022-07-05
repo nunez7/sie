@@ -164,6 +164,8 @@ public class DirectorController {
 	@Value("${spring.mail.username}")
 	private String correo;
 	
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
+	
 	@GetMapping("/dosificacion")
 	public String dosificacion(Model model, HttpSession session) {
 		//objetos de la persona en sesión 
@@ -658,6 +660,26 @@ public class DirectorController {
 			bajaAutorizada.setTipo(1);
 			bajaAutorizaService.guardar(bajaAutorizada);
 			
+			//correo
+			Mail mail = new Mail();
+			String de = correo;
+			//String para = "servicios.escolares@utnay.edu.mx";
+			String para = "brayan.bg499@gmail.com";
+			mail.setDe(de);
+			mail.setPara(new String[] {para});		
+			//Email title
+			mail.setTitulo("Nueva solicitud de baja.");		
+			//Variables a plantilla
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("titulo", "Solitud de baja del alumn(a) "+baja.getAlumno().getPersona().getNombreCompleto());						
+			variables.put("cuerpoCorreo","El director(a) de carrera "+baja.getAlumno().getCarreraInicio().getDirectorCarrera()+" aprobó la solicitud de baja para el alumno con matrícula "+baja.getAlumno().getMatricula()+", diríjase al apartado de bajas en el panel del escolares para rechazar o aprobar la abaja.");
+			mail.setVariables(variables);			
+			try {							
+				emailService.sendEmail(mail);													
+			}catch (MessagingException | IOException e) {
+				
+		  	}
+			
 			return "ok";
 		}
 		return "error";
@@ -695,5 +717,35 @@ public class DirectorController {
 		}
 		return "error";
 	}
+	
+	 @GetMapping("/reporte-bajas") 
+	 public String reporteBajas(Model model, HttpSession session) { 
+		// extrae el usuario a partir del usuario cargado en sesión.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+					
+		List<Grupo> grupos = grupoService.buscarPorCarreraPeriodoAndPersonaCarrera(cvePersona, usuario.getPreferencias().getIdPeriodo());
+		Integer cveGrupo = (Integer) session.getAttribute("rb-cveGrupo");
+		List<Baja> bajas = new ArrayList<>();
+		
+		if(cveGrupo!=null) {
+			Boolean GrupoEnPeriodo = grupoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			if(GrupoEnPeriodo==true) {
+				bajas = bajaService.buscarPorTipoStatusGrupoYPeriodo(2, 2, cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			}
+		}
+		
+		model.addAttribute("rol", 2);
+		model.addAttribute("bajas", bajas);
+		model.addAttribute("grupos", grupos);
+		model.addAttribute("cveGrupo", cveGrupo);
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "reportes/reporteBajas"; 
+	 } 
 
 }

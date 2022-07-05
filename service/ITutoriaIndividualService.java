@@ -19,8 +19,12 @@ public interface ITutoriaIndividualService {
 	
 	List<TutoriaIndividual> buscarPorAlumno(Alumno alumno);
 	
+	List<TutoriaIndividual> buscarPorAlumnoYValidada(Alumno alumno, Boolean validada);
+	
 	TutoriaIndividual ultimoRegistro();
 	
 	List<TutoriaIndividual> buscarEntreFechasPorGrupoYAlumno(Integer idGrupo, Integer idAlumno, Date fechaInicio, Date fechaFin);
+	
+	List<TutoriaIndividual> buscarEntreFechasPorGrupo(Integer idGrupo, Date fechaInicio, Date fechaFin);
 	
 }

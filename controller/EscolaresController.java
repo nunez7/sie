@@ -1466,7 +1466,7 @@ public class EscolaresController {
 				baja.setFechaAutorizacion(fechaHoy);
 				bajaService.guardar(baja);
 				
-				BajaAutorizada  bajaAutorizada = new BajaAutorizada();
+				BajaAutorizada bajaAutorizada = new BajaAutorizada();
 				bajaAutorizada.setBaja(baja);
 				bajaAutorizada.setFechaRegistro(fechaHoy);
 				bajaAutorizada.setPersona(new Persona(cvePersona));
@@ -1478,17 +1478,37 @@ public class EscolaresController {
 					
 					Usuario userAlumno = usuarioService.buscarPorUsuario(baja.getAlumno().getMatricula());
 					userAlumno.setActivo(false);
-					//usuarioService.guardar(usuario);
+					usuarioService.guardar(usuario);
 					
 					Alumno alumno = baja.getAlumno();
 					alumno.setEstatusGeneral(0);
-					//alumnoService.guardar(alumno);
+					alumnoService.guardar(alumno);
 					
 					//Se desactiva la relación alumno grupo del último grupo al que el alumno allá pertenecido
 					Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
 					AlumnoGrupo alumnoGrupo = alumnoGrService.buscarPorAlumnoYGrupo(alumno, ultimoGrupo);
 					alumnoGrupo.setActivo(false);
-					//alumnoGrService.guardar(alumnoGrupo);
+					alumnoGrService.guardar(alumnoGrupo);
+					
+					//correo
+					Mail mail = new Mail();
+					String de = correo;
+					//String para = .baja.getPersona().getEmail();
+					String para = "brayan.bg499@gmail.com";
+					mail.setDe(de);
+					mail.setPara(new String[] {para});		
+					//Email title
+					mail.setTitulo("Solitud de baja aprobada.");		
+					//Variables a plantilla
+					Map<String, Object> variables = new HashMap<>();
+					variables.put("titulo", "Solitud de baja aprobada por escolares");						
+					variables.put("cuerpoCorreo","La solicitud de baja que solito para el alumno "+baja.getAlumno().getPersona().getNombreCompleto()+" fue aprobada por escolares.");
+					mail.setVariables(variables);			
+					try {							
+						emailService.sendEmail(mail);													
+					}catch (MessagingException | IOException e) {
+						
+				  	}
 					
 					return "ok";
 				}else{
@@ -1532,5 +1552,33 @@ public class EscolaresController {
 			}
 			return "error";
 		}
+		
+		@GetMapping("/reporte-bajas") 
+		public String reporteBajas(Model model, HttpSession session) { 
+			Usuario usuario = (Usuario) session.getAttribute("usuario");
+
+			List<Carrera> carreras = carreraService.buscarTodas();
+			Integer cveCarrera = (Integer) session.getAttribute("rb-cveCarrera");
+			List<Grupo> grupos = new ArrayList<>();
+			List<Baja> bajas = new ArrayList<>();
+			if(cveCarrera!=null) {
+				grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), cveCarrera);
+				Integer cveGrupo = (Integer) session.getAttribute("rb-cveGrupo");
+				if(cveGrupo!=null) {
+					Boolean GrupoEnPeriodo = grupoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+					if(GrupoEnPeriodo==true) {
+						bajas = bajaService.buscarPorTipoStatusGrupoYPeriodo(2, 2, cveGrupo, usuario.getPreferencias().getIdPeriodo());
+					}
+				}
+				model.addAttribute("cveGrupo", cveGrupo);
+			}
+			
+			model.addAttribute("bajas", bajas);
+			model.addAttribute("grupos", grupos);
+			model.addAttribute("carreras", carreras);
+			model.addAttribute("cveCarrera", cveCarrera);
+			model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+			return "escolares/reporteBajas"; 
+		 }
 	
 }

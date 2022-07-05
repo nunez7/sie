@@ -90,6 +90,7 @@ import edu.mx.utdelacosta.service.IMotivoService;
 import edu.mx.utdelacosta.service.IMotivoTutoriaService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPeriodosService;
+import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IPreguntaService;
 import edu.mx.utdelacosta.service.IProgramacionTutoriaService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionInicialService;
@@ -198,6 +199,9 @@ public class TutorController {
 	@Autowired
 	private IRespuestaEvaluacionInicialService resEvaIniService;
 	
+	@Autowired
+	private IPersonaService personaService;
+	
     @GetMapping("/cargar-alumno/{dato}")
    	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato,  Model model, HttpSession session) { 
 		// extrae el usuario apartir del usuario cargado en cesion.
@@ -227,7 +231,7 @@ public class TutorController {
 	
 	@GetMapping("/tutoriaIndividual")
 	public String tutoriaIndividual(Model model, HttpSession session) {
-		// extrae el usuario apartir del usuario cargado en cesion.
+		// Extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -265,7 +269,7 @@ public class TutorController {
 			Date horaInicio = dFHora.parse(obj.get("horaInicio"));
 			Date horaFin = dFHora.parse(obj.get("horaFin"));
 			
-			//recibo los motivos de la tutoria como un string y los comvierto a una ArrayList<Integer>
+			//Recibo los motivos de la tutoría como un string y los convierto a una ArrayList<Integer>
 			String mo = obj.get("motivos");							
 		    String s = ",";
 		    String[] mot = mo.split(s);		
@@ -299,37 +303,38 @@ public class TutorController {
 			if(cveAlumno!=null) {	
 				Usuario usuario = usuarioService.buscarPorUsuario(usuarioMatricula);							
 				Boolean valContra =  passwordEncoder.matches(userNip, usuario.getContrasenia());				
-				if(valContra == true) {													
-					TutoriaIndividual tutInd = new TutoriaIndividual();
-					tutInd.setAlumno(new Alumno(Integer.parseInt(cveAlumno)));
-					tutInd.setGrupo(new Grupo(cveGrupo));
-					tutInd.setFechaTutoria(fechaTutoria);
-					tutInd.setFechaRegistro(fecha);
-					tutInd.setHoraInicio(horaInicio);
-					tutInd.setHoraFin(horaFin);
-					tutInd.setPuntosImportantes(puntosRelevantes);
-					tutInd.setCompromisosAcuerdos(compromisosAcuerdos);
-					tutInd.setNivelAtencion(nvAtencion);
-					tutInd.setValidada(false);
-					tutoriaIndiService.guardar(tutInd);
-					
-					for(int i = 0; i < motivos.size(); i++) {
-						MotivoTutoria motivoTutoria = new MotivoTutoria();
-						motivoTutoria.setTutoriaIndividual(tutInd);
-						motivoTutoria.setMotivo(new Motivo(motivos.get(i)));
-						motivoTutoService.guardar(motivoTutoria);
-					}
-					//Se valida si la tutoría se canalizara								
-					if(tipo==1) {		
-						TutoriaIndividual tutoria = tutoriaIndiService.ultimoRegistro();						
-						return  String.valueOf(tutoria.getId());
-					}else{
-						return "ok";
-					}
-					
+																	
+				TutoriaIndividual tutInd = new TutoriaIndividual();
+				tutInd.setAlumno(new Alumno(Integer.parseInt(cveAlumno)));
+				tutInd.setGrupo(new Grupo(cveGrupo));
+				tutInd.setFechaTutoria(fechaTutoria);
+				tutInd.setFechaRegistro(fecha);
+				tutInd.setHoraInicio(horaInicio);
+				tutInd.setHoraFin(horaFin);
+				tutInd.setPuntosImportantes(puntosRelevantes);
+				tutInd.setCompromisosAcuerdos(compromisosAcuerdos);
+				tutInd.setNivelAtencion(nvAtencion);
+				if(valContra==true) {
+					tutInd.setValidada(true);
 				}else{
-					return "PaError";
+					tutInd.setValidada(false);
 				}
+				tutoriaIndiService.guardar(tutInd);
+				
+				for(int i = 0; i < motivos.size(); i++) {
+					MotivoTutoria motivoTutoria = new MotivoTutoria();
+					motivoTutoria.setTutoriaIndividual(tutInd);
+					motivoTutoria.setMotivo(new Motivo(motivos.get(i)));
+					motivoTutoService.guardar(motivoTutoria);
+				}
+				//Se valida si la tutoría se canalizara								
+				if(tipo==1) {		
+					TutoriaIndividual tutoria = tutoriaIndiService.ultimoRegistro();						
+					return  String.valueOf(tutoria.getId());
+				}else{
+					return "ok";
+				}
+				
 			}else{
 				return "NoUser";
 			}
@@ -392,7 +397,7 @@ public class TutorController {
 					canalizacionService.guardar(canalizacion);
 					
 					Alumno alumno = alumnoService.buscarPorId(Integer.parseInt(cveAlumno));				
-					// se crear un correo y se envia al director correspondiente			
+					// Sé crear un correo y se envía al director correspondiente			
 					Mail mail = new Mail();
 					String de = correo;
 					String para = "brayan.bg499@gmail.com";
@@ -421,18 +426,16 @@ public class TutorController {
 					mail.setTitulo("Canalización de alumnos");		
 					//Variables a plantilla
 					Map<String, Object> variables = new HashMap<>();
-					variables.put("titulo", "Canalización del alumno(a) "+alumno.getPersona().getNombreCompleto());
+					variables.put("titulo", "Canalización del(a) alumno "+alumno.getPersona().getNombreCompleto());
 					//La canalización a profesor cambia un poco la estructura del correo enviado
 					if(servicio==3){
-						variables.put("cuerpoCorreo", "Canalización del alumno "+alumno.getPersona().getNombreCompleto()
-								+", por el tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
+						variables.put("cuerpoCorreo", "El tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
 								+", solicita una canalización el día "+dFDia.format(fecha)+" a las "+dFHora.format(hora)
 								+" para la materia "+cargaHoraria.getMateria().getNombre()+" que imparte"
 								+", por esta razon: "+razon
 								+". "+comentario+". Espero su confirmación"+grupo.getProfesor().getEmail()+".");
 					}else{
-						variables.put("cuerpoCorreo", "Canalización del alumno "+alumno.getPersona().getNombreCompleto()
-								+", por el tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
+						variables.put("cuerpoCorreo", "El tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
 								+", solicita una canalización el día "+dFDia.format(fecha)+" a las "+dFHora.format(hora)
 								+" debido a que "+resumen
 								+", por esta razon: "+razon
@@ -455,7 +458,7 @@ public class TutorController {
 	
 	@GetMapping("/bajaAlumno")
 	public String bajaAlumno(Model model, HttpSession session) {
-		// extrae el usuario apartir del usuario cargado en cesion.
+		// Extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -482,7 +485,7 @@ public class TutorController {
 	@PostMapping(path = "/guardar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String guardarBaja(@RequestBody Map<String, String> obj,HttpSession session) throws ParseException {	
-		// extrae el usuario apartir del usuario cargado en cesion.
+		// Extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -520,6 +523,29 @@ public class TutorController {
 					baja.setEstatus(0);
 					baja.setFechaRegistro(fecha);
 					bajaService.guardar(baja);
+					
+					Alumno alumno = alumnoService.buscarPorId(Integer.parseInt(cveAlumno));
+					Persona persona = personaService.buscarPorId(cvePersona);
+					//correo
+					Mail mail = new Mail();
+					String de = correo;
+					//String para = alumno.getCarreraInicio().getEmailCarrera();
+					String para = "brayan.bg499@gmail.com";
+					mail.setDe(de);
+					mail.setPara(new String[] {para});		
+					//Email title
+					mail.setTitulo("Nueva solicitud de baja.");		
+					//Variables a plantilla
+					Map<String, Object> variables = new HashMap<>();
+					variables.put("titulo", "Solitud de baja del alumn(a) "+alumno.getPersona().getNombreCompleto());						
+					variables.put("cuerpoCorreo","El Tutor "+persona.getNombreCompleto()+" realizó una solicitud de baja para el alumno con matrícula "+alumno.getMatricula()+", diríjase al apartado de bajas en el panel del director para ver más detalles al respecto.");
+					mail.setVariables(variables);			
+					try {							
+						emailService.sendEmail(mail);													
+					}catch (MessagingException | IOException e) {
+						
+				  	}
+					
 					return "ok";
 				}
 				return "bajaActiva";
@@ -777,7 +803,7 @@ public class TutorController {
 	
 	@GetMapping("/programacionTutorias")
 	public String programacionTutorias(Model model, HttpSession session) {
-		// extrae el usuario apartir del usuario cargado en cesion.
+		// Extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -878,9 +904,18 @@ public class TutorController {
 		return "error";		
 	}
 	
+	@GetMapping("/cargar-tutoria/{idTutoria}")
+	public String cargarAlumnos(@PathVariable(name = "idTutoria", required = false) String idAlumno,  Model model) { 
+		if(idAlumno!=null){
+			TutoriaIndividual tutoria = tutoriaIndiService.buscarPorId(Integer.parseInt(idAlumno));
+			model.addAttribute("tutoria", tutoria);
+		}
+		return "fragments/tutorias :: cargar-tutoria";
+	}
+	
 	@GetMapping("/reporte-evaluacion-tutor")
 	public String encuestaEvaluacionTutor(Model model, HttpSession session) {
-		// extrae el usuario apartir del usuario cargado en cesion.
+		// Extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -899,7 +934,7 @@ public class TutorController {
 			aluEncuestados = resEvaTutorService.contarEncuestadosPorGrupo(4, cveGrupo);			
 			List<ComentarioDTO> comentarios = comEvaTurtorService.buscarComentariosPorGrupo(4, cveGrupo);
 			Grupo grupo = grupoService.buscarPorId(cveGrupo);
-			//se caulculan los promedios de cada una de las preguntas para cada uno de los grupos en lo que el profesor imparte dicha materia en determinda carrera
+			//Se calculan los promedios de cada una de las preguntas para cada uno de los grupos en lo que el profesor imparte dicha materia en determinada carrera
 			List<PreguntaDTO> preguntasDto = new ArrayList<>();	
 			double promedioPre=0.0;
 			for(Pregunta pre :evaluacion.getPreguntas()) {
@@ -959,7 +994,7 @@ public class TutorController {
 	  
 	 @GetMapping("/reporte-tutorias-grupales") 
 	 public String reporteTutoriasGrupales(Model model, HttpSession session) { 
-		// extrae el usuario apartir del usuario cargado en cesion.
+		// Extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -967,7 +1002,8 @@ public class TutorController {
 		} catch (Exception e) {
 			cvePersona = usuario.getPersona().getId();
 		}
-					
+		int h=0;
+		int m=0;			
 		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));			
 		List<TemaGrupal> temasGrupales = new ArrayList<>();	
 		Integer cveGrupo = (Integer) session.getAttribute("rtg-cveGrupo");						
@@ -978,12 +1014,24 @@ public class TutorController {
 				if((String) session.getAttribute("rtg-fechaFin")!=null) {						
 					Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rtg-fechaFin"));
 					temasGrupales = temaGrupalService.buscarEntreFechasPorGrupo(cveGrupo,fechaInicio, fechaFin);
+					List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
+					
+					for(Alumno al : alumnos) {
+						if(al.getPersona().getSexo().equals("M")){
+							++m;
+						}else{
+							++h;
+						}
+					}
+					
 					model.addAttribute("fechaFin", fechaFin);
 				}
 				model.addAttribute("fechaInicio", fechaInicio);
 			}															
 		}
-						
+		
+		model.addAttribute("mujeres", m);
+		model.addAttribute("hombre", h);
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("grupos", grupos);		
 		model.addAttribute("temas", temasGrupales);	
@@ -993,7 +1041,7 @@ public class TutorController {
 	  
 	 @GetMapping("/reporte-tutoria-individual") 
 	 public String reporteTutoriaIndividual(Model model, HttpSession session) {	
-			// extrae el usuario apartir del usuario cargado en cesion.
+			// Extrae el usuario a partir del usuario cargado en sesión.
 			Usuario usuario = (Usuario) session.getAttribute("usuario");
 			int cvePersona;
 			try {
@@ -1001,28 +1049,42 @@ public class TutorController {
 			} catch (Exception e) {
 				cvePersona = usuario.getPersona().getId();
 			}
-						
+			int h=0;
+			int m=0;			
 			List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));			
 			List<TutoriaIndividual> tutorias = new ArrayList<>();	
 			Integer cveGrupo = (Integer) session.getAttribute("rtg-cveGrupo");
 			Integer cveAlumno = (Integer) session.getAttribute("rti-cveAlumno");	
 			List<Alumno> alumnos = new ArrayList<>();
-			
+			Boolean allAlumnos = false;
 			if(cveGrupo!=null) {				
 				alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
 				if((String) session.getAttribute("rti-fechaInicio")!=null) {					
 					Date fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("rti-fechaInicio"));				
 					if((String) session.getAttribute("rti-fechaFin")!=null) {						
 						Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rti-fechaFin"));
-						if(cveAlumno!=null) {
+						if(cveAlumno==null || cveAlumno==0) {							
+							tutorias = tutoriaIndiService.buscarEntreFechasPorGrupo(cveGrupo, fechaInicio, fechaFin);							
+							allAlumnos = true;
+						}else{
 							tutorias = tutoriaIndiService.buscarEntreFechasPorGrupoYAlumno(cveGrupo, cveAlumno, fechaInicio, fechaFin);
+						}
+						for(TutoriaIndividual tutoria : tutorias) {
+							if(tutoria.getAlumno().getPersona().getSexo().equals("M")){
+								++m;
+							}else{
+								++h;
+							}
 						}
 						model.addAttribute("fechaFin", fechaFin);
 					}
 					model.addAttribute("fechaInicio", fechaInicio);
 				}				
 			}
-							
+			
+			model.addAttribute("mujeres", m);
+			model.addAttribute("hombre", h);
+			model.addAttribute("allAlumnos", allAlumnos);				
 			model.addAttribute("cveGrupo", cveGrupo);
 			model.addAttribute("cveAlumno", cveAlumno);
 			model.addAttribute("grupos", grupos);	
@@ -1067,7 +1129,7 @@ public class TutorController {
 	  
 	 @GetMapping("/reporte-datos-contacto") 
 	 public String reporteDatosContacto(Model model, HttpSession session) { 
-			// extrae el usuario apartir del usuario cargado en cesion.
+			// Extrae el usuario a partir del usuario cargado en sesión.
 			Usuario usuario = (Usuario) session.getAttribute("usuario");
 			int cvePersona;
 			try {
@@ -1093,7 +1155,7 @@ public class TutorController {
 	 	 
 	 @GetMapping("/reporte-horario-clases") 
 	 public String reporteHorarioClases(Model model, HttpSession session) { 
-		// extrae el usuario apartir del usuario cargado en cesion.
+		// Extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -1118,15 +1180,15 @@ public class TutorController {
 			List<Horario> horas = serviceHorario.buscarPorGrupoDistinctPorHoraInicio(cveGrupo);
 			model.addAttribute("horas", horas);
 			
-			//se crea una lista vacia para colocarle los datos de las horas de calse				
+			//se crea una lista vacía para colocarle los datos de las horas de clase				
 			List<HorarioDTO> horasDto = new ArrayList<>();
 			
-			//crea el horario con las horarios vinculados al grupo				
+			//crea el horario con las horas vinculados al grupo			
 			for (Horario hora : horas) {
 														
 				for (Dia dia : dias) {
 					String horaI = dateFormat.format(hora.getHoraInicio());				
-					//se genera el horario al compara la lista de horas unicas y la lista de dias 						
+					//se genera el horario al comparar la lista de horas únicas y la lista de días 						
 					List<Horario> horario = serviceHorario.buscarPorHoraInicioDiaYGrupo(horaI, dia.getId(), cveGrupo);						
 					for(Horario hr : horario) {
 						HorarioDTO horaDto = new HorarioDTO();						
@@ -1165,7 +1227,7 @@ public class TutorController {
 	 
 	 @GetMapping("/reporte-bajas") 
 	 public String reporteBajas(Model model, HttpSession session) { 
-		// extrae el usuario apartir del usuario cargado en cesion.
+		// extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -1184,6 +1246,7 @@ public class TutorController {
 				bajas = bajaService.buscarPorTipoStatusGrupoYPeriodo(2, 2, cveGrupo, usuario.getPreferencias().getIdPeriodo());
 			}
 		}
+		model.addAttribute("rol", 1);
 		model.addAttribute("bajas", bajas);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("cveGrupo", cveGrupo);
@@ -1193,7 +1256,7 @@ public class TutorController {
 	 
 	 @GetMapping("/reporte-canalizaciones") 
 	 public String reporteCanalizaciones(Model model, HttpSession session) { 
-		// extrae el usuario apartir del usuario cargado en cesion.
+		// extrae el usuario a partir del usuario cargado en sesión
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -1207,18 +1270,22 @@ public class TutorController {
 		Integer cveGrupo = (Integer) session.getAttribute("rc-cveGrupo");
 		Integer cveAlumno = (Integer) session.getAttribute("rc-cveAlumno");
 		List<Canalizacion> canalizaciones = new ArrayList<>();
-		
+		Boolean allAlumnos = false;
 		if(cveGrupo!=null) {
 			alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
-			if(cveAlumno!=null) {
+			if(cveAlumno==null || cveAlumno==0) {
+				canalizaciones = canalizacionService.buscarPorGrupoPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+				allAlumnos = true;
+			}else{
 				canalizaciones = canalizacionService.buscarPorGrupoPeriodoYAlumno(cveGrupo, usuario.getPreferencias().getIdPeriodo(), cveAlumno);
-			}			
+			}
 		}
 		
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("alumnos", alumnos);
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("cveAlumno", cveAlumno);
+		model.addAttribute("allAlumnos", allAlumnos);
 		model.addAttribute("canalizaciones", canalizaciones);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "reportes/reporteCanalizaciones"; 
@@ -1226,7 +1293,7 @@ public class TutorController {
 	 
 	 @GetMapping("/reporte-cal-grupo") 
 	 public String reporteCalificacionesPorGrupo(Model model, HttpSession session) { 
-		// extrae el usuario apartir del usuario cargado en cesion.
+		// extrae el usuario a partir del usuario cargado en sesión
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -1303,7 +1370,7 @@ public class TutorController {
 	 
 	 @GetMapping("/reporte-entrevista-inicial") 
 	 public String reporteEntrevistaInicial(Model model, HttpSession session) { 
-		// extrae el usuario apartir del usuario cargado en cesion.
+		// extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {

@@ -7,6 +7,7 @@ import edu.mx.utdelacosta.model.Canalizacion;
 
 public interface ICanalizacionService {
 	void guardar(Canalizacion canalizacion);
-	List<Canalizacion> buscarPorGrupoPeriodoYAlumno(Integer idGrupo, Integer idPeriodo, Integer idAlumno);
 	List<Canalizacion> buscarPorAlumno(Alumno alumno);
+	List<Canalizacion> buscarPorGrupoPeriodoYAlumno(Integer idGrupo, Integer idPeriodo, Integer idAlumno);
+	List<Canalizacion> buscarPorGrupoPeriodo(Integer idGrupo, Integer idPeriodo);
 }
