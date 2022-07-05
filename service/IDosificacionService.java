@@ -15,4 +15,5 @@ public interface IDosificacionService {
 	List<DosificacionPendienteDTO> obtenerPendientesPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo);
 	List<Dosificacion> buscarPorIdCargaHoraria(Integer idCargaHoraria);
 	Dosificacion buscarPorIdMateriaEIdPersona(Integer idMateria, Integer IdPersona);
+	Integer contarPendientesPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo);
 }

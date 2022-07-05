@@ -79,10 +79,10 @@ public class CorteEvaluativo {
 	@Column(name = "fin_evaluaciones")
 	private Date finEvaluaciones;
 	
-	/* codigo provicional */
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(pattern = "dd/MM/yyyy")
-	@Column(name = "fecha_dosificacion")
+	@Temporal(TemporalType.DATE) 
+	@DateTimeFormat(pattern = "dd/MM/yyyy") 
+	@Column(name = "fecha_dosificacion") 
+
 	private Date fechaDosificacion;
 
 	public CorteEvaluativo() {
@@ -203,7 +203,5 @@ public class CorteEvaluativo {
 	public void setFechaDosificacion(Date fechaDosificacion) {
 		this.fechaDosificacion = fechaDosificacion;
 	}
-	
-	
 
 }

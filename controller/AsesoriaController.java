@@ -21,16 +21,14 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Asesoria;
 import edu.mx.utdelacosta.model.AsesoriaAlumno;
 import edu.mx.utdelacosta.model.CargaHoraria;
-import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Usuario;
-import edu.mx.utdelacosta.model.dto.AsesoriaDTO;
+import edu.mx.utdelacosta.model.dtoreport.AsesoriaDTO;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAsesoriaAlumnoService;
 import edu.mx.utdelacosta.service.IAsesoriaService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
-import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IUsuariosService;
@@ -48,9 +46,6 @@ public class AsesoriaController {
 	private IAsesoriaAlumnoService asesoriaAlumnoService;
 	
 	@Autowired
-	private ICarrerasServices carrerasServices;
-	
-	@Autowired
 	private IUsuariosService usuarioService;
 	
 	@Autowired
@@ -65,6 +60,7 @@ public class AsesoriaController {
 	@Autowired
 	private IAlumnoService alumnoService;
 	
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 
 	@PostMapping(path = "/guardarAsesoria", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
@@ -116,7 +112,7 @@ public class AsesoriaController {
 		   cveGrupo = 0;
 		  }
 		  if (cveGrupo>0) {
-			  List<AsesoriaDTO> asesorias = asesoriaService.buscarPorIdGrupo(cveGrupo);			
+			  List<AsesoriaDTO> asesorias = asesoriaService.buscarPorIdGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());			
 			  model.addAttribute("asesorias", asesorias);
 			  model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
 		}
@@ -131,21 +127,9 @@ public class AsesoriaController {
 	 public String reporteDirectorAsesorias(Model model, HttpSession session) {
 		Persona persona = personaService.buscarPorId((Integer)session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
-		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(persona.getId());
-		if(session.getAttribute("cveCarrera") != null) {
-			int cveCarrera = (Integer) session.getAttribute("cveCarrera");
-			model.addAttribute("cveCarrera", cveCarrera);
-			List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera( usuario.getPreferencias().getIdPeriodo(), cveCarrera);
-			model.addAttribute("grupos", grupos);
-			  if (session.getAttribute("cveGrupo") != null) {
-				  int cveGrupo = (Integer) session.getAttribute("cveGrupo");
-				model.addAttribute("cveGrupo", cveGrupo);
-				  List<AsesoriaDTO> asesorias = asesoriaService.buscarPorIdGrupo(cveGrupo);			
-				  model.addAttribute("asesorias", asesorias);
-				  model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
-			  }
-		}
-		model.addAttribute("carreras", carreras);
+		List<AsesoriaDTO> asesorias = asesoriaService.buscarPorPersonaCarreraAndPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("asesorias", asesorias);
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteAsesorias";
 	 }
 }

@@ -151,7 +151,7 @@ public class ProrrogaController {
 	public String prorrogasSave(@RequestBody ProrrogasDTO prorrogaDto, Model model, HttpSession session) {
 		CargaHoraria carga = cargaService.buscarPorIdCarga(prorrogaDto.getIdCargaHoraria());
 		CorteEvaluativo corte = corteService.buscarPorId(prorrogaDto.getIdCorteEvaluativo());
-		
+
 		Prorroga existente = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(carga, corte,
 				new TipoProrroga(prorrogaDto.getIdTipoProrroga()), true);
 		if (existente == null) {

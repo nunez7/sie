@@ -284,6 +284,27 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre ", nativeQuery = true)
 	List<Alumno> findByNombreOrMatricula(@Param("nombre") String nombre);
 	
+	//trae los alumnos de las carreras de la persona (reporte de datos personales)
+	@Query(value = "SELECT a.* FROM alumnos a "
+			+ "INNER JOIN personas p ON a.id_persona = p.id "
+			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno = a.id "
+			+ "INNER JOIN grupos g ON g.id = ag.id_grupo "
+			+ "WHERE g.id_carrera IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) AND estatus = 1 "
+			+ "AND g.id_periodo = :idPeriodo "
+			+ "GROUP BY a.id, p.nombre, p.primer_apellido, p.segundo_apellido "
+			+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true)
+	List<Alumno> findAllAlumnosByPersonaCarreraAndActivoAndPeriodo(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
+	
+	@Query(value = "SELECT a.* FROM alumnos a "
+			+ "INNER JOIN personas p ON a.id_persona = p.id "
+			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno = a.id "
+			+ "INNER JOIN grupos g ON g.id = ag.id_grupo "
+			+ "WHERE g.id_carrera = :idCarrera AND estatus = 1 "
+			+ "AND g.id_periodo = :idPeriodo "
+			+ "GROUP BY a.id, p.nombre, p.primer_apellido, p.segundo_apellido "
+			+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true)
+	List<Alumno> findAllAlumnosByCarreraAndActivoAndPeriodo(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo);
+	
 	@Query(value = "SELECT count(a.id) "
 			+ "FROM alumnos a "
 			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno=a.id "

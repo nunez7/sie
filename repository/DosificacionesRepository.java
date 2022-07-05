@@ -45,5 +45,17 @@ public interface DosificacionesRepository extends CrudRepository<Dosificacion, I
 			+ "INNER JOIN materias m on ch.id_materia = m.id "
 			+ "WHERE m.id = :idMateria AND d.id_persona<> :idPersona LIMIT 1 ", nativeQuery = true)
 	Dosificacion findByIdMateriaAndIdPersona(@Param("idMateria") Integer idMateria, @Param("idPersona") Integer idPersona);
+	
+	@Query(value = "SELECT COUNT(DISTINCT(ds.id)) as dosificaciones "
+			+ "FROM dosificaciones ds "
+			+ "INNER JOIN dosificaciones_cargas dc ON dc.id_dosificacion = ds.id "
+			+ "INNER JOIN cargas_horarias ch ON ch.id = dc.id_carga_horaria "
+			+ "INNER JOIN materias m ON m.id = ch.id_materia "
+			+ "INNER JOIN grupos g ON g.id = ch.id_grupo "
+			+ "INNER JOIN carreras c ON c.id = g.id_carrera "
+			+ "INNER JOIN personas p ON ds.id_persona = p.id "
+			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :persona) "
+			+ "AND ds.valida_director = 'False' AND g.id_periodo = :periodo", nativeQuery = true)
+	Integer coountByPersonaCarreraAndPeriodo(@Param("persona") Integer idPersona, @Param("periodo") Integer idPeriodo);
 
 }

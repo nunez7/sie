@@ -10,7 +10,7 @@ import edu.mx.utdelacosta.model.TipoProrroga;
 
 public interface IProrrogaService {
 	
-	List<Prorroga> buscarPorCarreraYPendientes(Integer idPersona);
+	List<Prorroga> buscarPorCarreraYPendientes(Integer idPersona, Integer idPeriodo);
 	
 	Prorroga buscarPorId(Integer id);
 	
@@ -24,7 +24,7 @@ public interface IProrrogaService {
 
 	List<Prorroga> buscarPorCargaHoraria (CargaHoraria cargaHoraria);
 	
-	List<Prorroga> buscarPorIdProfesor (Integer idProfesor);
+	List<Prorroga> buscarPorPersonaCarrerraAndAceptadas(Integer idPersona, Integer idPeriodo);
 	
 	Prorroga buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(CargaHoraria cargaHoraria, CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, boolean activo);
 	
@@ -34,5 +34,5 @@ public interface IProrrogaService {
 	
 	Prorroga buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada);
 	
-	
+	Integer contarProrrogasPendientesPorPersonaYPeriodo(Integer idPersona, Integer idPeriodo);
 }

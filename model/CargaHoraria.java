@@ -29,15 +29,15 @@ public class CargaHoraria {
 
 	@ManyToOne
 	@LazyCollection(LazyCollectionOption.FALSE)
-	@JoinColumn(name = "id_materia", nullable = false, updatable = false)
+	@JoinColumn(name = "id_materia")
 	private Materia materia;
 
 	@OneToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "id_profesor", nullable = false, updatable = false)
+	@JoinColumn(name = "id_profesor")
 	private Persona profesor;
 
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "id_grupo", nullable = false, updatable = false)
+	@JoinColumn(name = "id_grupo")
 	private Grupo grupo;
 
 	@OneToOne(fetch = FetchType.EAGER)

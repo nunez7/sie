@@ -15,10 +15,6 @@ import edu.mx.utdelacosta.model.TipoProrroga;
 
 public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 
-	@Query(value = "SELECT pr.* " + "FROM prorroga pr " + "INNER JOIN cargas_horarias cr ON cr.id=pr.id_carga_horaria "
-			+ "WHERE cr.id_profesor = :id_profesor ", nativeQuery = true)
-	List<Prorroga> findByIdProfesor(@Param("id_profesor") Integer IdProfesor);
-	
 	@Query(value = " SELECT p.* "
 			+ "FROM prorroga p "
 			+ "INNER JOIN cargas_horarias ch on ch.id = p.id_carga_horaria "
@@ -34,8 +30,9 @@ public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 	@Query(value = "SELECT pr.* FROM prorroga pr " + "INNER JOIN cargas_horarias ch ON pr.id_carga_horaria = ch.id "
 			+ "INNER JOIN grupos g ON g.id = ch.id_grupo " + "INNER JOIN carreras c ON c.id = g.id_carrera "
 			+ "WHERE pr.activo = 'True' AND aceptada = 'False' "
-			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona)", nativeQuery = true)
-	List<Prorroga> findByCarreraAndRequested(@Param("idPersona") Integer idPersona);
+			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) "
+			+ "AND g.id_periodo = :idPeriodo", nativeQuery = true)
+	List<Prorroga> findByCarreraAndRequested(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
 
 	@Query(value = "SELECT COUNT(p.*) as cantidad FROM prorroga p "
 			+ "INNER JOIN cargas_horarias ch ON p.id_carga_horaria = ch.id "
@@ -59,4 +56,23 @@ public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 
 	Prorroga findByCargaHorariaAndCorteEvaluativoAndTipoProrrogaAndActivo(CargaHoraria cargaHoraria,
 			CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, boolean activo);
+	
+	//busca las prorrogas autorizadas por personaCarrera 
+	@Query(value = "SELECT pr.* FROM prorroga pr " + "INNER JOIN cargas_horarias ch ON pr.id_carga_horaria = ch.id "
+			+ "INNER JOIN grupos g ON g.id = ch.id_grupo " + "INNER JOIN carreras c ON c.id = g.id_carrera "
+			+ "WHERE pr.activo = 'True' AND aceptada = 'True' "
+			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) "
+			+ "AND g.id_periodo = :idPeriodo", nativeQuery = true)
+	List<Prorroga> findByPersonaCarreraAndAccept(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
+	
+	//cuenta las solicitudes de prórroga por persona y periodo
+	@Query(value = "SELECT COUNT(DISTINCT(pr.id)) AS prorrogas FROM prorroga pr "
+			+ "INNER JOIN cargas_horarias ch ON pr.id_carga_horaria = ch.id "
+			+ "INNER JOIN grupos g ON g.id = ch.id_grupo "
+			+ "INNER JOIN carreras c ON c.id = g.id_carrera "
+			+ "WHERE pr.activo = 'True' AND aceptada = 'False' "
+			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) "
+			+ "AND g.id_periodo = :idPeriodo", nativeQuery = true)
+	Integer countPendientesByPersonaCarreraAndPeriodo(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
+
 }

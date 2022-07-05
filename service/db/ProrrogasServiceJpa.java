@@ -21,9 +21,9 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 	private ProrrogaRepository prorrogaRepository;
 
 	@Override
-	public List<Prorroga> buscarPorCarreraYPendientes(Integer idPersona) {
+	public List<Prorroga> buscarPorCarreraYPendientes(Integer idPersona, Integer idPeriodo) {
 		// TODO Auto-generated method stub
-		return prorrogaRepository.findByCarreraAndRequested(idPersona);
+		return prorrogaRepository.findByCarreraAndRequested(idPersona, idPeriodo);
 	}
 
 	@Override
@@ -48,11 +48,12 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 	}
 	
 	@Override
-	public Prorroga buscarPorCargaHorariaYTipoProrrogaYActivoYAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga,
-			boolean activo, boolean aceptada) {
-		return prorrogaRepository.findByCargaHorariaAndTipoProrrogaAndActivoAndAceptada(cargaHoraria, tipoProrroga, activo, aceptada);
+	public Prorroga buscarPorCargaHorariaYTipoProrrogaYActivoYAceptada(CargaHoraria cargaHoraria,
+			TipoProrroga tipoProrroga, boolean activo, boolean aceptada) {
+		return prorrogaRepository.findByCargaHorariaAndTipoProrrogaAndActivoAndAceptada(cargaHoraria, tipoProrroga,
+				activo, aceptada);
 	}
-	
+
 	@Override
 	public Prorroga buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(CargaHoraria cargaHoraria, CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga,
 			boolean activo) {
@@ -71,11 +72,6 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 	}
 
 	@Override
-	public List<Prorroga> buscarPorIdProfesor(Integer idProfesor) {
-		return prorrogaRepository.findByIdProfesor(idProfesor);
-	}
-
-	@Override
 	public List<Prorroga> buscarPorProfesorYPeriodoYActivo(Integer idProfesor, Integer idPeriodo) {
 		return prorrogaRepository.findByProfesorAndPeriodoAndActivo(idProfesor, idPeriodo);
 	}
@@ -86,6 +82,14 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 	}
 
 	@Override
+	public List<Prorroga> buscarPorPersonaCarrerraAndAceptadas(Integer idPersona, Integer idPeriodo) {
+		return prorrogaRepository.findByPersonaCarreraAndAccept(idPersona, idPeriodo);
+	}
+
+	@Override
+	public Integer contarProrrogasPendientesPorPersonaYPeriodo(Integer idPersona, Integer idPeriodo) {
+		return prorrogaRepository.countPendientesByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
+
 	public Prorroga buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(CargaHoraria cargaHoraria,
 			TipoProrroga tipoProrroga, CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada) {
 		return prorrogaRepository.findByCargaHorariaAndTipoProrrogaAndCorteEvaluativoAndActivoAndAceptada(cargaHoraria, tipoProrroga, corteEvaluativo, activo, aceptada);

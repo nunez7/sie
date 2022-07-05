@@ -106,7 +106,16 @@ public class RemedialAlumnoServiceJpa implements IRemedialAlumnoService{
 	@Override
 	public Integer countByCarreraAndCorteEvaluativo(Integer idCarrera, Integer tipoRemedial,
 			Integer idCorteEvaluativo) {
+		// TODO Auto-generated method stub
 		return remedialAlumnoRepository.countByCarreraAndCorteEvaluativo(idCarrera, tipoRemedial, idCorteEvaluativo);
 	}
+	
+	@Override
+	public Integer buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(Integer idAlumno,
+			Integer idCargaHoraria, Integer idCorte, Integer tipo) {
+		// TODO Auto-generated method stub
+		return remedialAlumnoRepository.findByAlumnoAndCargaHorariaAndCorteEvaluativoAndTipo(idAlumno, idCargaHoraria, idCorte, tipo);
+	}
+
 	
 }
