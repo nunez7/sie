@@ -108,6 +108,8 @@ public class HomeController {
 		}
 		usuario = (Usuario) session.getAttribute("usuario");
 		int rol = usuario.getRoles().get(0).getId();
+		model.addAttribute("observacionesP", dosiComentaService.contarPorProfesorYPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()));
+		model.addAttribute("dosificacionesP", dosiCargaService.contarNoEntregadas(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()));
 		model.addAttribute("modulos", modulosService.buscarModulosPorRol(rol));
 		model.addAttribute("periodos", periodosService.buscarTodos());
 		//para notificaciones

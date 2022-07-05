@@ -9,6 +9,7 @@ public class AlumnoDTO extends PersonaDTO{
 	private Integer ceneval;
 	private Integer documentosIngresos;
 	private Integer idCarrera;
+	private Integer idTurno;
 	
 	private String nombreFamiliar;
 	private String edoNacimiento;
@@ -21,6 +22,8 @@ public class AlumnoDTO extends PersonaDTO{
 	private Boolean discapacitado;
 	private String tipoDiscapacidad;
 	private Boolean indigena;
+	private Boolean dialecto;
+	private String tipoBeca;
 	private String promocion;
 	private String observaciones;
 	private Boolean otraUt;
@@ -55,6 +58,14 @@ public class AlumnoDTO extends PersonaDTO{
 	public void setCeneval(Integer ceneval) {
 		this.ceneval = ceneval;
 	}
+	public Integer getIdTurno() {
+		return idTurno;
+	}
+
+	public void setIdTurno(Integer idTurno) {
+		this.idTurno = idTurno;
+	}
+
 	public Integer getDocumentosIngresos() {
 		return documentosIngresos;
 	}
@@ -132,6 +143,18 @@ public class AlumnoDTO extends PersonaDTO{
 	}
 	public void setIndigena(Boolean indigena) {
 		this.indigena = indigena;
+	}
+	public Boolean getDialecto() {
+		return dialecto;
+	}
+	public void setDialecto(Boolean dialecto) {
+		this.dialecto = dialecto;
+	}
+	public String getTipoBeca() {
+		return tipoBeca;
+	}
+	public void setTipoBeca(String tipoBeca) {
+		this.tipoBeca = tipoBeca;
 	}
 	public String getPromocion() {
 		return promocion;

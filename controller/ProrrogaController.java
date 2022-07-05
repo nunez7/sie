@@ -121,7 +121,7 @@ public class ProrrogaController {
 		prorroga.setAceptada(false);
 		prorroga.setActivo(false);
 		//se guarda la prorroga 
-		//prorrogaService.guardar(prorroga);
+		prorrogaService.guardar(prorroga);
 		//envió de correo
 		Persona profesor = personaService.buscarPorId(prorroga.getCargaHoraria().getProfesor().getId());
 		Mail mail = new Mail();
@@ -155,6 +155,8 @@ public class ProrrogaController {
 		Prorroga existente = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(carga, corte,
 				new TipoProrroga(prorrogaDto.getIdTipoProrroga()), true);
 		if (existente == null) {
+			
+			// se guarda la prorroga.
 			Prorroga prorroga = new Prorroga();
 			prorroga.setCargaHoraria(carga);
 			prorroga.setFechaAlta(new java.util.Date());
@@ -165,6 +167,31 @@ public class ProrrogaController {
 			prorroga.setAceptada(false);
 			prorroga.setCorteEvaluativo(corte);
 			prorrogaService.guardar(prorroga);
+			
+			// se crea el correo
+			
+			Persona director = personaService.buscarDirectorPorCarga(carga.getId());
+			Mail mail = new Mail();
+			String de = correo;
+			String para = director.getEmail();
+			mail.setDe(de);
+			mail.setPara(new String[] {para});
+			//Email title
+			mail.setTitulo("Nueva Solicitud de Prórroga");
+			//Variables a plantilla
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("titulo", "Nueva Solicitud de Prórroga");
+			variables.put("cuerpoCorreo",
+					"El Profesor(a) "+carga.getProfesor().getNombreCompleto()+" ha solicitado una prorroga para la materia "+carga.getMateria().getNombre()+", <br> "
+							+ "es necesario acceder al panel de director.");
+			mail.setVariables(variables);
+			
+			try {
+				emailService.sendEmail(mail);
+			} catch (MessagingException | IOException e) {
+				return "mailErr";
+			}
+			
 			return "ok";
 		}
 

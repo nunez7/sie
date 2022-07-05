@@ -82,6 +82,7 @@ public class CorteEvaluativo {
 	@Temporal(TemporalType.DATE) 
 	@DateTimeFormat(pattern = "dd/MM/yyyy") 
 	@Column(name = "fecha_dosificacion") 
+
 	private Date fechaDosificacion;
 
 	public CorteEvaluativo() {

@@ -47,6 +47,9 @@ public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 
 	Prorroga findByCargaHorariaAndTipoProrrogaAndActivoAndAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga,
 			boolean activo, boolean aceptada);
+	
+	Prorroga findByCargaHorariaAndTipoProrrogaAndCorteEvaluativoAndActivoAndAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga,
+			CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada);
 
 	Prorroga findByCargaHorariaAndTipoProrrogaAndFechaLimiteGreaterThanEqualAndActivoAndAceptada(
 			CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, Date fecha, Boolean activo, Boolean aceptada);
@@ -71,4 +74,5 @@ public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) "
 			+ "AND g.id_periodo = :idPeriodo", nativeQuery = true)
 	Integer countPendientesByPersonaCarreraAndPeriodo(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
+
 }

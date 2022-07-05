@@ -27,7 +27,10 @@ public interface CorteEvaluativoRepository extends JpaRepository<CorteEvaluativo
 	
 	CorteEvaluativo findByFechaAsistenciaGreaterThanEqualAndPeriodo(Date fechaAsistencia, Periodo periodo);
 	
-	CorteEvaluativo findByFechaInicioLessThanEqualAndFechaAsistenciaGreaterThanEqualAndPeriodoAndCarrera(Date fechaAsistencia, Date fechaInicio, Periodo periodo, Carrera carrera);
+	@Query(value = "SELECT ce.* from cortes_evaluativos ce "
+			+ "WHERE id_periodo = :idPeriodo and fecha_inicio <= :fecha and fecha_asistencia >= :fecha "
+			+ "AND id_carrera = :idCarrera ", nativeQuery = true)
+	CorteEvaluativo findByFechaInicioLessThanEqualAndFechaAsistenciaGreaterThanEqualAndPeriodoAndCarrera(@Param("fecha")Date fecha,@Param("idPeriodo") Integer periodo,@Param("idCarrera") Integer carrera);
 	
 	Optional<CorteEvaluativo> findById(Integer id);
 	
@@ -37,4 +40,9 @@ public interface CorteEvaluativoRepository extends JpaRepository<CorteEvaluativo
 	
 	CorteEvaluativo findByInicioExtraordinarioLessThanEqualAndFinExtraordinarioGreaterThanEqualAndPeriodoAndCarrera(Date fechaInicio, Date fechaFin, Periodo periodo, Carrera carrera);
 
+	@Query(value = "SELECT COUNT(*) FROM cortes_evaluativos "
+			+ "WHERE fecha_dosificacion >= :fechaDosificacion AND id_periodo = :idPeriodo "
+			+ "AND id_carrera = :idCarrera AND id = :idCorteEvaluativo ", nativeQuery = true)
+	Integer findByFechaDosificacionAndPeriodoAndCarreraAndCorteEvaluativo(@Param("fechaDosificacion") Date fechaDosificacion,@Param("idPeriodo") Integer idPeriodo,@Param("idCarrera") Integer idCarrrera, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
+	
 }

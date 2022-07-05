@@ -8,4 +8,5 @@ public interface IDosificacionComentarioService {
 	List<DosificacionComentario> buscarPorIdPersona(Integer idPersona);
 	List<DosificacionComentario> buscarPorIdCargaHoraria(Integer idCargaHoraria);
 	void guardar(DosificacionComentario dosificacionComentario);
+	Integer contarPorProfesorYPeriodo (Integer idProfesor, Integer idPeriodo);
 }

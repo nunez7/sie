@@ -107,7 +107,7 @@ public class Prorroga {
 	public void setComentario(String comentario) {
 		this.comentario = comentario;
 	}
-
+  
 	public TipoProrroga getTipoProrroga() {
 		return tipoProrroga;
 	}

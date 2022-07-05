@@ -12,4 +12,6 @@ public interface IDosificacionCargaService {
 	DosificacionCarga buscarPorDosificacionYCargaHoraria(Dosificacion dosificacion, CargaHoraria cargaHoraria);
 	
 	List<DosificacionCarga> buscarPorCargaHoraria(CargaHoraria cargaHoraria);
+	
+	Integer contarNoEntregadas(Integer idProfesor, Integer idPeriodo);
 }

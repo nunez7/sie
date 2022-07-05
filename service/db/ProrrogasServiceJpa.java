@@ -55,17 +55,15 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 	}
 
 	@Override
-	public Prorroga buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(CargaHoraria cargaHoraria,
-			CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, boolean activo) {
-		return prorrogaRepository.findByCargaHorariaAndCorteEvaluativoAndTipoProrrogaAndActivo(cargaHoraria,
-				corteEvaluativo, tipoProrroga, activo);
+	public Prorroga buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(CargaHoraria cargaHoraria, CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga,
+			boolean activo) {
+		return prorrogaRepository.findByCargaHorariaAndCorteEvaluativoAndTipoProrrogaAndActivo(cargaHoraria, corteEvaluativo, tipoProrroga, activo);
 	}
-
+	
 	@Override
-	public Prorroga buscarPorCargaHorariaYTipoProrrogaYFechaLimiteMayorQueYActivoYAceptada(CargaHoraria cargaHoraria,
-			TipoProrroga tipoProrroga, Date fechaLimite, Boolean activo, Boolean aceptada) {
-		return prorrogaRepository.findByCargaHorariaAndTipoProrrogaAndFechaLimiteGreaterThanEqualAndActivoAndAceptada(
-				cargaHoraria, tipoProrroga, fechaLimite, activo, aceptada);
+	public Prorroga buscarPorCargaHorariaYTipoProrrogaYFechaLimiteMayorQueYActivoYAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga,
+			Date fechaLimite, Boolean activo, Boolean aceptada) {
+		return prorrogaRepository.findByCargaHorariaAndTipoProrrogaAndFechaLimiteGreaterThanEqualAndActivoAndAceptada(cargaHoraria, tipoProrroga, fechaLimite, activo, aceptada);
 	}
 	
 	@Override
@@ -91,5 +89,9 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 	@Override
 	public Integer contarProrrogasPendientesPorPersonaYPeriodo(Integer idPersona, Integer idPeriodo) {
 		return prorrogaRepository.countPendientesByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
+
+	public Prorroga buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(CargaHoraria cargaHoraria,
+			TipoProrroga tipoProrroga, CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada) {
+		return prorrogaRepository.findByCargaHorariaAndTipoProrrogaAndCorteEvaluativoAndActivoAndAceptada(cargaHoraria, tipoProrroga, corteEvaluativo, activo, aceptada);
 	}
 }

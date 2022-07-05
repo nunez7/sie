@@ -116,6 +116,7 @@ public class AsesoriaController {
 			  model.addAttribute("asesorias", asesorias);
 			  model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
 		}
+		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("persona", persona);
