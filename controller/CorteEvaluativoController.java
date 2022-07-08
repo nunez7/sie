@@ -63,12 +63,9 @@ public class CorteEvaluativoController {
 		Date iex2 = Date.valueOf(obj.get("ie2"));
 		Date fex1 = Date.valueOf(obj.get("fe1"));
 		Date fex2 = Date.valueOf(obj.get("fe2"));
-		Date iev1 = Date.valueOf(obj.get("iev1"));
-		Date iev2 = Date.valueOf(obj.get("iev2"));
-		Date fev1 = Date.valueOf(obj.get("fev1"));
-		Date fev2 = Date.valueOf(obj.get("fev2"));
-		Date fd1 = Date.valueOf(obj.get("fd1"));
-		Date fd2 = Date.valueOf(obj.get("fd2"));
+		Date iev = Date.valueOf(obj.get("iev"));
+		Date fev = Date.valueOf(obj.get("fev"));
+		Date fd = Date.valueOf(obj.get("fd"));
 		//creamos el usuario de acuerdo a la authenticación 
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona")); 
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
@@ -94,11 +91,11 @@ public class CorteEvaluativoController {
 			corteEvaluativo1.setFinRemedial(fr1);
 			corteEvaluativo1.setInicioExtraordinario(iex1);
 			corteEvaluativo1.setFinExtraordinario(fex1);
-			corteEvaluativo1.setInicioEvaluaciones(iev1);
-			corteEvaluativo1.setFinEvaluaciones(fev1);
+			corteEvaluativo1.setInicioEvaluaciones(iev);
+			corteEvaluativo1.setFinEvaluaciones(fev);
 			corteEvaluativo1.setFechaAsistencia(ff1);
 			corteEvaluativo1.setConsecutivo(1);
-			corteEvaluativo1.setFechaDosificacion(fd1);
+			corteEvaluativo1.setFechaDosificacion(fd);
 			Carrera carrera1 = carrerasServices.buscarPorId(carreras.get(i).getId());
 			corteEvaluativo1.setCarrera(carrera1);
 			corteEvaluativoService.guardar(corteEvaluativo1);
@@ -110,11 +107,11 @@ public class CorteEvaluativoController {
 			corteEvaluativo2.setFinRemedial(fr2);
 			corteEvaluativo2.setInicioExtraordinario(iex2);
 			corteEvaluativo2.setFinExtraordinario(fex2);
-			corteEvaluativo2.setInicioEvaluaciones(iev2);
-			corteEvaluativo2.setFinEvaluaciones(fev2);
+			corteEvaluativo2.setInicioEvaluaciones(iev);
+			corteEvaluativo2.setFinEvaluaciones(fev);
 			corteEvaluativo2.setFechaAsistencia(ff2);
 			corteEvaluativo2.setConsecutivo(2);
-			corteEvaluativo2.setFechaDosificacion(fd2);
+			corteEvaluativo2.setFechaDosificacion(fd);
 			Carrera carrera2 = carrerasServices.buscarPorId(carreras.get(i).getId());
 			corteEvaluativo2.setCarrera(carrera2);
 			corteEvaluativoService.guardar(corteEvaluativo2);

@@ -163,7 +163,7 @@ public class AsistenteController {
 	
 	@Autowired
 	private IRemedialAlumnoService remedialAlumnoService;
-
+	
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 	
 	@GetMapping("/carga")
@@ -451,7 +451,7 @@ public class AsistenteController {
 			/////****** proceso de creacion de horario
 			List<Dia> dias = diaService.buscarDias();
 			model.addAttribute("dias", dias);				
-			DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");  
+			DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss"); 
 			//Se extrae una lista de las horas que ahi asociadas a cada hora de calse con un disting por hora inicio y hora fin				
 			List<Horario> horas = horarioService.buscarPorGrupoDistinctPorHoraInicio(cveGrupo);
 			model.addAttribute("horas", horas);
@@ -549,14 +549,13 @@ public class AsistenteController {
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(persona.getId());
 		int cveCarrera = 0;
 		int cve = 0;
-	
+
 		try {
 			cve = (int) session.getAttribute("cveCarrera");
 		} catch (Exception e) {
-			
+
 		}
-		
-		if(session.getAttribute("cveCarrera") != null && cve>0) {
+		if(session.getAttribute("cveCarrera") != null && cve > 0) {
 			cveCarrera = (Integer) session.getAttribute("cveCarrera");
 			model.addAttribute("cveCarrera", cveCarrera);
 			int cveGrupo = 0;
@@ -698,13 +697,69 @@ public class AsistenteController {
 						//se agregan los alumnos al arreglo
 						alumnosCalificaciones.add(alumnoDTO);
 					}
-					
 					model.addAttribute("alumnosCali", alumnosCalificaciones);
+					List<IndicadorMateriaDTO> indicadoresMaterias = new ArrayList<IndicadorMateriaDTO>();
+					//proceso para tabla de indicadores
+					if (corte.size() > 1) {
+						for (CargaHoraria ch : cargaHorarias) {
+							IndicadorMateriaDTO im = new IndicadorMateriaDTO();
+							im.setIdMateria(ch.getId());
+							im.setNombre(ch.getMateria().getNombre());
+							// variables para guardar promedios y remediales de la materia
+							int tRemediales = 0;
+							int tExtras = 0;
+							double pRemes = 0;
+							double pExtras = 0;
+							double promedioFinal = 0;
+							List<IndicadorParcialDTO> indicaroresParcial = new ArrayList<IndicadorParcialDTO>();
+							for (CorteEvaluativo c : corte) {
+								IndicadorParcialDTO ip = new IndicadorParcialDTO();
+								// para sacar el promedio de la materia y sus indicadores
+								double calificacionTotal = calificacionCorteService
+										.buscarPorCargaHorariaIdCorteEvaluativoIdGrupo(ch.getId(), c.getId());
+								double promedio = calificacionTotal / alumnos.size();
+								int remediales = remedialAlumnoService.contarRemedialesAlumno(ch.getId(), 1);
+								double pr = remediales / alumnos.size();
+								int extraordernarios = remedialAlumnoService.contarRemedialesAlumno(ch.getId(), 2);
+								double pe = extraordernarios / alumnos.size();
+								// para guaredar lor promedios finales de extras y remediales
+								tRemediales = tRemediales + remediales;
+								tExtras = tExtras + extraordernarios;
+								// para guardar los porcentajes finales de extras y remediales
+								pRemes = pRemes + pr;
+								pExtras = pExtras + pe;
+								// para guardar el promedio de los dos parciales
+								promedioFinal = promedioFinal + promedio;
+								// se guardan los objetos
+								ip.setIdMateria(ch.getMateria().getId());
+								ip.setPromedio(promedio);
+								ip.setRemediales(remediales);
+								ip.setpRemediales(pr);
+								ip.setExtraordinarios(extraordernarios);
+								ip.setpExtraordinarios(pe);
+								ip.setParcial(c.getConsecutivo());
+								// se agrega el objeto a la lista de indicador parcial
+								indicaroresParcial.add(ip);
+							}
+							// se agregan los promedios y procentajes generales
+							im.setPromedio(Math.round(promedioFinal / corte.size()));
+							im.setRemediales(tRemediales / corte.size());
+							im.setpRemediales(pRemes / corte.size());
+							im.setExtraordinarios(tExtras / corte.size());
+							im.setpExtraordinarios(pExtras / corte.size());
+							im.setParciales(indicaroresParcial);
+							// se agrega el objeto de indficador materia
+							indicadoresMaterias.add(im);
+						}
+						// se retorna la lista de indicadores materia
+						model.addAttribute("materias", indicadoresMaterias);
+						model.addAttribute("alumnos", alumnos.size());
+					}
 				}
 			}
 		}
-		model.addAttribute("nombreUT", NOMBRE_UT);
 		model.addAttribute("carreras", carreras);
+		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteCalificacionesGenerales";
 	}
 	
@@ -816,7 +871,6 @@ public class AsistenteController {
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("profesores", profesores);
 		model.addAttribute("materias", materias);
-		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteEvaluacionDocente";
 	}
 	
@@ -900,8 +954,7 @@ public class AsistenteController {
 		model.addAttribute("aluEncuestados", aluEncuestados);			
 		model.addAttribute("cveCarrera", cveCarrera);
 		model.addAttribute("cveGrupo", cveGrupo);		
-		model.addAttribute("evaluacion", evaluacion);		
-		model.addAttribute("nombreUT", NOMBRE_UT);
+		model.addAttribute("evaluacion", evaluacion);			
 		return "asistente/reporteEvaluacionTutor";
 	}
 	
