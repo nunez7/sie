@@ -20,6 +20,8 @@ public class Instrumento {
 	
 	private Boolean obligatorio;
 	
+	private Boolean producto;
+	
 	public Instrumento(){	
 	}
 	
@@ -58,6 +60,15 @@ public class Instrumento {
 	public void setObligatorio(Boolean obligatorio) {
 		this.obligatorio = obligatorio;
 	}
+
+	public Boolean getProducto() {
+		return producto;
+	}
+
+	public void setProducto(Boolean producto) {
+		this.producto = producto;
+	}
+	
 	
 	
 }

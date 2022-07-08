@@ -72,7 +72,14 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 			+ "AND ch.activo = 'True' ", nativeQuery = true)
 	Integer countGruposByProfesorAndPeriodo(@Param("profesor") Integer profesor, @Param("periodo") Integer periodo);
 
-	@Query(value = "SELECT * FROM grupos " + "WHERE id_carrera = :carrera AND id_cuatrimestre = :cuatrimestre "
+	@Query(value = "SELECT * FROM grupos " 
+			+ "WHERE id_carrera = :carrera AND id_cuatrimestre = :cuatrimestre "
+			+ "AND id_turno = :turno AND id_periodo = :periodo ORDER BY nombre", nativeQuery = true)
+	List<Grupo> findByCuatrimestreAndCarreraAndPeriodoAndTurno(@Param("cuatrimestre") Integer idCuatrimestre,
+			@Param("carrera") Integer idCarrera, @Param("periodo") Integer idPeriodo, @Param("turno") Integer idTurno);
+	
+	@Query(value = "SELECT * FROM grupos " 
+			+ "WHERE id_carrera = :carrera AND id_cuatrimestre = :cuatrimestre "
 			+ "AND id_periodo = :periodo ORDER BY nombre", nativeQuery = true)
 	List<Grupo> findByCuatrimestreAndCarreraAndPeriodo(@Param("cuatrimestre") Integer idCuatrimestre,
 			@Param("carrera") Integer idCarrera, @Param("periodo") Integer idPeriodo);
@@ -97,11 +104,11 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 	@Query(value = "SELECT g.* "
 			+ "FROM grupos g "
 			+ "WHERE g.id_carrera = :idCarrera AND g.id_periodo = :idPeriodo "
-			+ "AND g.id_cuatrimestre = 1 AND g.activo = 'True' "
+			+ "AND g.id_cuatrimestre = 1 AND g.activo = 'True' AND g.id_turno = :idTurno "
 			+ "AND g.capacidad_maxima > (SELECT count(ag.*) "
 			+ "FROM alumnos_grupos ag "
 			+ "INNER JOIN grupos g2 on ag.id_grupo=g2.id "
 			+ "WHERE g2.id=g.id) ORDER BY g.id LIMIT 1 ", nativeQuery = true)
-	Grupo findLastEmptyGrupo(@Param("idPeriodo") Integer idPeriodo, @Param("idCarrera") Integer idCarrera);
+	Grupo findLastEmptyGrupo(@Param("idPeriodo") Integer idPeriodo, @Param("idCarrera") Integer idCarrera, @Param("idTurno") Integer idTurno);
 	
 }

@@ -43,6 +43,7 @@ import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPersonaDocumentoService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IPrestamoDocumentoService;
+import edu.mx.utdelacosta.util.Reinscribir;
 import edu.mx.utdelacosta.util.SubirArchivo;
 
 @Controller
@@ -76,6 +77,9 @@ public class PersonaDocumentoController {
 
 	@Value("${siestapp.ruta.docs}")
 	private String rutaDocs;
+	
+	@Autowired
+	private Reinscribir reinscripcion;
 
 	@GetMapping("/search-by-idpersona/{id}")
 	public ResponseEntity<List<PdfUrlPDO>> buscarDocumentos(@PathVariable("id") int id, Model model) {
@@ -97,7 +101,7 @@ public class PersonaDocumentoController {
 
 	@PostMapping("/aprobar-documentos-prospecto")
 	@ResponseBody
-	public String aprobdocs(@RequestBody Map<String, String> obj, HttpServletRequest request) {
+	public String aprobdocs(@RequestBody Map<String, String> obj, HttpServletRequest request, HttpSession session) {
 		String value = (obj.get("value"));
 		int idDoc = 0;
 		Integer idAl = (Integer.parseInt(obj.get("idAl")));
@@ -115,17 +119,23 @@ public class PersonaDocumentoController {
 			idDoc = 3;
 			break;
 		}
-		updateAndSendcorreoAceptar(idAl, idDoc, request);
+		
+		updateAndSendcorreoAceptar(idAl, idDoc, request, (Integer) session.getAttribute("cvePersona"));
 		return "ok";
 	}
 
-	public void updateAndSendcorreoAceptar(Integer idAl, int idDoc, HttpServletRequest request) {
+	public void updateAndSendcorreoAceptar(Integer idAl, int idDoc, HttpServletRequest request, Integer idPersona) {
+		
+		
 		PersonaDocumento pd = new PersonaDocumento();
 		pd = personaDocService.buscarPorPersonaYIdDoc(idAl, idDoc);
 		pd.setValidado(true);
 		personaDocService.guardar(pd);
 		int valor = personaDocService.documentosValidosPorPersona(idAl);
 		if (valor == 3) {
+						
+			
+			
 			String url = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 			String email = personaService.buscarPorId(idAl).getEmail();
 			// Estado de que entrego los documentos
@@ -142,8 +152,8 @@ public class PersonaDocumentoController {
 			Map<String, Object> variables = new HashMap<>();
 			variables.put("titulo", "Documentación aprobada");
 			variables.put("cuerpoCorreo",
-					"Estimado Alumno, <br>"
-							+ "Se le notifica que tus documentos han sido aprobados por Servicios Escolares.<br>"
+							  "Estimado(a) Alumno(a), <br>"
+							+ "Se le notifica que sus documentos han sido aprobados por Servicios Escolares.<br>"
 							+ "¡Ya eres parte de nuestra Universidad! <br>" + "<a style ='color:white' href='" + url
 							+ "' class='btn' target='_blank'>Link de acceso a sistema</a><br>");
 			mail.setVariables(variables);
@@ -153,6 +163,16 @@ public class PersonaDocumentoController {
 			} catch (MessagingException | IOException e) {
 				System.out.println("Error " + e);
 			}
+			
+
+			Integer pagado = pagoGeneralService.validarPagoExamenAdmision(idAl);
+
+			if (pagado != null && pagado == 1) {
+				//se envian los datos al util de reinscribir, siendo idAl el id de persona del alumno e idPersona
+				// el id de persona de quien realiza la accion
+				reinscripcion.reinscribir(alumnoService.buscarPorPersona(new Persona(idAl)), idPersona);
+			}
+			
 		}
 
 	}
@@ -452,12 +472,12 @@ public class PersonaDocumentoController {
 			PersonaDocumento docPersona = personaDocService.buscarPorPersonaYdocumento(alumno.getPersona(), documento);
 			docPersona.setDetalle(numeroDetalle);
 			personaDocService.guardar(docPersona);
+			return "ok";
 
 		} else {
 			return "err";
 		}
 
-		return "ok";
 	}
 
 	@GetMapping("/ver-escolares/{idDocumento}")

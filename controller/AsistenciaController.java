@@ -389,7 +389,7 @@ public class AsistenciaController {
 		
 		// lista de cortesEvalutivos
 		model.addAttribute("grupos", grupos); // retorna los grupos de nivel TSU
-		model.addAttribute("nombreUT", NOMBRE_UT);
+		model.addAttribute("utName", NOMBRE_UT);
 		return "profesor/reporteAsistencias";
 	}
 	

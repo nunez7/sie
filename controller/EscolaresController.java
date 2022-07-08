@@ -51,12 +51,14 @@ import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Remedial;
 import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.Testimonio;
+import edu.mx.utdelacosta.model.Turno;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoCalificacionDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
 import edu.mx.utdelacosta.model.dto.CalificacionDTO;
 import edu.mx.utdelacosta.model.dto.MateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
+import edu.mx.utdelacosta.model.dtoreport.AlumnoNoReinscritoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoRegularDTO;
 import edu.mx.utdelacosta.model.dtoreport.CalificacionInstrumentoDTO;
@@ -90,6 +92,7 @@ import edu.mx.utdelacosta.service.IPlanEstudioService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.ITestimonioCorteService;
 import edu.mx.utdelacosta.service.ITestimonioService;
+import edu.mx.utdelacosta.service.ITurnoService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 import edu.mx.utdelacosta.util.SubirArchivo;
 
@@ -175,6 +178,9 @@ public class EscolaresController {
 
 	@Autowired
 	private ICalificacionCorteService calificacionesCorteService;
+	
+	@Autowired
+	private ITurnoService turnoService;
 
 	@Value("${siestapp.ruta.docs}")
 	private String rutaDocs;
@@ -457,7 +463,9 @@ public class EscolaresController {
 		List<Carrera> carreras = carreraService.buscarTodasMenosIngles();
 		List<Cuatrimestre> cuatrimestres = cuatrimestreService.buscarTodos();
 		List<Periodo> periodos = periodosService.buscarTodos();
+		List<Turno> turnos = turnoService.buscarTodos();
 
+		model.addAttribute("turnos", turnos);
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("periodos", periodos);
@@ -836,6 +844,15 @@ public class EscolaresController {
 		model.addAttribute("carreras", carreraService.buscarTodasMenosIngles());
 		model.addAttribute("alumnos", alumnos);
 		return "escolares/reporteMatriculaInicial";
+	}
+	
+	@GetMapping("ralumnosnoreinscritos")
+	public String rAlumnosNoReinscritos(Model model, HttpSession session) {
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		List<AlumnoNoReinscritoDTO> alumnos = alumnoService.BuscarNoReinscritosPorPeriodo(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("utName", NOMBRE_UT);
+		model.addAttribute("alumnos", alumnos);
+		return "escolares/reporteNoReinscritos";
 	}
 
 	@GetMapping("/municipios/{estado}")

@@ -22,6 +22,7 @@ import edu.mx.utdelacosta.model.Municipio;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.PersonaDocumento;
+import edu.mx.utdelacosta.model.Turno;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.service.IAlumnoService;
@@ -34,6 +35,7 @@ import edu.mx.utdelacosta.service.ILocalidadesService;
 import edu.mx.utdelacosta.service.IMunicipiosService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
+import edu.mx.utdelacosta.service.ITurnoService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
@@ -73,15 +75,16 @@ public class CaptacionAlumnoController {
 
 	@Autowired
 	private IAlumnoService alumnoService;
+	
+	@Autowired
+	private ITurnoService turnoService;
 
 	@Value("${siestapp.ruta.docs}")
 	private String rutaDocs;
 
 	@GetMapping("/aceptarAspirantes")
 	public String aceptarAspirantes(Model model, HttpSession session) {
-		// List<Alumno> prospectos = alumnoService.buscarProspectosRegular();
 		List<ProspectoDTO> prospectos = alumnoService.buscarProspectosActivos();
-		// List<Carrera> carreras = carreraService.buscarTodasMenosIngles();
 		List<Carrera> carreras = carreraService.buscarTodasTSUMenosIngles();
 		List<PersonaDocumento> documentos = new ArrayList<>();
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona"));
@@ -105,14 +108,12 @@ public class CaptacionAlumnoController {
 		Carrera carIni = new Carrera(idCarrera);
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = periodosService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
-		// List<Carrera> carreras = carreraService.buscarTodasMenosIngles();
 		List<Carrera> carreras = carreraService.buscarTodasTSUMenosIngles();
-		List<Grupo> grupos = grupoService.buscarPorCuatrimestreCarreraYPeriodo(1, idCarrera,
-				usuario.getPreferencias().getIdPeriodo());
-		// List<Alumno> alumnos =
-		// alumnoService.buscarTodoAceptarPorCarreraYPeriodo(carIni.getId(),
-		// periodo.getId());
+		List<Grupo> grupos = grupoService.buscarPorCuatrimestreCarreraYPeriodoYTurno(1, idCarrera,
+				usuario.getPreferencias().getIdPeriodo(),1);
+		List<Turno> turnos = turnoService.buscarTodos(); 
 		List<Alumno> alumnos = alumnoService.buscarProspectosAceptados(carIni.getId(), periodo.getId());
+		model.addAttribute("turnos", turnos);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("alumnos", alumnos);
 		model.addAttribute("carreras", carreras);
@@ -122,7 +123,6 @@ public class CaptacionAlumnoController {
 
 	@GetMapping("/nuevoProspecto")
 	public String nuevoProspecto(Model model) {
-		// List<Carrera> carreras = carreraService.buscarTodasMenosIngles();
 		List<Carrera> carreras = carreraService.buscarTodasTSUMenosIngles();
 		Estado estado = new Estado();
 		estado.setId(18);

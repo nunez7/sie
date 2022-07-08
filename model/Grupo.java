@@ -4,6 +4,7 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -52,7 +53,11 @@ public class Grupo {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@JoinColumn(name = "id_cuatrimestre", referencedColumnName = "id")
 	private Cuatrimestre cuatrimestre;
-
+	
+	@OneToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "id_turno", referencedColumnName = "id")
+	private Turno turno;
+		
 	private String nombre;
 
 	private String horario;
@@ -177,5 +182,14 @@ public class Grupo {
 	public void setActivo(Boolean activo) {
 		this.activo = activo;
 	}
+
+	public Turno getTurno() {
+		return turno;
+	}
+
+	public void setTurno(Turno turno) {
+		this.turno = turno;
+	}
+	
 		
 }
