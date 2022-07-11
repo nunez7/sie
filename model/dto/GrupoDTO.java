@@ -9,6 +9,7 @@ public class GrupoDTO {
 	private String nombreGrupo;
 	private boolean activo;
 	private Integer cantidad;
+	private Integer idTurno;
 	
 	private double promedio;
 	private int promedioRed;
@@ -81,6 +82,12 @@ public class GrupoDTO {
 	}
 	public void setCantidad(Integer cantidad) {
 		this.cantidad = cantidad;
+	}
+	public Integer getIdTurno() {
+		return idTurno;
+	}
+	public void setIdTurno(Integer idTurno) {
+		this.idTurno = idTurno;
 	}
 	
 
