@@ -37,7 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.Baja;
-import edu.mx.utdelacosta.model.BajaAutorizada;
+import edu.mx.utdelacosta.model.BajaAutoriza;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Concepto;
@@ -78,7 +78,7 @@ import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
-import edu.mx.utdelacosta.service.IBajaAutorizadaService;
+import edu.mx.utdelacosta.service.IBajaAutorizaService;
 import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
@@ -238,7 +238,7 @@ public class EscolaresController {
 	private IBajaService bajaService;
 	
 	@Autowired
-	private IBajaAutorizadaService bajaAutorizaService;
+	private IBajaAutorizaService bajaAutorizaService;
 
 	@GetMapping("/aceptarAspirantes")
 	public String aceptarAspirantes(Model model, HttpSession session) {
@@ -1466,7 +1466,7 @@ public class EscolaresController {
 				baja.setFechaAutorizacion(fechaHoy);
 				bajaService.guardar(baja);
 				
-				BajaAutorizada bajaAutorizada = new BajaAutorizada();
+				BajaAutoriza bajaAutorizada = new BajaAutoriza();
 				bajaAutorizada.setBaja(baja);
 				bajaAutorizada.setFechaRegistro(fechaHoy);
 				bajaAutorizada.setPersona(new Persona(cvePersona));
@@ -1540,7 +1540,7 @@ public class EscolaresController {
 				//Variables a plantilla
 				Map<String, Object> variables = new HashMap<>();
 				variables.put("titulo", "Baja rechazada por escolares.");						
-				variables.put("cuerpoCorreo","La solicitud de baja fue rechazada por escolares, debido al siguiente motivo: "+motivo);
+				variables.put("cuerpoCorreo","La solicitud de baja para el alumno "+baja.getAlumno().getPersona().getNombreCompleto()+" fue rechazada por escolares, debido al siguiente motivo: "+motivo);
 				mail.setVariables(variables);			
 				try {							
 					emailService.sendEmail(mail);													

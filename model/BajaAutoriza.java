@@ -13,8 +13,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "bajas_autorizadas")
-public class BajaAutorizada {
+@Table(name = "baja_autoriza")
+public class BajaAutoriza {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

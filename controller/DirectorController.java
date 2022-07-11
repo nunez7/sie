@@ -30,7 +30,7 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.Asistencia;
 import edu.mx.utdelacosta.model.Baja;
-import edu.mx.utdelacosta.model.BajaAutorizada;
+import edu.mx.utdelacosta.model.BajaAutoriza;
 import edu.mx.utdelacosta.model.CambioGrupo;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
@@ -65,7 +65,7 @@ import edu.mx.utdelacosta.service.IActividadService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAsistenciaService;
-import edu.mx.utdelacosta.service.IBajaAutorizadaService;
+import edu.mx.utdelacosta.service.IBajaAutorizaService;
 import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICambioGrupoService;
@@ -156,7 +156,7 @@ public class DirectorController {
 	private ITutoriaIndividualService tutoriaIndService;
 	
 	@Autowired
-	private IBajaAutorizadaService bajaAutorizaService;
+	private IBajaAutorizaService bajaAutorizaService;
 	
 	@Autowired
 	private EmailSenderService emailService;
@@ -653,7 +653,7 @@ public class DirectorController {
 			baja.setFechaAutorizacion(fechaHoy);
 			bajaService.guardar(baja);
 			
-			BajaAutorizada  bajaAutorizada = new BajaAutorizada();
+			BajaAutoriza  bajaAutorizada = new BajaAutoriza();
 			bajaAutorizada.setBaja(baja);
 			bajaAutorizada.setFechaRegistro(fechaHoy);
 			bajaAutorizada.setPersona(new Persona(cvePersona));
@@ -672,7 +672,7 @@ public class DirectorController {
 			//Variables a plantilla
 			Map<String, Object> variables = new HashMap<>();
 			variables.put("titulo", "Solitud de baja del alumn(a) "+baja.getAlumno().getPersona().getNombreCompleto());						
-			variables.put("cuerpoCorreo","El director(a) de carrera "+baja.getAlumno().getCarreraInicio().getDirectorCarrera()+" aprobó la solicitud de baja para el alumno con matrícula "+baja.getAlumno().getMatricula()+", diríjase al apartado de bajas en el panel del escolares para rechazar o aprobar la abaja.");
+			variables.put("cuerpoCorreo","El director(a) de carrera "+baja.getAlumno().getCarreraInicio().getDirectorCarrera()+" aprobó la solicitud de baja para el alumno con matrícula "+baja.getAlumno().getMatricula()+", diríjase al apartado de bajas en el panel del escolares para rechazar o aprobar la baja.");
 			mail.setVariables(variables);			
 			try {							
 				emailService.sendEmail(mail);													
@@ -706,7 +706,7 @@ public class DirectorController {
 			//Variables a plantilla
 			Map<String, Object> variables = new HashMap<>();
 			variables.put("titulo", "Baja rechazada por el director de la carrera.");						
-			variables.put("cuerpoCorreo","La solicitud de baja fue rechazada por el director de la carrera, debido al siguiente motivo: "+motivo);
+			variables.put("cuerpoCorreo","La solicitud de baja para el alumno "+baja.getAlumno().getPersona().getNombreCompleto()+" fue rechazada por el director de la carrera, debido al siguiente motivo: "+motivo);
 			mail.setVariables(variables);			
 			try {							
 				emailService.sendEmail(mail);													

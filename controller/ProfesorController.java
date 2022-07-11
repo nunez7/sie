@@ -149,6 +149,8 @@ public class ProfesorController {
 	@Autowired
 	private ICargaEvaluacionService serviceCarEva;
 
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
+
 	@GetMapping("/dosificacion")
 	public String dosificacion(Model model, HttpSession session) {
 		Integer cveCarga = (Integer) session.getAttribute("cveCarga"); 
@@ -597,6 +599,7 @@ public class ProfesorController {
 			
 		}
 		
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		model.addAttribute("usuario", usuario);
 		model.addAttribute("periodo", periodo);
 		model.addAttribute("aluEncuestados", aluEncuestados);			

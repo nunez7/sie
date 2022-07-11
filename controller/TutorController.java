@@ -430,15 +430,15 @@ public class TutorController {
 					//La canalización a profesor cambia un poco la estructura del correo enviado
 					if(servicio==3){
 						variables.put("cuerpoCorreo", "El tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
-								+", solicita una canalización el día "+dFDia.format(fecha)+" a las "+dFHora.format(hora)
+								+", solicita una canalización para el día "+dFDia.format(fecha)+" a las "+dFHora.format(hora)
 								+" para la materia "+cargaHoraria.getMateria().getNombre()+" que imparte"
-								+", por esta razon: "+razon
+								+", por esta razón: "+razon
 								+". "+comentario+". Espero su confirmación"+grupo.getProfesor().getEmail()+".");
 					}else{
 						variables.put("cuerpoCorreo", "El tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
-								+", solicita una canalización el día "+dFDia.format(fecha)+" a las "+dFHora.format(hora)
+								+", solicita una canalización para el día "+dFDia.format(fecha)+" a las "+dFHora.format(hora)
 								+" debido a que "+resumen
-								+", por esta razon: "+razon
+								+", por esta razón: "+razon
 								+". "+comentario+". Espero su confirmación"+grupo.getProfesor().getEmail()+".");
 					}
 					mail.setVariables(variables);			
@@ -537,7 +537,7 @@ public class TutorController {
 					mail.setTitulo("Nueva solicitud de baja.");		
 					//Variables a plantilla
 					Map<String, Object> variables = new HashMap<>();
-					variables.put("titulo", "Solitud de baja del alumn(a) "+alumno.getPersona().getNombreCompleto());						
+					variables.put("titulo", "Solicitud de baja del alumn(a) "+alumno.getPersona().getNombreCompleto());						
 					variables.put("cuerpoCorreo","El Tutor "+persona.getNombreCompleto()+" realizó una solicitud de baja para el alumno con matrícula "+alumno.getMatricula()+", diríjase al apartado de bajas en el panel del director para ver más detalles al respecto.");
 					mail.setVariables(variables);			
 					try {							

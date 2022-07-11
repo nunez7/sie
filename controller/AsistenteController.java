@@ -57,8 +57,8 @@ import edu.mx.utdelacosta.service.IAreaConocimientoService;
 import edu.mx.utdelacosta.service.IAsistenciaService;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
-import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.ICargaEvaluacionService;
+import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.IComentarioEvaluacionTutorService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
@@ -165,9 +165,11 @@ public class AsistenteController {
 	
 	@Autowired
 	private IRespuestaEvaluacionTutorService serviceResEvaTutor;
-
+	
 	@Autowired
 	private ICargaEvaluacionService serviceCarEva;
+	
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 	
 	@GetMapping("/carga")
 	public String carga(Model model, HttpSession session) {
@@ -793,8 +795,8 @@ public class AsistenteController {
 					//se extraen los cargas horararias (grupos) en las que que se imparte la meteria asociada al profesor y el perido  
 					List<CargaHoraria> ChGrupos = cargaHorariaService.buscarPorCarreraProfesorMateriaYPeriodo(cveCarrera, cveProfesor, cveMateria, usuario.getPreferencias().getIdPeriodo());
 					List<ComentarioDTO> comentarios = serviceEvaCom.buscarComentariosPorPersona(3, cveCarrera, cveProfesor, cveMateria, usuario.getPreferencias().getIdPeriodo());
-					//se obtiene el numero de alumnos que an relisado la encueta 
-					Boolean vista = false;				
+					//se obtiene el numero de alumnos que an relisado la encueta
+					Boolean vista = false;
 					for(CargaHoraria ch: ChGrupos) {
 						aluEncuestados = serviceResCarEva.contarPorGrupoYCargaHoraria(3, ch.getGrupo().getId(), ch.getId())+aluEncuestados;
 						CargaEvaluacion CaEva = serviceCarEva.buscarPorCargaHorariaYEvaluacion(ch, evaluacion);
@@ -872,13 +874,14 @@ public class AsistenteController {
 			model.addAttribute("profesores",null);
 			model.addAttribute("drCarrera", carrera.getDirectorCarrera());				
 		}
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		model.addAttribute("usuario", usuario);
 		model.addAttribute("periodo", periodo);
 		model.addAttribute("aluEncuestados", aluEncuestados);			
 		model.addAttribute("cveCarrera", cveCarrera);
 		model.addAttribute("cveProfesor", cveProfesor);
 		model.addAttribute("cveMateria", cveMateria);
-		model.addAttribute("evaluacion", evaluacion);
+		model.addAttribute("evaluacion", evaluacion);	
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("profesores", profesores);
 		model.addAttribute("materias", materias);
@@ -901,10 +904,8 @@ public class AsistenteController {
 		if(cveCarrera != null) {
 			Carrera carrera = carrerasServices.buscarPorId(cveCarrera);
 			grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), cveCarrera);
-			if(cveGrupo != null) {
-				
-				aluEncuestados = serviceResEvaTutor.contarEncuestadosPorGrupo(4, cveGrupo);
-				
+			if(cveGrupo != null) {				
+				aluEncuestados = serviceResEvaTutor.contarEncuestadosPorGrupo(4, cveGrupo);				
 				List<ComentarioDTO> comentarios = serviceComEvaTurtor.buscarComentariosPorGrupo(4, cveGrupo);
 				Grupo grupo = grupoService.buscarPorId(cveGrupo);
 				//se caulculan los promedios de cada una de las preguntas para cada uno de los grupos en lo que el profesor imparte dicha materia en determinda carrera
@@ -958,6 +959,7 @@ public class AsistenteController {
 			}								
 		}
 		
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("grupos", grupos);				
 		model.addAttribute("periodo", periodo);

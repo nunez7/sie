@@ -24,7 +24,7 @@ public interface BajaRepository extends CrudRepository<Baja, Integer>{
 	
 	//bajas para scolares 
 	@Query(value = "SELECT b.* FROM bajas b "
-			+ "INNER JOIN bajas_autorizadas bg ON b.id=bg.id_baja "
+			+ "INNER JOIN baja_autoriza bg ON b.id=bg.id_baja "
 			+ "WHERE bg.tipo=:tipo AND b.estatus=:estatus", nativeQuery = true)
 	List<Baja> findByTipoAndStatus(@Param("tipo") Integer tipo, @Param("estatus") Integer estatus);
 	
@@ -32,7 +32,7 @@ public interface BajaRepository extends CrudRepository<Baja, Integer>{
 			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno=b.id_alumno "
 			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
 			+ "INNER JOIN alumnos a ON a.id=ag.id_alumno "
-			+ "INNER JOIN bajas_autorizadas bg ON b.id=bg.id_baja "
+			+ "INNER JOIN baja_autoriza bg ON b.id=bg.id_baja "
 			+ "WHERE bg.tipo=:tipo AND b.estatus=:estatus AND ag.id_grupo=:idGrupo AND g.id_periodo =:idPeriodo", nativeQuery = true)
 	List<Baja> findByTipoAndStatusAndGrupoAndPeriodo(@Param("tipo") Integer tipo, @Param("estatus") Integer estatus, @Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo);
 }
