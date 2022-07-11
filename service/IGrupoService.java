@@ -33,11 +33,13 @@ public interface IGrupoService {
 	
 	List<Grupo> buscarPorCuatrimestreCarreraYPeriodo(Integer idCuatrimestre, Integer idCarrera, Integer idPeriodo);
 
+	List<Grupo> buscarPorCuatrimestreCarreraYPeriodoYTurno(Integer idCuatrimestre, Integer idCarrera, Integer idPeriodo, Integer idTurno);
+
 	List<Grupo> buscarPorIdProfesor(Persona profesor);
 	
 	List<Grupo> buscarPorProfesorYPeriodo(Integer idProfesor, Integer idPersona);
 	
 	Grupo buscarPorAlumnoPenultimoGrupo(Integer idAlumno);
 	
-	Grupo buscarUltimoGrupoLibre(Integer idPeriodo, Integer idCarrera);
+	Grupo buscarUltimoGrupoLibre(Integer idPeriodo, Integer idCarrera, Integer idTurno);
 }

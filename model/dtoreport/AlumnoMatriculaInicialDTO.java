@@ -20,6 +20,8 @@ public interface AlumnoMatriculaInicialDTO {
 	
 	Boolean getDiscapacitado();
 	
+	String getTipoDiscapacidad();
+	
 	Integer getEdad();
 	
 	String getCurp();
@@ -31,5 +33,17 @@ public interface AlumnoMatriculaInicialDTO {
 	String getNombreBachillerato();
 	
 	String getEstadoBachillerato();
+	
+	String getMunicipioBachillerato();
+	
+	String getLocalidadBachillerato();
+	
+	String getHijos();
+	
+	Integer getDialecto();
+	
+	String getPromocion();
+	
+	String getTipoBeca();
 	
 }

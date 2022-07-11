@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpSession;
 
@@ -55,6 +57,8 @@ public class HorariosController {
 	@Autowired
 	private IDiaService diaService;
 	
+	Logger logger = Logger.getLogger(HorariosController.class.getName());
+	
 	
 	@PostMapping(value = "/guardar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
@@ -69,6 +73,13 @@ public class HorariosController {
 		String horaInicioDTO = "";
 		String horaFinDTO = "";
 		if(horarioDTO.getIdHorario() > 0) {
+			//para desactivar el horario
+			if(!horarioDTO.getActivo()) {
+				horario = horarioService.buscarPorId(horarioDTO.getIdHorario());
+				horario.setActivo(horarioDTO.getActivo());
+				horarioService.guardar(horario);
+				return "baja";
+			}
 			horaInicioDTO = horarioDTO.getHoraInicio();
 			horaFinDTO = horarioDTO.getHoraFin();
 			//cuando se va editar el horario
@@ -83,12 +94,9 @@ public class HorariosController {
 				return "hp";
 			}
 			Horario horarioGrupo = horarioService.buscarPorHoraInicioHoraFinYGrupoYdia(horaInicioDTO, horaFinDTO, cargaHoraria.getGrupo().getId(), horarioDTO.getDia());
-			System.err.println("hg: "+horarioGrupo);
 			if(horarioGrupo != null) {
 				return "hg";
 			}
-			horario = horarioService.buscarPorId(horarioDTO.getIdHorario());
-			horario.setActivo(horarioDTO.getActivo());
 		}
 		else {
 			horaInicioDTO = horarioDTO.getHoraInicio()+":00";
@@ -116,7 +124,7 @@ public class HorariosController {
 			horario.setHoraInicio(horaInicio);
 			horario.setHoraFin(horaFin);
 		} catch (ParseException e) {
-			System.err.println("Error de parseo: " + e);
+			logger.log(Level.WARNING, "Error de parseo: " + e);
 		}
 		horarioService.guardar(horario);
 		return "ok";

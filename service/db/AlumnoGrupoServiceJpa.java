@@ -74,6 +74,10 @@ public class AlumnoGrupoServiceJpa implements IAlumnoGrupoService{
 	public Integer contarAlumnosGruposPorGrupo(Integer idGrupo) {
 		return agRepositorio.countAlumnosByGrupo(idGrupo);
 	}
-	
+
+	@Override
+	public AlumnoGrupo buscarPrimerGrupoProspecto(Integer idAlumno) {
+		return agRepositorio.findFirstGrupoProspecto(idAlumno);
+	}	
 
 }

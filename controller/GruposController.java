@@ -26,6 +26,7 @@ import edu.mx.utdelacosta.model.Cuatrimestre;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.Turno;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
 import edu.mx.utdelacosta.service.ICarrerasServices;
@@ -65,6 +66,7 @@ public class GruposController {
 			grupo.setCuatrimestre(new Cuatrimestre(datos.getIdCuatrimestre()));
 			grupo.setPeriodo(new Periodo(datos.getIdPeriodo()));
 		}
+		grupo.setTurno(new Turno(datos.getIdTurno()));
 		grupo.setActivo(datos.isActivo());
 		grupo.setNombre(datos.getNombreGrupo());
 		grupo.setCapacidadMaxima(datos.getCantidad());
@@ -87,6 +89,7 @@ public class GruposController {
 			grupoDto.setNombreGrupo(grupo.getNombre());
 			grupoDto.setActivo(grupo.getActivo());
 			grupoDto.setCantidad(grupo.getCapacidadMaxima());
+			grupoDto.setIdTurno(grupo.getTurno().getId());
 			return ResponseEntity.ok(grupoDto);
 		}
 	}
@@ -114,11 +117,12 @@ public class GruposController {
 		return map;
 	}
 	
-	@GetMapping ("/find-all-by-periodocarrera/{id}")
-	public String gruposF(@PathVariable(name ="id", required = false) int id, Model model, HttpSession session) {
+	@GetMapping ("/find-all-by-periodocarrera/{carrera}/{turno}")
+	public String gruposF(@PathVariable(name ="carrera", required = true) int carrera,
+		@PathVariable(name ="turno", required = true) int turno, Model model, HttpSession session) {
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		List<Grupo> grupos = new ArrayList<>();
-		grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), id);
+		grupos = grupoService.buscarPorCuatrimestreCarreraYPeriodoYTurno(1, carrera, usuario.getPreferencias().getIdPeriodo(), turno);
 		model.addAttribute("grupos", grupos);
 		return "escolares/aspirantesAceptados :: lf-grupos";
 	}

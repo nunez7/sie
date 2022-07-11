@@ -54,6 +54,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.PersonaDocumento;
 import edu.mx.utdelacosta.model.RemedialAlumno;
+import edu.mx.utdelacosta.model.Turno;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
 import edu.mx.utdelacosta.model.dto.CorteEvaluativoDTO;
@@ -178,6 +179,7 @@ public class AlumnoController {
 			alumnoDTO.setFechaNacimiento(date);
 			alumnoDTO.setEmail(alumno.getPersona().getEmail());
 			alumnoDTO.setCelular(alumno.getPersona().getDatosPersonales().getCelular());
+			alumnoDTO.setIdTurno(alumno.getTurno().getId());
 			grupo = serviceGrupo.buscarUltimoDeAlumno(id);
 			if(grupo  == null)
 			{
@@ -1267,6 +1269,7 @@ public class AlumnoController {
     		alumno.getPersona().getDatosPersonales().setFechaNacimiento(fechaNac);
     		alumno.getPersona().setEmail(dto.getEmail());
     		alumno.getPersona().getDatosPersonales().setCelular(dto.getCelular());
+    		alumno.setTurno(new Turno(dto.getIdTurno()));
     		if(alumno.getCarreraInicio().getId() != dto.getIdCarrera()) {
     			
     			//Esto indica que se mando desde prospectosAceptados y genera un adeudo
@@ -1285,6 +1288,14 @@ public class AlumnoController {
     			alumno.setCarreraInicio(new Carrera(dto.getIdCarrera()));
     			
     		}
+    		
+    		AlumnoGrupo alGrupo = alumnoGrService.buscarPorIdAlumnoYidGrupo(alumno.getId(), dto.getIdGrupo());
+    		if (alGrupo==null) {
+				alGrupo = alumnoGrService.buscarPrimerGrupoProspecto(alumno.getId());
+				alGrupo.setGrupo(new Grupo(dto.getIdGrupo()));
+				alumnoGrService.guardar(alGrupo);
+			}
+    		
     		serviceAlumno.guardar(alumno);
     	}
 		return "ok";

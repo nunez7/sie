@@ -5,6 +5,7 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
+import edu.mx.utdelacosta.model.dtoreport.AlumnoNoReinscritoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoRegularDTO;
 import edu.mx.utdelacosta.model.dto.ProspectoDTO;
@@ -77,5 +78,9 @@ public interface IAlumnoService {
 	List<ProspectoDTO> buscarProspectosActivos();
 	
 	List<Alumno> buscarProspectosAceptados(Integer idCarrera, Integer idPeriodo);
+	
+	List<AlumnoNoReinscritoDTO> buscarNoReinscritosPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo);
+	
+	List<AlumnoNoReinscritoDTO> BuscarNoReinscritosPorPeriodo(Integer idPeriodo);
 
 }

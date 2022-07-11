@@ -16,4 +16,5 @@ public interface IAlumnoGrupoService {
 	void eliminar(AlumnoGrupo alumnoGrupo);
 	List<AlumnoGrupo> buscarPorAlumnoYPeriodo(Integer idAlumno, Integer idPeriodo);
 	Integer contarAlumnosGruposPorGrupo(Integer idGrupo);
+	AlumnoGrupo buscarPrimerGrupoProspecto (Integer idAlumno);
 }

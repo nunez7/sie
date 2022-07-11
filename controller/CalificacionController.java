@@ -128,6 +128,7 @@ public class CalificacionController {
 	@Autowired
 	private ITestimonioCorteService testimonioCorteService;
 	
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 
 	// metodo que devuelve la tabla de calificaciones e instrumentos de una materia
 	// y corte seleccionado
@@ -331,6 +332,8 @@ public class CalificacionController {
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
 			model.addAttribute("cargas", cargasHorarias);
 		}
+		
+		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);
 		return "profesor/reporteCalificaciones";
 	}
@@ -401,6 +404,7 @@ public class CalificacionController {
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
 			model.addAttribute("cargas", cargasHorarias);
 		}
+		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);
 		return "profesor/reporteSeguimiento";
 	}

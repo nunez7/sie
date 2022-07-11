@@ -48,6 +48,7 @@ import edu.mx.utdelacosta.model.dto.MateriaDTO;
 import edu.mx.utdelacosta.model.dto.MesDTO;
 import edu.mx.utdelacosta.model.dto.ProfesorProrrogaDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
+import edu.mx.utdelacosta.model.dtoreport.AlumnoNoReinscritoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AsistenciasCorteDTO;
 import edu.mx.utdelacosta.model.dtoreport.DosificacionPendienteDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaDTO;
@@ -607,95 +608,6 @@ public class DirectorController {
 		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "director/reporteAdeudos";
 	}	
-	
-	// reporte de indicadores
-	@GetMapping("/reporte-indicadores")
-	public String reporteIndicadores(Model model, HttpSession session) {
-		int cvePersona = (Integer) session.getAttribute("cvePersona");
-		Persona persona = personaService.buscarPorId(cvePersona);
-		Usuario usuario = usuariosService.buscarPorPersona(persona);
-		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(persona.getId());
-		if (session.getAttribute("cveCarrera") != null) {
-			int cveCarrera = (Integer) session.getAttribute("cveCarrera");
-			List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(),
-					cveCarrera);
-			model.addAttribute("grupos", grupos);
-			model.addAttribute("cveCarrera", cveCarrera);
-			if (session.getAttribute("cveGrupo") != null) {
-				int cveGrupo = (Integer) session.getAttribute("cveGrupo");
-				model.addAttribute("cveGrupo", cveGrupo);
-				// model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
-				// proceso para sacar las materias
-				List<CargaHoraria> cargaHorarias = cargaHorariaService.buscarPorGrupoYPeriodo(cveGrupo,
-						usuario.getPreferencias().getIdPeriodo());
-				// model.addAttribute("ch", cargaHorarias);
-				List<CorteEvaluativo> corte = corteEvaluativoService.buscarPorCarreraYPeriodo(
-						usuario.getPreferencias().getIdCarrera(), usuario.getPreferencias().getIdPeriodo());
-				List<IndicadorMateriaDTO> indicadoresMaterias = new ArrayList<IndicadorMateriaDTO>();
-				int alumnos = alumnoService.buscarPorGrupo(cveGrupo).size();
-				model.addAttribute("alumnos", alumnos);
-				if (alumnos > 0) {
-					if (corte.size() > 1) {
-						for (CargaHoraria ch : cargaHorarias) {
-							IndicadorMateriaDTO im = new IndicadorMateriaDTO();
-							im.setIdMateria(ch.getId());
-							im.setNombre(ch.getMateria().getNombre());
-							// variables para guardar promedios y remediales de la materia
-							int tRemediales = 0;
-							int tExtras = 0;
-							double pRemes = 0;
-							double pExtras = 0;
-							double promedioFinal = 0;
-							List<IndicadorParcialDTO> indicaroresParcial = new ArrayList<IndicadorParcialDTO>();
-							for (CorteEvaluativo c : corte) {
-								IndicadorParcialDTO ip = new IndicadorParcialDTO();
-								// para sacar el promedio de la materia y sus indicadores
-								double calificacionTotal = calificacionCorteService
-										.buscarPorCargaHorariaIdCorteEvaluativoIdGrupo(ch.getId(), c.getId());
-								double promedio = calificacionTotal / alumnos;
-								int remediales = remedialAlumnoService.contarRemedialesAlumno(ch.getId(), 1);
-								double pr = remediales / alumnos;
-								int extraordernarios = remedialAlumnoService.contarRemedialesAlumno(ch.getId(), 2);
-								double pe = extraordernarios / alumnos;
-								// para guaredar lor promedios finales de extras y remediales
-								tRemediales = tRemediales + remediales;
-								tExtras = tExtras + extraordernarios;
-								// para guardar los porcentajes finales de extras y remediales
-								pRemes = pRemes + pr;
-								pExtras = pExtras + pe;
-								// para guardar el promedio de los dos parciales
-								promedioFinal = promedioFinal + promedio;
-								// se guardan los objetos
-								ip.setIdMateria(ch.getMateria().getId());
-								ip.setPromedio(promedio);
-								ip.setRemediales(remediales);
-								ip.setpRemediales(pr);
-								ip.setExtraordinarios(extraordernarios);
-								ip.setpExtraordinarios(pe);
-								ip.setParcial(c.getConsecutivo());
-								// se agrega el objeto a la lista de indicador parcial
-								indicaroresParcial.add(ip);
-							}
-							// se agregan los promedios y procentajes generales
-							im.setPromedio(Math.round(promedioFinal / corte.size()));
-							im.setRemediales(tRemediales / corte.size());
-							im.setpRemediales(pRemes / corte.size());
-							im.setExtraordinarios(tExtras / corte.size());
-							im.setpExtraordinarios(pExtras / corte.size());
-							im.setParciales(indicaroresParcial);
-							// se agrega el objeto de indficador materia
-							indicadoresMaterias.add(im);
-						}
-						// se retorna la lista de indicadores materia
-						model.addAttribute("materias", indicadoresMaterias);
-					}
-				}
-			} // pruebas de indicadores por carrera
-		}
-		model.addAttribute("carreras", carreras);
-		model.addAttribute("nombreUT", NOMBRE_UT);
-		return "director/reporteIndicadores";
-	}
 
 	// reporte de indicadores por carrera
 	@GetMapping("/reporte-indicadores-carrera")
@@ -890,6 +802,17 @@ public class DirectorController {
 		model.addAttribute("carreras", carrerasServices.buscarCarrerasPorIdPersona(persona.getId()));
 		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "director/reporteAsistenciasAlumno";
+	}
+	
+	@GetMapping("/reporte-alumnos-noreinscritos")
+	public String reporteAlumnosNoReinscritos(Model model, HttpSession session) {
+		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
+		Usuario usuario = usuariosService.buscarPorPersona(persona);
+		//lista de alumnos no reinscritos
+		List<AlumnoNoReinscritoDTO> alumnos = alumnoService.buscarNoReinscritosPorPersonaCarreraYPeriodo(persona.getId(), usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("alumnos", alumnos);
+		model.addAttribute("nombreUT", NOMBRE_UT);
+		return "director/reporteNoReinscritos";
 	}
 
 }
