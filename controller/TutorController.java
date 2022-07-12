@@ -66,6 +66,7 @@ import edu.mx.utdelacosta.model.dto.PreguntaDTO;
 import edu.mx.utdelacosta.model.dto.PromedioPreguntaDTO;
 import edu.mx.utdelacosta.model.dto.TutoriasProgramadasDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioDTO;
+import edu.mx.utdelacosta.model.dtoreport.GruposEvaluacionTutorDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorParcialDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
@@ -930,64 +931,79 @@ public class TutorController {
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		Evaluacion evaluacion = evaluacionService.buscar(4);
 		
-		if(cveGrupo != null) {			
-			aluEncuestados = resEvaTutorService.contarEncuestadosPorGrupo(4, cveGrupo);			
-			List<ComentarioDTO> comentarios = comEvaTurtorService.buscarComentariosPorGrupo(4, cveGrupo);
-			Grupo grupo = grupoService.buscarPorId(cveGrupo);
-			//Se calculan los promedios de cada una de las preguntas para cada uno de los grupos en lo que el profesor imparte dicha materia en determinada carrera
-			List<PreguntaDTO> preguntasDto = new ArrayList<>();	
-			double promedioPre=0.0;
-			for(Pregunta pre :evaluacion.getPreguntas()) {
-				PromedioPreguntaDTO promedioPreguntaDTOs = preguntasService.ObtenerPromedioEvaTuPorPregunta(4, pre.getId(), cveGrupo);
-				promedioPre=promedioPreguntaDTOs.getPromedio()+promedioPre;
-				
-				List<GrupoDTO> gruposDTO = new ArrayList<>();
-				GrupoDTO grupoDto = new GrupoDTO();
-				grupoDto.setIdGrupo(grupo.getId());
-				grupoDto.setNombreGrupo(grupo.getNombre());
-				grupoDto.setPromedioPre(promedioPreguntaDTOs.getPromedio());
-				gruposDTO.add(grupoDto);
-				
-				PreguntaDTO preguntaDto = new PreguntaDTO();
-				preguntaDto.setIdPregunta(pre.getId());
-				preguntaDto.setDescripcion(pre.getDescripcion());
-				preguntaDto.setConsecutivo(pre.getConsecutivo());	
-				preguntaDto.setGruposDTO(gruposDTO);
-				preguntasDto.add(preguntaDto);
+		if(cveGrupo != null) {	
+			// Validación por si el reporte es de todos los grupos tutorados o de solo uno en particular
+			List<Grupo> Rgrupos = new ArrayList<>();
+			if(cveGrupo==0) {
+				Rgrupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));
+			}else {
+				Grupo Rgrupo = grupoService.buscarPorId(cveGrupo);
+				Rgrupos.add(Rgrupo);
 			}
 			
-			List<GrupoDTO> gruposDTOs = new ArrayList<>();
-			double proGe=0.0;					
-			for(PreguntaDTO preDTO : preguntasDto) {
-				proGe =  preDTO.getGruposDTO().get(0).getPromedioPre()+proGe;
-			}		
+			List<GruposEvaluacionTutorDTO> gruposEvaDto = new ArrayList<>();
+			for(Grupo grupo : Rgrupos) {
+				GruposEvaluacionTutorDTO grupoEvaDto =  new GruposEvaluacionTutorDTO();
+				aluEncuestados = resEvaTutorService.contarEncuestadosPorGrupo(4, grupo.getId());			
+				List<ComentarioDTO> comentarios = comEvaTurtorService.buscarComentariosPorGrupo(4, grupo.getId());
+				//Se calculan los promedios de cada una de las preguntas para cada uno de los grupos en lo que el profesor imparte dicha materia en determinada carrera
+				List<PreguntaDTO> preguntasDto = new ArrayList<>();	
+				double promedioPre=0.0;
+				for(Pregunta pre :evaluacion.getPreguntas()) {
+					PromedioPreguntaDTO promedioPreguntaDTOs = preguntasService.ObtenerPromedioEvaTuPorPregunta(4, pre.getId(), grupo.getId());
+					promedioPre=promedioPreguntaDTOs.getPromedio()+promedioPre;
+					
+					List<GrupoDTO> gruposDTO = new ArrayList<>();
+					GrupoDTO grupoDto = new GrupoDTO();
+					grupoDto.setIdGrupo(grupo.getId());
+					grupoDto.setNombreGrupo(grupo.getNombre());
+					grupoDto.setPromedioPre(promedioPreguntaDTOs.getPromedio());
+					gruposDTO.add(grupoDto);
+					
+					PreguntaDTO preguntaDto = new PreguntaDTO();
+					preguntaDto.setIdPregunta(pre.getId());
+					preguntaDto.setDescripcion(pre.getDescripcion());
+					preguntaDto.setConsecutivo(pre.getConsecutivo());	
+					preguntaDto.setGruposDTO(gruposDTO);
+					preguntasDto.add(preguntaDto);
+				}
+				
+				List<GrupoDTO> gruposDTOs = new ArrayList<>();
+				Double proGe=0.0;					
+				for(PreguntaDTO preDTO : preguntasDto) {
+					proGe =  preDTO.getGruposDTO().get(0).getPromedioPre()+proGe;
+				}		
+				
+				proGe=proGe/evaluacion.getPreguntas().size();
+				GrupoDTO grupoDto = new GrupoDTO();
+				grupoDto.setIdGrupo(0);
+				grupoDto.setNombreGrupo("0");
+				grupoDto.setPromedioPre(proGe);
+				gruposDTOs.add(grupoDto);					
+							
+				PreguntaDTO preguntaDto = new PreguntaDTO();
+				preguntaDto.setIdPregunta(evaluacion.getPreguntas().size()+1);
+				preguntaDto.setDescripcion("Promedio");
+				preguntaDto.setConsecutivo(evaluacion.getPreguntas().size()+1);	
+				preguntaDto.setGruposDTO(gruposDTOs);
+				preguntasDto.add(preguntaDto);
+				
+				
+				grupoEvaDto.setPromedioGeneral(proGe);
+				grupoEvaDto.setPreguntas(preguntasDto);
+				grupoEvaDto.setGrupo(grupo);
+				grupoEvaDto.setComentarios(comentarios);
+				grupoEvaDto.setDirectorCarrera(grupo.getCarrera().getDirectorCarrera());
+				grupoEvaDto.setAlumnosEncuestados(aluEncuestados);
+				gruposEvaDto.add(grupoEvaDto);
 			
-			proGe=proGe/evaluacion.getPreguntas().size();
-			GrupoDTO grupoDto = new GrupoDTO();
-			grupoDto.setIdGrupo(0);
-			grupoDto.setNombreGrupo("0");
-			grupoDto.setPromedioPre(proGe);
-			gruposDTOs.add(grupoDto);					
-						
-			PreguntaDTO preguntaDto = new PreguntaDTO();
-			preguntaDto.setIdPregunta(evaluacion.getPreguntas().size()+1);
-			preguntaDto.setDescripcion("Promedio");
-			preguntaDto.setConsecutivo(evaluacion.getPreguntas().size()+1);	
-			preguntaDto.setGruposDTO(gruposDTOs);
-			preguntasDto.add(preguntaDto);
-			
-			model.addAttribute("proGe", proGe);
-			model.addAttribute("preguntas", preguntasDto);
-			model.addAttribute("grupo", grupo);
-			model.addAttribute("comentarios", comentarios);
-			model.addAttribute("drCarrera", grupo.getCarrera().getDirectorCarrera());
+			}
+			model.addAttribute("gruposEvaDto", gruposEvaDto);
 		}				
 		
 		model.addAttribute("grupos", grupos);
-		model.addAttribute("usuario", usuario);	
 		model.addAttribute("periodo", periodo);
 		model.addAttribute("cveGrupo", cveGrupo);
-		model.addAttribute("aluEncuestados", aluEncuestados);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "reportes/reporteEvaluacionTutor";
 	}

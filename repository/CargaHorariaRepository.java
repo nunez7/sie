@@ -52,5 +52,12 @@ public interface CargaHorariaRepository extends JpaRepository<CargaHoraria, Inte
 			   + "INNER JOIN carreras c ON c.id=g.id_carrera "
 			   + "WHERE c.id=:idCarrera AND ch.id_profesor=:idProfesor AND ch.id_materia=:idMateria AND ch.id_periodo=:idPeriodo AND ch.activo=true ORDER BY ch.id_grupo" ,nativeQuery = true)
 	List<CargaHoraria> findByCarreraProfesorAndMateriaAndPeriodo(@Param("idCarrera") Integer idCarrera, @Param("idProfesor") Integer idProfesor, @Param("idMateria") Integer idMateria, @Param("idPeriodo") Integer idPeriodo);
-
+	
+	@Query(value = "SELECT ch.* FROM cargas_horarias ch "
+			   + "INNER JOIN grupos g ON g.id=ch.id_grupo "
+			   + "INNER JOIN carreras c ON c.id=g.id_carrera "
+			   + "WHERE c.id=:idCarrera AND ch.id_profesor=:idProfesor AND ch.id_periodo=:idPeriodo "
+			   + "AND ch.activo=true ORDER BY ch.id_grupo" ,nativeQuery = true)
+	List<CargaHoraria> findByCarreraAndProfesorAndPeriodo(@Param("idCarrera") Integer idCarrera, @Param("idProfesor") Integer idProfesor, @Param("idPeriodo") Integer idPeriodo);
+	
 }

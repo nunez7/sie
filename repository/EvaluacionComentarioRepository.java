@@ -36,4 +36,21 @@ public interface EvaluacionComentarioRepository extends CrudRepository<Evaluacio
 			+ "WHERE c.id=:idCarrera AND ch.id_profesor=:idProfesor AND ch.id_materia=:idMateria "			
 			+ "AND ch.id_periodo=:idPeriodo AND ch.activo=true ORDER BY ch.id_grupo", nativeQuery = true)
 	List<ComentarioDTO> findComentarioByAlumno(@Param("idEvaluacion") Integer idEvaluacion, @Param("idCarrera") Integer idCarrera, @Param("idProfesor") Integer idProfesor, @Param("idMateria") Integer idMateria, @Param("idPeriodo") Integer idPeriodo);
+	
+	@Query(value = "SELECT co.id_persona, co.comentario FROM comentarios co "
+			+ "INNER JOIN evaluacion_comentario ec ON co.id=ec.id_comentario "
+			+ "INNER JOIN carga_evaluacion ce ON ce.id=ec.id_carga_evaluacion "
+			+ "INNER JOIN cargas_horarias ch ON ch.id=ce.id_carga "
+			+ "WHERE ch.id_profesor=:idProfesor AND ch.id_periodo=:idPeriodo AND ch.activo=true AND ce.id_evaluacion=:idEvaluacion", nativeQuery = true)
+	List<ComentarioDTO> findComentarioByProfesorAndPeriodoAndEvaluacion(@Param("idProfesor") Integer idProfesor, @Param("idPeriodo") Integer idPeriodo, @Param("idEvaluacion") Integer idEvaluacion);
+	
+	@Query(value = "SELECT co.id_persona, co.comentario FROM comentarios co "
+			+ "INNER JOIN evaluacion_comentario ec ON co.id=ec.id_comentario "
+			+ "INNER JOIN carga_evaluacion ce ON ce.id=ec.id_carga_evaluacion "
+			+ "INNER JOIN cargas_horarias ch ON ch.id=ce.id_carga "
+			+ "INNER JOIN grupos g ON g.id=ch.id_grupo "
+			+ "INNER JOIN carreras c ON c.id=g.id_carrera "
+			+ "WHERE c.id=:idCarrera AND ch.id_profesor=:idProfesor AND ch.id_periodo=:idPeriodo AND ch.activo=true AND ce.id_evaluacion=:idEvaluacion", nativeQuery = true)
+	List<ComentarioDTO> findComentarioByCarreraAndProfesorAndPeriodoAndEvaluacion(@Param("idCarrera") Integer idCarrera, @Param("idProfesor") Integer idProfesor, @Param("idPeriodo") Integer idPeriodo, @Param("idEvaluacion") Integer idEvaluacion);
+	
 }

@@ -32,5 +32,17 @@ public class EvaluacionComentarioServiceJpa implements IEvaluacionComentarioServ
 			Integer idMateria, Integer idPeriodo) {
 		return evaComRepo.findComentarioByAlumno(idEvaluacion, idCarrera, idProfesor, idMateria, idPeriodo);
 	}
+
+	@Override
+	public List<ComentarioDTO> buscarComentariosPorProfesorPeridoYEvaluacion(Integer idProfesor, Integer idPeriodo,Integer idEvaluacion) {
+		return evaComRepo.findComentarioByProfesorAndPeriodoAndEvaluacion(idProfesor, idPeriodo, idEvaluacion);
+	}
+
+	@Override
+	public List<ComentarioDTO> buscarComentariosPorCarreraProfesorPeridoYEvaluacion(Integer idCarrera, Integer idProfesor, Integer idPeriodo, Integer idEvaluacion) {
+		return evaComRepo.findComentarioByCarreraAndProfesorAndPeriodoAndEvaluacion(idCarrera, idProfesor, idPeriodo, idEvaluacion);
+	}
+
+	
 		
 }

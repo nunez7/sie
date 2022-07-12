@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
-import org.hibernate.internal.build.AllowSysOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -18,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import edu.mx.utdelacosta.model.Actividad;
 import edu.mx.utdelacosta.model.Alumno;
-import edu.mx.utdelacosta.model.CargaEvaluacion;
 import edu.mx.utdelacosta.model.Asesoria;
+import edu.mx.utdelacosta.model.CargaEvaluacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
@@ -30,14 +29,12 @@ import edu.mx.utdelacosta.model.Evaluacion;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Horario;
 import edu.mx.utdelacosta.model.Instrumento;
-import edu.mx.utdelacosta.model.Materia;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Pregunta;
 import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.Usuario;
-import edu.mx.utdelacosta.model.dto.ComentarioDTO;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
 import edu.mx.utdelacosta.model.dto.HorarioDTO;
 import edu.mx.utdelacosta.model.dto.PreguntaDTO;
@@ -46,19 +43,16 @@ import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorProfesorDTO;
 import edu.mx.utdelacosta.service.IActividadService;
 import edu.mx.utdelacosta.service.IAlumnoService;
+import edu.mx.utdelacosta.service.ICargaEvaluacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
-import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IDiaService;
 import edu.mx.utdelacosta.service.IDosificacionComentarioService;
 import edu.mx.utdelacosta.service.IDosificacionService;
-import edu.mx.utdelacosta.service.IEvaluacionComentarioService;
 import edu.mx.utdelacosta.service.IEvaluacionesService;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IHorarioService;
-import edu.mx.utdelacosta.service.ICargaEvaluacionService;
 import edu.mx.utdelacosta.service.IInstrumentoService;
-import edu.mx.utdelacosta.service.IMateriasService;
 import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
@@ -135,17 +129,8 @@ public class ProfesorController {
 	private IEvaluacionesService serviceEvaluacion;
 	
 	@Autowired
-	private ICarrerasServices serviceCarrera;
-	
-	@Autowired
-	private IMateriasService serviceMateria;
-	
-	@Autowired
 	private IRespuestaCargaEvaluacionService serviceResCarEva;
 	
-	@Autowired
-	private IEvaluacionComentarioService serviceEvaCom;
-
 	@Autowired
 	private ICargaEvaluacionService serviceCarEva;
 
@@ -505,109 +490,94 @@ public class ProfesorController {
 	public String reporteEvaluacionDocente(HttpSession session, Model model) {		
 		Persona persona = new Persona((Integer)session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
-		Integer cveCarrera = (Integer) session.getAttribute("cveCarrera");
-		Integer cveMateria = (Integer) session.getAttribute("cveMateria");		
+		Integer cvePerido = (Integer) session.getAttribute("red-cvePerido");
 		
 		Evaluacion evaluacion = serviceEvaluacion.buscar(3);	
-		int aluEncuestados=0;		
-		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
-		List<Carrera> carreras = serviceCarrera.buscarCarrerasPorIdPersona(persona.getId());
-		List<Materia> materias = null;
-		if(cveCarrera != null) {	
-			Carrera carrera = serviceCarrera.buscarPorId(cveCarrera);
-			materias = serviceMateria.buscarPorCarreraProfesorYPeriodo(cveCarrera, persona.getId(), usuario.getPreferencias().getIdPeriodo());						
-			if(cveMateria!=null) {	
-				
-				//se extraen los cargas horararias (grupos) en las que que se imparte la meteria asociada al profesor y el perido  
-				List<CargaHoraria> ChGrupos = cargaService.buscarPorCarreraProfesorMateriaYPeriodo(cveCarrera, persona.getId(), cveMateria, usuario.getPreferencias().getIdPeriodo());
-				List<ComentarioDTO> comentarios = serviceEvaCom.buscarComentariosPorPersona(3, cveCarrera, persona.getId(), cveMateria, usuario.getPreferencias().getIdPeriodo());
-				//se obtiene el numero de alumnos que an relisado la encueta 				
-				for(CargaHoraria ch: ChGrupos) {
-					aluEncuestados = serviceResCarEva.contarPorGrupoYCargaHoraria(3, ch.getGrupo().getId(), ch.getId())+aluEncuestados;
-					CargaEvaluacion CaEva = serviceCarEva.buscarPorCargaHorariaYEvaluacion(ch, evaluacion);
-					if(CaEva!=null) {
-						CaEva.setVista(true);
-						serviceCarEva.guardar(CaEva);
-					}
+		int aluEncuestados=0;	
+		
+		List<Periodo> periodos = periodoService.buscarTodos();
+		if(cvePerido!=null) {	
+			//Se extraen las cargas horadarías de profesor en el periodo seleccionado 
+			List<CargaHoraria> ChGrupos = cargaService.buscarPorProfesorYPeriodo(persona, new Periodo(cvePerido));
+			//se obtiene el numero de alumnos que an relisado la encueta y marca la carga evaluasion como vista  				
+			for(CargaHoraria ch: ChGrupos) {
+				aluEncuestados = serviceResCarEva.contarPorGrupoYCargaHoraria(3, ch.getGrupo().getId(), ch.getId())+aluEncuestados;
+				CargaEvaluacion CaEva = serviceCarEva.buscarPorCargaHorariaYEvaluacion(ch, evaluacion);
+				if(CaEva!=null) {
+					CaEva.setVista(true);
+					serviceCarEva.guardar(CaEva);
 				}
-				
-				//se caulculan los promedios de cada una de las preguntas para cada uno de los grupos en lo que el profesor imparte dicha 
-				//materia en determinda carrera
-				List<PreguntaDTO> preguntasDto = new ArrayList<>();				
-				for(Pregunta pre :evaluacion.getPreguntas()) {	
-														
-					List<GrupoDTO> gruposDTO = new ArrayList<>();
-					double promedioGenPre=0;					
-					for(CargaHoraria ch: ChGrupos) {					
-						PromedioPreguntaDTO promedioPreguntaDTOs = servicePreguntas.ObtenerPromedioPorPregunta(3, pre.getId(), ch.getId(), ch.getGrupo().getId());
-						promedioGenPre=promedioPreguntaDTOs.getPromedio()+promedioGenPre;
-						GrupoDTO grupoDto = new GrupoDTO();
-						grupoDto.setIdGrupo(ch.getId());
-						grupoDto.setNombreGrupo(ch.getGrupo().getNombre());
-						grupoDto.setPromedioPre(promedioPreguntaDTOs.getPromedio());
-						gruposDTO.add(grupoDto);						
-					}
-					
-					//se crea un grupo fantasma el cual contendra el promedio general de cada pregunta 
-					//a partir de los grupos promediados  
-					promedioGenPre=promedioGenPre/ChGrupos.size();
-					GrupoDTO grupoDto = new GrupoDTO();
-					grupoDto.setIdGrupo(0);
-					grupoDto.setNombreGrupo("promedio");
-					grupoDto.setPromedioPre(promedioGenPre);
-					gruposDTO.add(grupoDto);
-					
-					PreguntaDTO preguntaDto = new PreguntaDTO();
-					preguntaDto.setIdPregunta(pre.getId());
-					preguntaDto.setDescripcion(pre.getDescripcion());
-					preguntaDto.setConsecutivo(pre.getConsecutivo());
-					preguntaDto.setGruposDTO(gruposDTO);
-					preguntasDto.add(preguntaDto);					
-					model.addAttribute("grupos", gruposDTO);
-				}
-				//se crea una pregunta fantasma a cual contendra el promedio final de cada uno de los grupos
-				//promediados y del promedio final de cada pregunta 
-				List<GrupoDTO> gruposDTOs = new ArrayList<>();
-				for(int i=0; i<=ChGrupos.size();) {					
-					double pro=0.0;					
-					for(PreguntaDTO preDTO : preguntasDto) {
-						pro =  preDTO.getGruposDTO().get(i).getPromedioPre()+pro;
-					}						
-					GrupoDTO grupoDto = new GrupoDTO();
-					grupoDto.setIdGrupo(i);
-					grupoDto.setNombreGrupo("i");
-					grupoDto.setPromedioPre(pro/evaluacion.getPreguntas().size());
-					gruposDTOs.add(grupoDto);					
-					i++;					
-				}												
-				PreguntaDTO preguntaDto = new PreguntaDTO();
-				preguntaDto.setIdPregunta(evaluacion.getPreguntas().size()+1);
-				preguntaDto.setDescripcion("Promedio");
-				preguntaDto.setConsecutivo(evaluacion.getPreguntas().size()+1);
-				preguntaDto.setGruposDTO(gruposDTOs);
-				preguntasDto.add(preguntaDto);
-				
-				model.addAttribute("preguntas", preguntasDto);
-				//se carga el numero de grupos para extrer el prmedio final desde el scrip 
-				model.addAttribute("numGrupos", ChGrupos.size());
-				//se carga el promedio total final 
-				model.addAttribute("promedioTotal", gruposDTOs.get(ChGrupos.size()).getPromedioPre());
-				
-				model.addAttribute("comentarios", comentarios);
-			}			
-			model.addAttribute("drCarrera", carrera.getDirectorCarrera());
+			}
 			
-		}
+			//se caulculan los promedios de cada una de las preguntas para cada uno de los grupos en lo que el profesor imparte dicha 
+			//materia en determinda carrera
+			List<PreguntaDTO> preguntasDto = new ArrayList<>();				
+			for(Pregunta pre :evaluacion.getPreguntas()) {	
+													
+				List<GrupoDTO> gruposDTO = new ArrayList<>();
+				double promedioGenPre=0;					
+				for(CargaHoraria ch: ChGrupos) {					
+					PromedioPreguntaDTO promedioPreguntaDTOs = servicePreguntas.ObtenerPromedioPorPregunta(3, pre.getId(), ch.getId(), ch.getGrupo().getId());
+					promedioGenPre=promedioPreguntaDTOs.getPromedio()+promedioGenPre;
+					GrupoDTO grupoDto = new GrupoDTO();
+					grupoDto.setIdGrupo(ch.getId());
+					grupoDto.setNombreGrupo(ch.getMateria().getAbreviatura()+"-"+ch.getGrupo().getNombre());
+					grupoDto.setPromedioPre(promedioPreguntaDTOs.getPromedio());
+					gruposDTO.add(grupoDto);												
+				}
+				
+				//se crea un grupo fantasma el cual contendra el promedio general de cada pregunta 
+				//a partir de los grupos promediados  
+				promedioGenPre=promedioGenPre/ChGrupos.size();
+				GrupoDTO grupoDto = new GrupoDTO();
+				grupoDto.setIdGrupo(0);
+				grupoDto.setNombreGrupo("Promedio");
+				grupoDto.setPromedioPre(promedioGenPre);
+				gruposDTO.add(grupoDto);
+				
+				PreguntaDTO preguntaDto = new PreguntaDTO();
+				preguntaDto.setIdPregunta(pre.getId());
+				preguntaDto.setDescripcion(pre.getDescripcion());
+				preguntaDto.setConsecutivo(pre.getConsecutivo());
+				preguntaDto.setGruposDTO(gruposDTO);
+				preguntasDto.add(preguntaDto);					
+				model.addAttribute("grupos", gruposDTO);
+			}
+			//se crea una pregunta fantasma a cual contendra el promedio final de cada uno de los grupos
+			//promediados y del promedio final de cada pregunta 
+			List<GrupoDTO> gruposDTOs = new ArrayList<>();
+			for(int i=0; i<=ChGrupos.size();) {					
+				double pro=0.0;					
+				for(PreguntaDTO preDTO : preguntasDto) {
+					pro =  preDTO.getGruposDTO().get(i).getPromedioPre()+pro;
+				}						
+				GrupoDTO grupoDto = new GrupoDTO();
+				grupoDto.setIdGrupo(i);
+				grupoDto.setNombreGrupo("i");
+				grupoDto.setPromedioPre(pro/evaluacion.getPreguntas().size());
+				gruposDTOs.add(grupoDto);					
+				i++;					
+			}												
+			PreguntaDTO preguntaDto = new PreguntaDTO();
+			preguntaDto.setIdPregunta(evaluacion.getPreguntas().size()+1);
+			preguntaDto.setDescripcion("Promedio");
+			preguntaDto.setConsecutivo(evaluacion.getPreguntas().size()+1);
+			preguntaDto.setGruposDTO(gruposDTOs);
+			preguntasDto.add(preguntaDto);
+			
+			model.addAttribute("preguntas", preguntasDto);
+			//se carga el numero de grupos para extrer el prmedio final desde el scrip 
+			model.addAttribute("numGrupos", ChGrupos.size());
+			//se carga el promedio total final 
+			model.addAttribute("promedioTotal", gruposDTOs.get(ChGrupos.size()).getPromedioPre());
+		}	
 		
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		model.addAttribute("usuario", usuario);
-		model.addAttribute("periodo", periodo);
+		model.addAttribute("periodos", periodos);
+		model.addAttribute("cvePerido", cvePerido);
 		model.addAttribute("aluEncuestados", aluEncuestados);			
-		model.addAttribute("cveCarrera", cveCarrera);
-		model.addAttribute("cveMateria", cveMateria);
 		model.addAttribute("evaluacion", evaluacion);
-		model.addAttribute("carreras", carreras);
-		model.addAttribute("materias", materias);
 		return "profesor/reporteEvaluacionDocente";
 	}
 
