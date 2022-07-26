@@ -701,6 +701,15 @@ public class TutorController {
 					temaGrupal.setActividad(actividades);
 					temaGrupal.setFechaProgramada(fechaProgramada);					
 					temaGrupalService.guardar(temaGrupal);
+					
+					List<Alumno> alumno = alumnoService.buscarPorGrupo(cveGrupo);
+					for(Alumno al: alumno) {
+						AsistenciaTemaGrupal asistencia = new AsistenciaTemaGrupal();
+						asistencia.setTemaGrupal(temaGrupal);
+						asistencia.setAlumno(al);
+						asistencia.setAsistencia("A");
+						asisTemaGruService.guardar(asistencia);
+					}
 					return "ok";
 				}
 			}else{
