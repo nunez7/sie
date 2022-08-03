@@ -650,7 +650,7 @@ public class DirectorController {
 			
 			Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
 			baja.setEstatus(1);
-			baja.setFechaAutorizacion(fechaHoy);
+			//baja.setFechaAutorizacion(fechaHoy);
 			bajaService.guardar(baja);
 			
 			BajaAutoriza  bajaAutorizada = new BajaAutoriza();

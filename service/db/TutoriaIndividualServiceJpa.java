@@ -10,6 +10,12 @@ import org.springframework.stereotype.Service;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.TutoriaIndividual;
+import edu.mx.utdelacosta.model.dtoimport.BajasUtNay;
+import edu.mx.utdelacosta.model.dtoimport.CanalizacionesUtNay;
+import edu.mx.utdelacosta.model.dtoimport.FocosAtencionUtNay;
+import edu.mx.utdelacosta.model.dtoimport.FortalezasGrupoUtNay;
+import edu.mx.utdelacosta.model.dtoimport.TemasGruposUtNay;
+import edu.mx.utdelacosta.model.dtoimport.TutoriasUtNay;
 import edu.mx.utdelacosta.repository.TutoriaIndividualRepository;
 import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 
@@ -66,6 +72,36 @@ public class TutoriaIndividualServiceJpa implements ITutoriaIndividualService{
 	@Override
 	public List<TutoriaIndividual> buscarEntreFechasPorGrupo(Integer idGrupo, Date fechaInicio, Date fechaFin) {
 		return tutoriaIndRepo.findByGrupoAndFechaTutoria(idGrupo, fechaInicio, fechaFin);
+	}
+
+	@Override
+	public List<TutoriasUtNay> buscarTodoTutoriasUtNay() {
+		return tutoriaIndRepo.findAllUtNay();
+	}
+
+	@Override
+	public List<CanalizacionesUtNay> buscarCanalizacionesUtNay() {
+		return tutoriaIndRepo.findCanalizacionesByUtNay();
+	}
+
+	@Override
+	public List<TemasGruposUtNay> buscarTemasGrupalesByUtNay() {
+		return tutoriaIndRepo.findTemasGrupalesByUtNay();
+	}
+
+	@Override
+	public List<FocosAtencionUtNay> buscarFocosAtencionByUtNay() {
+		return tutoriaIndRepo.findFocosAtencionByUtNay();
+	}
+
+	@Override
+	public List<FortalezasGrupoUtNay> buscarFortalezasGrupoByUtNay() {
+		return tutoriaIndRepo.findFortalezasGrupoByUtNay();
+	}
+
+	@Override
+	public List<BajasUtNay> buscarBajasByUtNay() {
+		return tutoriaIndRepo.findBajasByUtNay();
 	}
 
 }

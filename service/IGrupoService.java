@@ -43,4 +43,7 @@ public interface IGrupoService {
 	Grupo buscarPorAlumnoPenultimoGrupo(Integer idAlumno);
 	
 	Boolean buscarPorGrupoYPeriodo(Integer idGrupo, Integer idPeriodo);
+	
+	Grupo buscarPorAlumnoYPeriodo(Integer idAlumno, Integer idPeriodo);
+	
 }

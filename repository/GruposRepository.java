@@ -100,4 +100,10 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 	@Query(value = "SELECT EXISTS(SELECT * FROM grupos WHERE id=:idGrupo AND id_periodo =:idPeriodo)", nativeQuery = true)
 	Boolean findByGrupoYPeriodo(@Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo);
 	
+	@Query(value ="SELECT g.* FROM grupos g "
+			+ "INNER JOIN periodos p ON p.id=g.id_periodo "
+			+ "INNER JOIN alumnos_grupos ag ON g.id=ag.id_grupo "
+			+ "WHERE ag.id_alumno=:idAlumno AND p.id=:idPeriodo AND id_carrera != 26 ORDER BY id LIMIT 1", nativeQuery = true)
+	Grupo findByAlumnoYPeriodo(@Param("idAlumno") Integer idAlumno, @Param("idPeriodo") Integer idPeriodo);
+	
 }

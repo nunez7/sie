@@ -202,7 +202,7 @@ public class TutorController {
 	
 	@Autowired
 	private IPersonaService personaService;
-	
+
     @GetMapping("/cargar-alumno/{dato}")
    	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato,  Model model, HttpSession session) { 
 		// extrae el usuario apartir del usuario cargado en cesion.
@@ -699,7 +699,8 @@ public class TutorController {
 					temaGrupal.setFoco(new Foco(foco));
 					temaGrupal.setGrupo(new Grupo(cveGrupo));
 					temaGrupal.setActividad(actividades);
-					temaGrupal.setFechaProgramada(fechaProgramada);					
+					temaGrupal.setFechaProgramada(fechaProgramada);	
+					temaGrupal.setFechaRegistro(new Date());	
 					temaGrupalService.guardar(temaGrupal);
 					
 					List<Alumno> alumno = alumnoService.buscarPorGrupo(cveGrupo);
@@ -781,8 +782,8 @@ public class TutorController {
 		
 		TemaGrupal temaGrupal = temaGrupalService.bucarPorId(cveTemaGrupal);
 		if(temaGrupal!=null) {		
-			if(temaGrupal.getFechaRegistro()==null) {
-				temaGrupal.setFechaRegistro(fechaHoy);
+			if(temaGrupal.getFechaRealizada()==null) {
+				temaGrupal.setFechaRealizada(fechaHoy);
 			}
 //			temaGrupal.setFechaProgramada(fechaProgramada);			
 			temaGrupal.setHoraInicio(horaInicio);
@@ -1455,6 +1456,6 @@ public class TutorController {
 	//consulta
 	@GetMapping("/reportes") 
 	 public String reportesTutoria() { 
-	  return "tutorias/reportes"; 
+		return "tutorias/reportes"; 
 	 } 
 }

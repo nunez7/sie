@@ -18,5 +18,6 @@ public interface PeriodosRepository extends JpaRepository<Periodo, Integer>{
 	List<Date> findDiasByFechaInicioAndFechafin(@Param("fechaInicio") String fechaInicio, @Param("fechaFin") String fechaFin);
 	
 	Periodo findTopByOrderByIdDesc();
-
+	
+	Periodo findAllByInicioLessThanEqualAndFinGreaterThanEqual(Date inicio, Date fin);
 }

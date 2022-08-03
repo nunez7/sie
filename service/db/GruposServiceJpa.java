@@ -133,5 +133,10 @@ public class GruposServiceJpa implements IGrupoService{
 		return gruposRepository.findByGrupoYPeriodo(idGrupo, idPeriodo);
 	}
 
+	@Override
+	public Grupo buscarPorAlumnoYPeriodo(Integer idAlumno, Integer idPeriodo) {
+		return gruposRepository.findByAlumnoYPeriodo(idAlumno, idPeriodo);
+	}
+
 
 }

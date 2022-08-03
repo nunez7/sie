@@ -15,7 +15,7 @@ public interface TemaGrupalRepository extends CrudRepository<TemaGrupal, Integer
 	List<TemaGrupal> findByGrupo(Grupo grupo);
 	
 	@Query(value = "SELECT * FROM tema_grupal where id_grupo =:idGrupo "
-			+ "AND fecha_programada >=:fechaInicio AND fecha_programada <=:fechaFin", nativeQuery = true)
+			+ "AND fecha_registro >=:fechaInicio AND fecha_registro <=:fechaFin", nativeQuery = true)
 	List<TemaGrupal> findByGrupoAndFechaProgramada(@Param("idGrupo") Integer idGrupo, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
 	
 }
