@@ -35,6 +35,9 @@ public class TemaGrupal {
 	@Column(name = "fecha_programada")
 	private Date fechaProgramada;
 	
+	@Column(name = "fecha_realizada")
+	private Date fechaRealizada;
+	
 	@Column(name = "fecha_registro")
 	private Date fechaRegistro;
 	
@@ -106,6 +109,14 @@ public class TemaGrupal {
 
 	public void setFechaProgramada(Date fechaProgramada) {
 		this.fechaProgramada = fechaProgramada;
+	}
+
+	public Date getFechaRealizada() {
+		return fechaRealizada;
+	}
+
+	public void setFechaRealizada(Date fechaRealizada) {
+		this.fechaRealizada = fechaRealizada;
 	}
 
 	public Date getFechaRegistro() {

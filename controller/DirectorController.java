@@ -61,9 +61,7 @@ import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoNoReinscritoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AsistenciasCorteDTO;
 import edu.mx.utdelacosta.model.dtoreport.DosificacionPendienteDTO;
-import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaProfesorDTO;
-import edu.mx.utdelacosta.model.dtoreport.IndicadorParcialDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaAsistenciaDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
@@ -74,7 +72,6 @@ import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAsistenciaService;
 import edu.mx.utdelacosta.service.IBajaAutorizaService;
 import edu.mx.utdelacosta.service.IBajaService;
-import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICambioGrupoService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
@@ -174,10 +171,8 @@ public class DirectorController {
 	@Value("${spring.mail.username}")
 	private String correo;
   
-	private IRemedialAlumnoService remedialAlumnoService;
-	
 	@Autowired
-	private ICalificacionCorteService calificacionCorteService;
+	private IRemedialAlumnoService remedialAlumnoService;
 	
 	@Autowired
 	private ITestimonioCorteService testimonioCorteService;

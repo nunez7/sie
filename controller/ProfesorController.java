@@ -135,9 +135,6 @@ public class ProfesorController {
 	
 	@Autowired
 	private ICargaEvaluacionService serviceCarEva;
-  
-  @Autowired
-	private IEvaluacionComentarioService serviceEvaCom;
 	
 	@Autowired
 	private ITipoProrrogaService tipoProrroService;

@@ -60,6 +60,12 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	}
 	
 	@Override
+	 public List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo) {
+	  // TODO Auto-generated method stub
+	  return alumnosRepo.getAllAlumnoAdeudoByCarreraAndPeriodo(idCarrera, idPeriodo);
+	 }
+	
+	@Override
 	public String buscarMatriculaSiguiente(String matricula) {
 		return alumnosRepo.findNextMatricula(matricula);
 	}

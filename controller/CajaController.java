@@ -18,7 +18,6 @@ import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Cliente;
 import edu.mx.utdelacosta.model.Concepto;
 import edu.mx.utdelacosta.model.Estado;
-import edu.mx.utdelacosta.model.PagoAlumno;
 import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
@@ -29,7 +28,6 @@ import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.IClienteService;
 import edu.mx.utdelacosta.service.IConceptoService;
 import edu.mx.utdelacosta.service.IEstadoService;
-import edu.mx.utdelacosta.service.IPagoAlumnoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
@@ -168,7 +166,6 @@ public class CajaController {
 	public String reporteAdeudos(Model model, HttpSession session) {
 		int cvePersona = (Integer) session.getAttribute("cvePersona");
 		Persona persona = personaService.buscarPorId(cvePersona);
-		Usuario usuario = usuariosService.buscarPorPersona(persona);
 		List<Periodo> periodos = periodosService.buscarTodos();
 		List<Carrera> carreras = carrerasServices.buscarTodasMenosIngles();
 		List<AlumnoAdeudoDTO> adeudos = new ArrayList<>();
@@ -176,7 +173,7 @@ public class CajaController {
 			int cveCarrera = (Integer) session.getAttribute("cveCarrera");
 			if(session.getAttribute("cvePeriodo") != null) {
 				int cvePeriodo = (Integer) session.getAttribute("cvePeriodo");
-				adeudos = alumnoService.obtenerAlumnosAdeudoPorCarreraYPeriodo(cveCarrera, cvePeriodo);
+				adeudos = alumnoService.obtenerAlumnosAdeudoPorPersonaCarreraYPeriodo(persona.getId(), cvePeriodo);
 				model.addAttribute("cveCarrera", cveCarrera);
 				model.addAttribute("cvePeriodo", cvePeriodo);
 				

@@ -6,12 +6,12 @@ import java.util.List;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.TutoriaIndividual;
-import edu.mx.utdelacosta.model.dtoimport.BajasUtNay;
-import edu.mx.utdelacosta.model.dtoimport.CanalizacionesUtNay;
-import edu.mx.utdelacosta.model.dtoimport.FocosAtencionUtNay;
-import edu.mx.utdelacosta.model.dtoimport.FortalezasGrupoUtNay;
-import edu.mx.utdelacosta.model.dtoimport.TemasGruposUtNay;
-import edu.mx.utdelacosta.model.dtoimport.TutoriasUtNay;
+import edu.mx.utdelacosta.util.imports.dto.BajasUtNay;
+import edu.mx.utdelacosta.util.imports.dto.CanalizacionesUtNay;
+import edu.mx.utdelacosta.util.imports.dto.FocosAtencionUtNay;
+import edu.mx.utdelacosta.util.imports.dto.FortalezasGrupoUtNay;
+import edu.mx.utdelacosta.util.imports.dto.TemasGruposUtNay;
+import edu.mx.utdelacosta.util.imports.dto.TutoriasUtNay;
 
 public interface ITutoriaIndividualService {
 	

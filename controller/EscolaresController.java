@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.servlet.http.HttpSession;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -45,6 +44,7 @@ import edu.mx.utdelacosta.model.Estado;
 import edu.mx.utdelacosta.model.FolioCeneval;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Localidad;
+import edu.mx.utdelacosta.model.Mail;
 import edu.mx.utdelacosta.model.Materia;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
 import edu.mx.utdelacosta.model.Municipio;
@@ -69,6 +69,7 @@ import edu.mx.utdelacosta.model.dtoreport.CalificacionesMateriasParcialesDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
+import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IBajaAutorizaService;
@@ -201,6 +202,9 @@ public class EscolaresController {
 	
 	@Autowired
 	private IBajaAutorizaService bajaAutorizaService;
+	
+	@Autowired
+	private EmailSenderService emailService;
 
 	@GetMapping("/reinscripcion")
 	public String reinscripcion(Model model, HttpSession session) {
@@ -1104,7 +1108,7 @@ public class EscolaresController {
 					mail.setVariables(variables);			
 					try {							
 						emailService.sendEmail(mail);													
-					}catch (MessagingException | IOException e) {
+					}catch (Exception e) {
 						
 				  	}
 					
@@ -1142,7 +1146,7 @@ public class EscolaresController {
 				mail.setVariables(variables);			
 				try {							
 					emailService.sendEmail(mail);													
-				}catch (MessagingException | IOException e) {
+				}catch (Exception e) {
 					return "errorMen";
 			  	}
 				
@@ -1178,14 +1182,5 @@ public class EscolaresController {
 			model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 			return "escolares/reporteBajas"; 
 		 }
-	
-}
-
-	// solicitudes de bajas
-	@GetMapping("/bajas")
-	public String bajas(Model model) {
-		model.addAttribute("utName", NOMBRE_UT);
-		return "escolares/bajas";
-	}
 
 }

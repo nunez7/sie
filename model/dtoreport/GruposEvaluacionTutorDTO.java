@@ -1,8 +1,10 @@
-package edu.mx.utdelacosta.model.dto;
+package edu.mx.utdelacosta.model.dtoreport;
 
 import java.util.List;
 
 import edu.mx.utdelacosta.model.Grupo;
+import edu.mx.utdelacosta.model.dto.ComentarioDTO;
+import edu.mx.utdelacosta.model.dto.PreguntaDTO;
 
 public class GruposEvaluacionTutorDTO {
 	

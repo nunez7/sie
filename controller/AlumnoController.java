@@ -1411,6 +1411,7 @@ public class AlumnoController {
 			}
 			return "ok";
 		}
+		return "fail";
 	}
 	
 	@GetMapping("/cargar-tutorias-no-aprobadas")
