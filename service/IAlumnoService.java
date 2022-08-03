@@ -3,6 +3,7 @@ import java.util.List;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoNoReinscritoDTO;
@@ -25,8 +26,6 @@ public interface IAlumnoService {
 	List<Alumno> buscarPorCarreraYActivo(Integer idCarrera);
 	
 	List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo);
-	
-	List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo);
 	
 	Integer contarAlumnosInscritosPorGrupoYActivo(Integer idCargaHoraria);
 	
@@ -66,7 +65,13 @@ public interface IAlumnoService {
 	
 	List<Alumno> buscarPorNombreOMatricula(String nombre);
 	
+	List<AlumnoInfoDTO> buscarPorProfesorPeriodoYNombreOMatricula(Integer idProfesor,Integer idPeriodo,String nombre);
+	
+	List<AlumnoInfoDTO> buscarPorProfesorYPeriodo(Integer idProfesor,Integer idPeriodo);
+	
 	List<Alumno> buscarTodos();
+	
+	List<Alumno> buscarPorGrupoYPeriodo(Integer idGrupo, Integer idPeriodo);
   
 	List<Alumno> buscarPorPersonaCarreraAndActivo(Integer idPersona, Integer idPeriodo);
 	

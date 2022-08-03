@@ -9,6 +9,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Grupo;
+import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 
 public interface GruposRepository extends CrudRepository<Grupo, Integer> {
@@ -86,7 +87,9 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 	
 	Optional<Grupo> findById(Integer Id);
 	
-	List<Grupo> findByProfesorAndActivo(Persona profesor, Boolean Activo);
+	//Modificada
+	//List<Grupo> findByProfesorAndActivo(Persona profesor, Boolean Activo);
+	List<Grupo> findByProfesorAndPeriodoAndActivoTrueOrderByPeriodoAsc(Persona profesor, Periodo periodo);
 	
 	@Query(value = "SELECT DISTINCT(g.*) FROM grupos g "
 			+ "INNER JOIN alumnos_grupos ag on g.id=ag.id_grupo "
@@ -101,6 +104,15 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 			+ "ORDER BY id_grupo DESC LIMIT 2", nativeQuery = true)
 	List<Grupo> findByAlumnoPenultimoGrupo(@Param("alumno") Integer idAlumno);
 	
+	@Query(value = "SELECT EXISTS(SELECT * FROM grupos WHERE id=:idGrupo AND id_periodo =:idPeriodo)", nativeQuery = true)
+	Boolean findByGrupoYPeriodo(@Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo);
+	
+	@Query(value ="SELECT g.* FROM grupos g "
+			+ "INNER JOIN periodos p ON p.id=g.id_periodo "
+			+ "INNER JOIN alumnos_grupos ag ON g.id=ag.id_grupo "
+			+ "WHERE ag.id_alumno=:idAlumno AND p.id=:idPeriodo AND id_carrera != 26 ORDER BY id LIMIT 1", nativeQuery = true)
+	Grupo findByAlumnoYPeriodo(@Param("idAlumno") Integer idAlumno, @Param("idPeriodo") Integer idPeriodo);
+
 	@Query(value = "SELECT g.* "
 			+ "FROM grupos g "
 			+ "WHERE g.id_carrera = :idCarrera AND g.id_periodo = :idPeriodo "

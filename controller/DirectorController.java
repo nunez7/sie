@@ -1,19 +1,25 @@
 package edu.mx.utdelacosta.controller;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +29,8 @@ import edu.mx.utdelacosta.model.Actividad;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.Asistencia;
+import edu.mx.utdelacosta.model.Baja;
+import edu.mx.utdelacosta.model.BajaAutoriza;
 import edu.mx.utdelacosta.model.CambioGrupo;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
@@ -31,6 +39,7 @@ import edu.mx.utdelacosta.model.Dia;
 import edu.mx.utdelacosta.model.Dosificacion;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Horario;
+import edu.mx.utdelacosta.model.Mail;
 import edu.mx.utdelacosta.model.Materia;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
 import edu.mx.utdelacosta.model.Periodo;
@@ -38,6 +47,7 @@ import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Personal;
 import edu.mx.utdelacosta.model.PlanEstudio;
 import edu.mx.utdelacosta.model.Prorroga;
+import edu.mx.utdelacosta.model.TutoriaIndividual;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
 import edu.mx.utdelacosta.model.dto.CambiarGrupoDTO;
@@ -57,10 +67,13 @@ import edu.mx.utdelacosta.model.dtoreport.IndicadorParcialDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaAsistenciaDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
+import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IActividadService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAsistenciaService;
+import edu.mx.utdelacosta.service.IBajaAutorizaService;
+import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICambioGrupoService;
@@ -77,6 +90,7 @@ import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IPersonalService;
 import edu.mx.utdelacosta.service.IPlanEstudioService;
 import edu.mx.utdelacosta.service.IProrrogaService;
+import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.ITestimonioCorteService;
 import edu.mx.utdelacosta.service.IUsuariosService;
@@ -146,6 +160,20 @@ public class DirectorController {
 	private IMecanismoInstrumentoService mecanismoInstrumentoService;
 	
 	@Autowired
+	private IBajaService bajaService;
+	
+	@Autowired
+	private ITutoriaIndividualService tutoriaIndService;
+	
+	@Autowired
+	private IBajaAutorizaService bajaAutorizaService;
+	
+	@Autowired
+	private EmailSenderService emailService;
+	
+	@Value("${spring.mail.username}")
+	private String correo;
+  
 	private IRemedialAlumnoService remedialAlumnoService;
 	
 	@Autowired
@@ -608,6 +636,156 @@ public class DirectorController {
 		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "director/reporteAdeudos";
 	}	
+	
+	///////////////////////////////////////////////////////////////////
+	//-------------------------Brayan---------------------------------
+	//////////////////////////////////////////////////////////////////
+	
+	@GetMapping("/bajas")
+	 public String bajasAlumnos(Model model, HttpSession session) {
+		// extrae el usuario apartir del usuario cargado en cesion.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}	
+		
+		List<Baja> bajas = bajaService.buscarPorPersonaYEstatus(cvePersona, 0);
+		model.addAttribute("bajas", bajas);
+		return "director/bajas";
+	}
+	
+	@GetMapping("/bajas-cargar-tutorias/{idAlumno}")
+	public String cargarAlumnos(@PathVariable(name = "idAlumno", required = false) String idAlumno,  Model model) { 
+		if(idAlumno!=null){
+			Alumno alumno = alumnoService.buscarPorId(Integer.parseInt(idAlumno));
+			List<TutoriaIndividual> tutorias =  tutoriaIndService.buscarUltimas5PorAlumno(alumno);
+			// Extrae el último grupo del alumno y se inserta en el modelo del alumno
+			Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
+			alumno.setUltimoGrupo(ultimoGrupo);
+			model.addAttribute("alumno", alumno);
+			model.addAttribute("tutorias", tutorias);
+		}
+		return "fragments/tutorias :: cargar-tutorias";
+	}
+	
+	@PostMapping(path="/aprobar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String aprobarBaja(@RequestBody Map<String, String> obj, HttpSession session) {
+		// extrae el usuario apartir del usuario cargado en cesion.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+		
+		Date fechaHoy = new Date();	
+		String cveBaja = obj.get("id");		
+		if(cveBaja!=null){
+			
+			Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
+			baja.setEstatus(1);
+			//baja.setFechaAutorizacion(fechaHoy);
+			bajaService.guardar(baja);
+			
+			BajaAutoriza  bajaAutorizada = new BajaAutoriza();
+			bajaAutorizada.setBaja(baja);
+			bajaAutorizada.setFechaRegistro(fechaHoy);
+			bajaAutorizada.setPersona(new Persona(cvePersona));
+			bajaAutorizada.setTipo(1);
+			bajaAutorizaService.guardar(bajaAutorizada);
+			
+			//correo
+			Mail mail = new Mail();
+			String de = correo;
+			//String para = "servicios.escolares@utnay.edu.mx";
+			String para = "brayan.bg499@gmail.com";
+			mail.setDe(de);
+			mail.setPara(new String[] {para});		
+			//Email title
+			mail.setTitulo("Nueva solicitud de baja.");		
+			//Variables a plantilla
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("titulo", "Solitud de baja del alumn(a) "+baja.getAlumno().getPersona().getNombreCompleto());						
+			variables.put("cuerpoCorreo","El director(a) de carrera "+baja.getAlumno().getCarreraInicio().getDirectorCarrera()+" aprobó la solicitud de baja para el alumno con matrícula "+baja.getAlumno().getMatricula()+", diríjase al apartado de bajas en el panel del escolares para rechazar o aprobar la baja.");
+			mail.setVariables(variables);			
+			try {							
+				emailService.sendEmail(mail);													
+			}catch (MessagingException | IOException e) {
+				
+		  	}
+			
+			return "ok";
+		}
+		return "error";
+	}
+	
+	@PostMapping(path="/rechazar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String rechazarBaja(@RequestBody Map<String, String> obj, HttpSession session) {
+		String cveBaja = obj.get("id");	
+		String motivo = obj.get("motivo");	
+		if(cveBaja!=null){
+			Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
+			baja.setEstatus(1);
+			bajaService.guardar(baja);
+			//correo
+			Mail mail = new Mail();
+			String de = correo;
+			//String para = baja.getPersona().getEmail();
+			String para = "brayan.bg499@gmail.com";
+			mail.setDe(de);
+			mail.setPara(new String[] {para});		
+			//Email title
+			mail.setTitulo("Rechazo de solicitud de baja.");		
+			//Variables a plantilla
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("titulo", "Baja rechazada por el director de la carrera.");						
+			variables.put("cuerpoCorreo","La solicitud de baja para el alumno "+baja.getAlumno().getPersona().getNombreCompleto()+" fue rechazada por el director de la carrera, debido al siguiente motivo: "+motivo);
+			mail.setVariables(variables);			
+			try {							
+				emailService.sendEmail(mail);													
+			}catch (MessagingException | IOException e) {
+				return "errorMen";
+		  	}
+			return "ok";
+		}
+		return "error";
+	}
+	
+	 @GetMapping("/reporte-bajas") 
+	 public String reporteBajas(Model model, HttpSession session) { 
+		// extrae el usuario a partir del usuario cargado en sesión.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+					
+		List<Grupo> grupos = grupoService.buscarPorCarreraPeriodoAndPersonaCarrera(cvePersona, usuario.getPreferencias().getIdPeriodo());
+		Integer cveGrupo = (Integer) session.getAttribute("rb-cveGrupo");
+		List<Baja> bajas = new ArrayList<>();
+		
+		if(cveGrupo!=null) {
+			Boolean GrupoEnPeriodo = grupoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			if(GrupoEnPeriodo==true) {
+				bajas = bajaService.buscarPorTipoStatusGrupoYPeriodo(2, 2, cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			}
+		}
+		
+		model.addAttribute("rol", 2);
+		model.addAttribute("bajas", bajas);
+		model.addAttribute("grupos", grupos);
+		model.addAttribute("cveGrupo", cveGrupo);
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "reportes/reporteBajas"; 
+	 } 
 
 	// reporte de indicadores por carrera
 	@GetMapping("/reporte-indicadores-carrera")

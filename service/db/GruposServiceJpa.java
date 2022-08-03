@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import edu.mx.utdelacosta.model.Grupo;
+import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.repository.GruposRepository;
 import edu.mx.utdelacosta.service.IGrupoService;
@@ -104,10 +105,10 @@ public class GruposServiceJpa implements IGrupoService{
 		return gruposRepository.findByCarreraAndPeriodoAndPersonaCarrera(persona, periodo);
 	}
 
+	//modificada
 	@Override
-	public List<Grupo> buscarPorIdProfesor(Persona profesor) {
-		boolean activo=true;
-		return gruposRepository.findByProfesorAndActivo(profesor, activo);
+	public List<Grupo> buscarPorProfesorYPeriodoAsc(Persona profesor, Periodo periodo) {		
+		return gruposRepository.findByProfesorAndPeriodoAndActivoTrueOrderByPeriodoAsc(profesor, periodo);
 	}
 
 	@Override
@@ -134,6 +135,16 @@ public class GruposServiceJpa implements IGrupoService{
 	}
 
 	@Override
+	public Boolean buscarPorGrupoYPeriodo(Integer idGrupo, Integer idPeriodo) {
+		return gruposRepository.findByGrupoYPeriodo(idGrupo, idPeriodo);
+	}
+
+	@Override
+	public Grupo buscarPorAlumnoYPeriodo(Integer idAlumno, Integer idPeriodo) {
+		return gruposRepository.findByAlumnoYPeriodo(idAlumno, idPeriodo);
+	}
+
+
 	public Grupo buscarUltimoGrupoLibre(Integer idPeriodo, Integer idCarrera, Integer idTurno) {
 		return gruposRepository.findLastEmptyGrupo(idPeriodo, idCarrera, idTurno);
 	}

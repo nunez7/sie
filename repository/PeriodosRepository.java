@@ -19,4 +19,5 @@ public interface PeriodosRepository extends JpaRepository<Periodo, Integer>{
 	
 	Periodo findTopByOrderByIdDesc();
 	
+	Periodo findAllByInicioLessThanEqualAndFinGreaterThanEqual(Date inicio, Date fin);
 }

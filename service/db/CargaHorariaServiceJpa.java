@@ -76,4 +76,9 @@ public class CargaHorariaServiceJpa implements  ICargaHorariaService{
 	public List<CargaHoraria> buscarPorCarreraProfesorMateriaYPeriodo(Integer idCarrera, Integer idProfesor, Integer idMateria, Integer idPeriodo) {
 		return cargaHorariasRepository.findByCarreraProfesorAndMateriaAndPeriodo(idCarrera, idProfesor, idMateria, idPeriodo);
 	}
+
+	@Override
+	public List<CargaHoraria> buscarPorCarreraProfesorYPeriodo(Integer idCarrera, Integer idProfesor,Integer idPeriodo) {
+		return cargaHorariasRepository.findByCarreraAndProfesorAndPeriodo(idCarrera, idProfesor, idPeriodo);
+	}
 }

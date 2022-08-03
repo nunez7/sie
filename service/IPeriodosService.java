@@ -11,4 +11,5 @@ public interface IPeriodosService {
 	void guardar(Periodo periodo);
 	List<Date> buscarDiasPorFechaInicioYFechafin(String fechaInicio, String fechaFin);
 	Periodo buscarUltimo();
+	Periodo buscarPorFechaInicioYFechafin(Date inicio, Date fin);
 }

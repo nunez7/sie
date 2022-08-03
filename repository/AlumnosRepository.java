@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
@@ -84,20 +85,6 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "AND pg.status=0 AND g.id_periodo = :periodo "
 			+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true) 
 	List<AlumnoAdeudoDTO> getAllAlumnoAdeudoByPersonaCarreraAndPeriodo(@Param("persona") Integer idPersona, @Param("periodo") Integer idPeriodo);
-	
-	//para traer los adeudos de alumnos por carrera y periodo
-	@Query(value = "SELECT a.id as idAlumno, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as alumno, a.matricula, c.concepto, pg.monto as cantidad, pg.concepto as descripcion "
-			+ "FROM pagos_generales pg "
-			+ "INNER JOIN pago_alumno pa on pg.id=pa.id_pago "
-			+ "INNER JOIN alumnos a on pa.id_alumno=a.id "
-			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno = a.id "
-			+ "INNER JOIN grupos g ON g.id = ag.id_grupo "
-			+ "INNER JOIN personas p ON p.id = a.id_persona "
-			+ "INNER JOIN conceptos c ON c.id = pg.id_concepto "
-			+ "WHERE a.id_carrera=:carrera "
-			+ "AND pg.status=0 AND g.id_periodo = :periodo "
-			+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true) 
-	List<AlumnoAdeudoDTO> getAllAlumnoAdeudoByCarreraAndPeriodo(@Param("carrera") Integer idCarrera, @Param("periodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT a.id AS idAlumno, a.matricula, p.primer_apellido AS primerApellido, p.segundo_apellido AS segundoApellido,  "
 			+ "p.nombre,  a.id_persona AS idPersona, g.nombre AS grupoAnterior, "
@@ -288,6 +275,35 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre ", nativeQuery = true)
 	List<Alumno> findByNombreOrMatricula(@Param("nombre") String nombre);
 	
+	@Query(value = "select a.*,CONCAT(per.nombre,' ',per.primer_apellido,' ',per.segundo_apellido) AS nombreCompleto "
+			+ "FROM alumnos a "
+			+ "INNER JOIN alumnos_grupos ag ON a.id=ag.id_alumno "
+			+ "INNER JOIN grupos g ON g.id=ag.id_grupo AND g.id_profesor=:idProfesor AND g.id_periodo=:idPeriodo "
+			+ "INNER JOIN personas per ON per.id=a.id_persona "
+			+ "WHERE CONCAT(per.nombre,' ',per.primer_apellido) iLIKE %:nombre% "
+			+ "OR CONCAT(per.primer_apellido,' ',per.segundo_apellido) iLIKE %:nombre% "
+			+ "OR CONCAT(per.segundo_apellido, ' ',per.nombre) iLIKE %:nombre% "
+			+ "OR a.matricula iLIKE %:nombre% "
+			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre", nativeQuery = true)
+	List<AlumnoInfoDTO> findByProfesorAndPeriodoAndNombreOrMatricula(@Param("idProfesor") Integer idProfesor, @Param("idPeriodo") Integer idPeriodo,@Param("nombre") String nombre);
+	
+	@Query(value = "select a.*,CONCAT(per.nombre,' ',per.primer_apellido,' ',per.segundo_apellido) AS nombreCompleto "
+			+ "FROM alumnos a "
+			+ "INNER JOIN alumnos_grupos ag ON a.id=ag.id_alumno "
+			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
+			+ "INNER JOIN personas per ON per.id=a.id_persona "
+			+ "WHERE AND g.id_profesor=:idProfesor AND g.id_periodo=:idPeriodo "
+			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre", nativeQuery = true)
+	List<AlumnoInfoDTO> findByProfesorAndPeriodo(@Param("idProfesor") Integer idProfesor, @Param("idPeriodo") Integer idPeriodo);
+	
+	@Query(value = "SELECT a.* FROM alumnos_grupos ag "
+			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
+			+ "INNER JOIN alumnos a ON a.id=ag.id_alumno "
+			+ "INNER JOIN personas p ON p.id=a.id_persona "
+			+ "WHERE ag.id_grupo=:idGrupo AND g.id_periodo=:idPeriodo "
+			+ "ORDER BY p.primer_apellido ASC, p.segundo_apellido ASC, p.nombre ASC", nativeQuery = true)
+	List<Alumno> findByGrupoAndPeriodo(@Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo);
+  
 	//trae los alumnos de las carreras de la persona (reporte de datos personales)
 	@Query(value = "SELECT a.* FROM alumnos a "
 			+ "INNER JOIN personas p ON a.id_persona = p.id "

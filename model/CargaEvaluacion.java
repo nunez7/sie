@@ -32,6 +32,8 @@ public class CargaEvaluacion {
 	private Date fechaAlta;
 	
 	private Boolean activo;
+	
+	private Boolean vista;
 
 	public Integer getId() {
 		return id;
@@ -71,6 +73,14 @@ public class CargaEvaluacion {
 
 	public void setActivo(Boolean activo) {
 		this.activo = activo;
+	}
+
+	public Boolean getVista() {
+		return vista;
+	}
+
+	public void setVista(Boolean vista) {
+		this.vista = vista;
 	}
 
 }

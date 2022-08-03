@@ -9,4 +9,6 @@ public interface IEvaluacionComentarioService {
 	void guardar(EvaluacionComentario evaluacionComentario);
 	EvaluacionComentario buscarEvaluacionComentarioPorPersona( Integer idPersona, Integer idEvaluacion, Integer idCarga);
 	List<ComentarioDTO> buscarComentariosPorPersona(Integer idEvaluacion, Integer idCarrera, Integer idProfesor, Integer idMateria, Integer idPeriodo);
+	List<ComentarioDTO> buscarComentariosPorProfesorPeridoYEvaluacion(Integer idProfesor, Integer idPeriodo, Integer idEvaluacion);
+	List<ComentarioDTO> buscarComentariosPorCarreraProfesorPeridoYEvaluacion(Integer idCarrera, Integer idProfesor, Integer idPeriodo, Integer idEvaluacion);
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
@@ -177,14 +178,25 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	}
 	
 	@Override
+	public List<AlumnoInfoDTO> buscarPorProfesorPeriodoYNombreOMatricula(Integer idProfesor, Integer idPeriodo, String nombre) {
+		return alumnosRepo.findByProfesorAndPeriodoAndNombreOrMatricula(idProfesor, idPeriodo, nombre);
+	}
+	
+	
+
+	@Override
+	public List<AlumnoInfoDTO> buscarPorProfesorYPeriodo(Integer idProfesor, Integer idPeriodo) {
+		return alumnosRepo.findByProfesorAndPeriodo(idProfesor, idPeriodo);
+	}
+
+	@Override
 	public List<Alumno> buscarTodos() {
 		return (List<Alumno>) alumnosRepo.findAll();
 	}
 
 	@Override
-	public List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo) {
-		// TODO Auto-generated method stub
-		return alumnosRepo.getAllAlumnoAdeudoByCarreraAndPeriodo(idCarrera, idPeriodo);
+	public List<Alumno> buscarPorGrupoYPeriodo(Integer idGrupo, Integer idPeriodo) {
+		return alumnosRepo.findByGrupoAndPeriodo(idGrupo, idPeriodo);
 	}
 
 	@Override

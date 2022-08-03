@@ -2,8 +2,8 @@ package edu.mx.utdelacosta.service;
 
 import java.util.List;
 
-import edu.mx.utdelacosta.model.OpcionRespuesta;
+import edu.mx.utdelacosta.model.dto.OpcionRespuestaDTO;
 
 public interface IOpcionesRepuestaService {
-	List<OpcionRespuesta> buscarPorEvaluacionPreguntaYPersona(Integer idPregunta);
+	List<OpcionRespuestaDTO> buscarPorEvaluacionPreguntaYPersona(Integer idPregunta);
 }

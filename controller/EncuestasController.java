@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.controller;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -30,10 +31,13 @@ import edu.mx.utdelacosta.model.EvaluacionComentario;
 import edu.mx.utdelacosta.model.EvaluacionTutor;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.OpcionRespuesta;
+import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Pregunta;
 import edu.mx.utdelacosta.model.Respuesta;
 import edu.mx.utdelacosta.model.RespuestaCargaEvaluacion;
+import edu.mx.utdelacosta.model.RespuestaComentario;
+import edu.mx.utdelacosta.model.RespuestaEvaluacionInicial;
 import edu.mx.utdelacosta.model.RespuestaEvaluacionTutor;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.OpcionRespuestaDTO;
@@ -47,6 +51,7 @@ import edu.mx.utdelacosta.service.IEvaluacionTutorService;
 import edu.mx.utdelacosta.service.IEvaluacionesService;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IRespuestaCargaEvaluacionService;
+import edu.mx.utdelacosta.service.IRespuestaEvaluacionInicialService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionTutorService;
 
 @Controller
@@ -86,6 +91,9 @@ public class EncuestasController {
 	
 	@Autowired
 	private ICorteEvaluativoService serviceCorteEva;
+	
+	@Autowired
+	private IRespuestaEvaluacionInicialService resEvaIniService;
 	
 	@GetMapping("/evaluacionDocente")
 	public String evaluacionDocente(Model model, HttpSession session, Authentication authentication) {	
@@ -198,15 +206,13 @@ public class EncuestasController {
 					resCarEva.setCargaEvaluacion(cargaEvaluacion);
 					serviceResCarEva.guardar(resCarEva);
 					return "ok";
-				}else{						
-					System.err.println("existe carga evaluacion y actauliza");
+				}else{											
 					respuestaCaEva.getRespuesta().setOpcionRespuesta(new OpcionRespuesta(idOpRepuesta));
 					respuestaCaEva.getRespuesta().setFechaModificacion(fechaActual);
 					serviceResCarEva.guardar(respuestaCaEva);
 					return "ok";
 				}
 			}else{
-				System.err.println("existe carga horaria");
 				CargaEvaluacion carEva = new CargaEvaluacion();
 				carEva.setCargaHoraria(new CargaHoraria(cveCargaHr));
 				carEva.setEvaluacion(new Evaluacion(idEvaluacion));
@@ -296,6 +302,7 @@ public class EncuestasController {
 					return "ok";
 				}else{
 					evaluacionComentario.getComentario().setComentario(comentario);
+					evaluacionComentario.getComentario().setFechaModificacion(fechaActual);
 					serviceEvaluacionComentario.guardar(evaluacionComentario);
 					return "ok";
 				}
@@ -304,11 +311,6 @@ public class EncuestasController {
 		}
 		return "error";
 	}	
-	
-	@GetMapping("/entrevistaInicial")
-	public String entrevistaInicial() {
-		return "encuestas/entrevistaInicial";
-	}
 	
 	@GetMapping("/evaluacionTutor")
 	public String evaluacionTutor(Model model, HttpSession session, Authentication authentication) {
@@ -513,6 +515,7 @@ public class EncuestasController {
 				}else{
 					
 					comentarioEvaluacionTutor.getComentario().setComentario(comentario);
+					comentarioEvaluacionTutor.getComentario().setFechaModificacion(fechaActual);
 					serviceComEvaTutor.guardar(comentarioEvaluacionTutor);
 					return "ok";
 				}
@@ -524,4 +527,162 @@ public class EncuestasController {
 		return "Error";
 	}	
 	
+	@PreAuthorize("hasRole('Administrador') and hasRole('Profesor')")
+	@GetMapping("/entrevistaInicial")
+	public String entrevistaInicial(Model model, HttpSession session) {		
+		// extrae el usuario apartir del usuario cargado en cesion.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+		
+		Date fechaHoy = new Date();			
+		List<Grupo> grupos = serviceGrupo.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));
+		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");
+		Evaluacion evaluacion = serviceEvaluacion.buscar(5);
+		
+		if (cveGrupo != null) {			
+			Grupo grupo = serviceGrupo.buscarPorId(cveGrupo);
+			List<Alumno> alumnos = serviceAlumno.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			
+			List<CorteEvaluativo> cortesEva = serviceCorteEva.buscarPorPeridoYCarreraFechaInicioAsc(grupo.getPeriodo(), grupo.getCarrera());				
+			//validación de las fechas de evaluación 				
+			if((cortesEva.size() > 0) && (cortesEva.get(0).getInicioEvaluaciones() != null) && (cortesEva.get(0).getFinEvaluaciones() != null)) {
+				CorteEvaluativo corteEvaluativo = cortesEva.get(0);
+				if(corteEvaluativo.getInicioEvaluaciones().before(fechaHoy) && corteEvaluativo.getFinEvaluaciones().after(fechaHoy)) {
+					Integer cvePersonaAl = (Integer) session.getAttribute("t-cvePersonaAl");
+					if(cvePersonaAl!=null) {
+						//Se inyectan las respuestas asociadas a cada pregunta de la evaluación seleccionada asi como su repuesta si es que la ahi		
+						for (Pregunta pregunta : evaluacion.getPreguntas()) {
+							
+							List<OpcionRespuestaDTO> OpcionesRepuesta = resEvaIniService.buscarOpcionesRespuestaYRespuestaPorPregunta(pregunta.getId(), cvePersonaAl, evaluacion.getId(), cveGrupo);
+							pregunta.setOpcionesRespuesta(OpcionesRepuesta);
+							
+							if(pregunta.getAbierta()==true) {
+								RespuestaEvaluacionInicial respuestaEI = resEvaIniService.buscarRespuestaAbiertaPorPregunta(5, pregunta.getId(), cvePersonaAl, cveGrupo);
+								pregunta.setComentarioRespuesta(respuestaEI != null ? respuestaEI.getRespuestaComentario().getComentario().getComentario() : null);
+							}
+							
+						}
+					}
+					model.addAttribute("cvePersonaAl", cvePersonaAl);
+					model.addAttribute("encuestaActiva", true);
+				}else{
+					model.addAttribute("encuestaActiva", false);
+					model.addAttribute("corteEvaluativo", corteEvaluativo);
+				}					
+			}else{
+				model.addAttribute("encuestaActiva", null);
+			}
+			model.addAttribute("alumnos", alumnos);
+		}
+		model.addAttribute("evaluacion", evaluacion);	
+		model.addAttribute("cveGrupo", cveGrupo);		
+		model.addAttribute("grupos", grupos);
+		return "encuestas/entrevistaInicial";
+	}
+	
+	@PostMapping(path = "/guardar-entrevistaInicial", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String guardarIndividual(@RequestBody Map<String, String> obj, HttpSession session, Model model){
+		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");
+		Integer cvePersona = 0;
+		if(obj.get("idPersona")!=null) {
+			cvePersona = Integer.parseInt(obj.get("idPersona"));
+		}	
+		Date fechaActual = new Date();
+		
+		List<String> respuetasV = new ArrayList<>();
+		respuetasV.add(obj.get("pregunta1"));
+		respuetasV.add(obj.get("pregunta2"));
+		respuetasV.add(obj.get("pregunta3"));
+		respuetasV.add(obj.get("pregunta4"));
+		respuetasV.add(obj.get("pregunta5"));
+		respuetasV.add(obj.get("pregunta6"));
+		respuetasV.add(obj.get("pregunta7"));
+		respuetasV.add(obj.get("pregunta8"));
+		respuetasV.add(obj.get("pregunta9"));
+			
+		if(cvePersona!=0) {
+			if (cveGrupo != null) {
+				Evaluacion evaluacion = serviceEvaluacion.buscar(5);
+				//Se valida si ya hay una avalusion asociada al grupo		
+				EvaluacionTutor evaluacionTutor = serviceEvaTutor.buscarPorEvaluacionYGrupo(new Evaluacion(5), new Grupo(cveGrupo));
+				if(evaluacionTutor == null) {
+					evaluacionTutor = new EvaluacionTutor();
+					evaluacionTutor.setEvaluacion(new Evaluacion(5));
+					evaluacionTutor.setGrupo(new Grupo(cveGrupo));
+					evaluacionTutor.setFechaAlta(fechaActual);
+					serviceEvaTutor.guardar(evaluacionTutor);
+				}
+				
+				for(Pregunta pregunta : evaluacion.getPreguntas()) {
+						
+						RespuestaEvaluacionInicial respuestaEI = null;
+						
+						if(pregunta.getAbierta()==true) {
+							respuestaEI = resEvaIniService.buscarRespuestaAbiertaPorPregunta(5, pregunta.getId(), cvePersona, cveGrupo);
+						}else{
+							respuestaEI = resEvaIniService.buscarRespuestaCerradaPorPregunta(5, pregunta.getId(), cvePersona, cveGrupo);
+						}
+						
+						if(respuestaEI==null) {
+							if(pregunta.getAbierta()==true){
+								Comentario comentario =  new Comentario();
+								comentario.setPersona(new Persona(cvePersona));
+								comentario.setTitulo(evaluacion.getNombre());
+								comentario.setComentario(respuetasV.get(pregunta.getConsecutivo()-1));
+								comentario.setFechaAlta(fechaActual);
+								comentario.setActivo(true);
+								
+								RespuestaComentario rComentario = new RespuestaComentario();
+								rComentario.setPregunta(pregunta);
+								rComentario.setComentario(comentario);
+								rComentario.setEvaluacion(evaluacion);
+								
+								RespuestaEvaluacionInicial resEvaInicial = new RespuestaEvaluacionInicial();							
+								resEvaInicial.setRespuesta(null);
+								resEvaInicial.setRespuestaComentario(rComentario);
+								resEvaInicial.setEvaluacionTutor(evaluacionTutor);
+								resEvaIniService.guardar(resEvaInicial);
+							}else{
+								Respuesta respuesta = new Respuesta();
+								respuesta.setEvaluacion(evaluacion);
+								respuesta.setPregunta(pregunta);
+								respuesta.setOpcionRespuesta(new OpcionRespuesta(Integer.parseInt(respuetasV.get(pregunta.getConsecutivo()-1))));
+								respuesta.setPersona(new Persona(cvePersona));
+								respuesta.setActivo(true);
+								respuesta.setFechaAlta(fechaActual);
+								
+								RespuestaEvaluacionInicial resEvaInicial = new RespuestaEvaluacionInicial();							
+								resEvaInicial.setRespuesta(respuesta);
+								resEvaInicial.setRespuestaComentario(null);
+								resEvaInicial.setEvaluacionTutor(evaluacionTutor);
+								resEvaIniService.guardar(resEvaInicial);	
+							}
+						
+					}else{
+						
+						if(pregunta.getAbierta()==true){
+							respuestaEI.getRespuestaComentario().getComentario().setComentario(respuetasV.get(pregunta.getConsecutivo()-1));
+							respuestaEI.getRespuestaComentario().getComentario().setFechaModificacion(fechaActual);
+							resEvaIniService.guardar(respuestaEI);
+						}else{
+							respuestaEI.getRespuesta().setOpcionRespuesta(new OpcionRespuesta(Integer.parseInt(respuetasV.get(pregunta.getConsecutivo()-1))));
+							respuestaEI.getRespuesta().setFechaModificacion(fechaActual);
+							resEvaIniService.guardar(respuestaEI);
+						}
+					}	
+				}
+				return "ok";
+			}
+			return "noGru";
+		}
+		return "noAl";
+	}
+	
+}
 }
