@@ -66,6 +66,12 @@ public class CalificacionServiceJpa implements ICalificacionService {
 	}
 
 	@Override
+	public CalificacionInstrumentoDTO buscarPorCargaHorariaYCorteEvaluativoEInstrumento(Integer idAlumno,
+			Integer idCargaHoraria, Integer idCorteEvaluativo, Integer idInstrumento) {
+		return calificacionRepository.findByCargaHorariaAndCorteEvaluativoAndInstrumento(idCargaHoraria, idCorteEvaluativo, idAlumno, idInstrumento);
+	}
+
+	@Override
 	public List<CalificacionInstrumentoDTO> findByCargaHorariaAndCorteEvaluativo(Integer idAlumno,
 			Integer idCargaHoraria, Integer idCorteEvaluativo) {
 		return calificacionRepository.findByCargaHorariaAndCorteEvaluativo(idCargaHoraria, idCorteEvaluativo, idAlumno);

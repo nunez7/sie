@@ -32,12 +32,23 @@ public interface CalificacionRepository extends CrudRepository<Calificacion, Int
 	 
     Calificacion findByAlumnoAndMecanismoInstrumento(Alumno alumno, MecanismoInstrumento mecanismoInstrumento);
     
-    @Query(value = "SELECT mi.id as mecanismo, mi.id_instrumento as instrumento, COALESCE(c.valor,0) as ponderacion "
+    @Query(value = "SELECT COALESCE(SUM(c.valor),0) as ponderacion "
     		+ "FROM mecanismo_instrumento mi "
     		+ "LEFT JOIN calificacion c on mi.id=c.id_mecanismo_instrumento "
-    		+ "WHERE mi.id_carga_horaria=:idCargaHoraria and mi.id_corte_evaluativo=:idCorteEvaluativo and mi.activo='True' and c.id_alumno=:idAlumno", nativeQuery = true)
+    		+ "WHERE mi.id_carga_horaria=:idCargaHoraria and mi.id_corte_evaluativo=:idCorteEvaluativo and mi.activo='True' and c.id_alumno=:idAlumno and mi.id_instrumento = :idInstrumento ",
+    		//+ "GROUP BY mi.id, mi.id_instrumento, ponderacion", 
+    		nativeQuery = true)
+    CalificacionInstrumentoDTO findByCargaHorariaAndCorteEvaluativoAndInstrumento(@Param("idCargaHoraria") Integer idCargaHoraria, @Param("idCorteEvaluativo") Integer idCorteEvaluativo, @Param("idAlumno") Integer idAlumno, @Param("idInstrumento") Integer idMecanismo);
+   
+    
+    @Query(value = "SELECT mi.id as mecanismo, mi.id_instrumento as instrumento, COALESCE(SUM(c.valor),0) as ponderacion "
+    		+ "FROM mecanismo_instrumento mi "
+    		+ "LEFT JOIN calificacion c on mi.id=c.id_mecanismo_instrumento "
+    		+ "WHERE mi.id_carga_horaria=:idCargaHoraria and mi.id_corte_evaluativo=:idCorteEvaluativo and mi.activo='True' and c.id_alumno=:idAlumno "
+    		+ "GROUP BY mi.id, mi.id_instrumento, ponderacion", nativeQuery = true)
     List<CalificacionInstrumentoDTO> findByCargaHorariaAndCorteEvaluativo(@Param("idCargaHoraria") Integer idCargaHoraria, @Param("idCorteEvaluativo") Integer idCorteEvaluativo, @Param("idAlumno") Integer idAlumno);
    
+    
 	@Query(value = "SELECT c.* "
 			+ "FROM calificacion c "
 			+ "INNER JOIN mecanismo_instrumento mi on mi.id=c.id_mecanismo_instrumento "

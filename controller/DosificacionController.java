@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.mx.utdelacosta.model.CalendarioEvaluacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
-import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Dosificacion;
 import edu.mx.utdelacosta.model.DosificacionCarga;
@@ -36,7 +35,9 @@ import edu.mx.utdelacosta.model.Mail;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.TemaUnidad;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.UnidadTematica;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.DosificacionTemaDto;
@@ -52,6 +53,7 @@ import edu.mx.utdelacosta.service.IDosificacionValida;
 import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
+import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
@@ -61,10 +63,10 @@ public class DosificacionController {
 
 	@Value("${spring.mail.username}")
 	private String correo;
-	
+
 	@Autowired
 	private IDosificacionService dosificacionService;
-	
+
 	@Autowired
 	private ICalendarioEvaluacionService calendarioService;
 
@@ -76,34 +78,37 @@ public class DosificacionController {
 
 	@Autowired
 	private IMecanismoInstrumentoService mecanismoService;
-	
+
 	@Autowired
 	private IPersonaService personaService;
-	
+
 	@Autowired
 	private IDosificacionTemaService dosiTemaService;
-	
+
 	@Autowired
 	private IDosificacionCargaService dosiCargaService;
-	
+
 	@Autowired
-	private IUsuariosService usuarioService; 
-	
+	private IUsuariosService usuarioService;
+
 	@Autowired
 	private IPeriodosService periodoService;
-	
+
 	@Autowired
 	private IDosificacionComentarioService dosificacionComentarioService;
-	
+
 	@Autowired
 	private EmailSenderService emailService;
-	
+
 	@Autowired
 	private ICargaHorariaService cargaHorariaService;
-	
+
 	@Autowired
 	private IDosificacionValida dosificacionValidaService;
 	
+	@Autowired
+	private IProrrogaService prorrogaService;
+
 	@PostMapping(path = "/asignar-corte-unidad", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String asignarCorteUnidad(@RequestBody Map<String, String> obj, Model model, HttpSession session) {
@@ -129,101 +134,62 @@ public class DosificacionController {
 		calendarioService.guarda(calendario);
 		return "ok";
 	}
-	
+
 	@PostMapping(path = "/guardar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String guardaDosificacion(@RequestBody Map<String, String> obj) {
-		String competencia = obj.get("competencia");
-		String actividadApertura = obj.get("actividadApertura");
-		String actividadCierra = obj.get("actividadCierra");
-		String actividadDesarrollo = obj.get("actividadDesarrollo");
+	public String guardaDosificacion(@RequestBody Map<String, String> obj, HttpSession session) {
+
+		CargaHoraria carga = cargaService.buscarPorIdCarga(Integer.parseInt(obj.get("idCargaHoraria")));
+		Integer existeCorte = corteService.contarPorFechaDosificacionYPeriodoYCarreraYCorteEvaluativo(new Date(),
+				carga.getPeriodo().getId(), carga.getGrupo().getCarrera().getId(),
+				Integer.parseInt(obj.get("idCorteEvaluativo")));
+
+		if (existeCorte == 0) {
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(
+					carga, new TipoProrroga(3), new CorteEvaluativo(Integer.parseInt(obj.get("idCorteEvaluativo"))),
+					true, true);
+			if (prorroga != null) {
+				if (prorroga.getFechaLimite().before(new Date())) {
+					return "limit";
+				}
+			} else {
+				return "limit";
+			}
+		}
+
+		CorteEvaluativo corte = corteService.buscarPorId(Integer.parseInt(obj.get("idCorteEvaluativo")));
 		String AvanceYObservaciones = obj.get("AvanceYObservaciones");
 		Persona profesor = personaService.buscarPorId(Integer.parseInt(obj.get("idProfesor")));
-		CargaHoraria carga = cargaService.buscarPorIdCarga(Integer.parseInt(obj.get("idCargaHoraria")));
-		CorteEvaluativo corte = corteService.buscarPorId(Integer.parseInt(obj.get("idCorteEvaluativo")));
 		Dosificacion dosificacion = dosificacionService.buscarPorIdCargaHorariaEIdCorteEvaluativo(carga.getId(),
 				corte.getId());
-		
 		// si la dosificacion es nueva
 		if (dosificacion == null) {
-			
+
 			// se crea la dosificacion y sus datos
 			dosificacion = new Dosificacion();
 			dosificacion.setIdCorteEvaluativo(corte.getId());
 			dosificacion.setPersona(profesor);
-			dosificacion.setCompetenciaDesarrollar(competencia);
-			dosificacion.setActividadApertura(actividadApertura);
-			dosificacion.setActividadCierre(actividadCierra);
-			dosificacion.setActividadDesarrollo(actividadDesarrollo);
 			dosificacion.setFechaAlta(new Date());
-			dosificacion.setAvanceObservaciones("");
 			dosificacion.setValidaDirector(false);
 			dosificacion.setTerminada(false);
 			dosificacion.setActivo(true);
-			
-			//se guarda la dosificacion
-			dosificacionService.guardar(dosificacion);
-			
-			//se toma la ultima dosificacion
-			dosificacion = null;
-			dosificacion = dosificacionService.encontrarUltimaDosificacion();
-			
-			//se crea la dosificacion carga
-			DosificacionCarga dosiCarga = dosiCargaService.buscarPorDosificacionYCargaHoraria(dosificacion, carga);
-			if (dosiCarga == null) {
-				dosiCarga = new DosificacionCarga();
-				dosiCarga.setDosificacion(dosificacion);
-				dosiCarga.setCargaHoraria(carga);
-				dosiCarga.setActivo(true);
-				dosiCargaService.guardar(dosiCarga);
-			}
-			
-			// se crear un correo y se envia al director correspondiente
-			/*
-			Mail mail = new Mail();
-			String de = correo;
-//			String para = carga.getGrupo().getCarrera().getEmailCarrera();
-			mail.setDe(de);
-			mail.setPara(new String[] {para});
-			
-			//Email title
-			mail.setTitulo("Dosificación pendiente por validar");
-			
-			//Variables a plantilla
-			Map<String, Object> variables = new HashMap<>();
-			variables.put("titulo", "Dosificación pendiente por validar");
-			variables.put("cuerpoCorreo", "Tienes una dosificación por validar de la materia "+carga.getMateria().getNombre());
-			mail.setVariables(variables);
-			try {
-				emailService.sendEmail(mail);
-				System.out.println("Enviado");
-			}catch (MessagingException | IOException e) {
-				System.out.println("Error "+e);
-			  	}
-			*/
-			
-		//en de que la dosificacion no este vacia
-		} else {
+
+			DosificacionCarga dosiCargas = new DosificacionCarga();
+			dosiCargas.setCargaHoraria(carga);
+			dosiCargas.setActivo(true);
+			dosiCargas.setDosificacion(dosificacion);
+			dosiCargaService.guardar(dosiCargas);
+
+		// en caso de que la dosificacion no este vacia
+		}  else {
+
 			// si la dosificacion ya esta validada
 			if (dosificacion.getValidaDirector() == true && AvanceYObservaciones != null) {
-				dosificacion.setAvanceObservaciones(AvanceYObservaciones);
 				dosificacion.setTerminada(true);
 				dosificacionService.guardar(dosificacion);
 				return "up";
-			
-			// si la dosificacion ya esta terminadad
-			} else if (dosificacion.getTerminada() == true) {
-				return "end";
-			
-			// si la dosificacion no esta validada ni terminada
-			} else {
-				dosificacion.setActividadApertura(actividadApertura);
-				dosificacion.setActividadCierre(actividadCierra);
-				dosificacion.setActividadDesarrollo(actividadDesarrollo);
-				dosificacion.setCompetenciaDesarrollar(competencia);
-			}
-			
-			dosificacionService.guardar(dosificacion);
+			} 
+
 		}
 
 		List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHorariaYCorteEvaluativo(carga, corte);
@@ -249,6 +215,30 @@ public class DosificacionController {
 				}
 			}
 		}
+
+		// se crear un correo y se envia al director correspondiente
+
+		Mail mail = new Mail();
+		String de = correo;
+		String para = carga.getGrupo().getCarrera().getEmailCarrera();
+		//String para = "rhekhienth.reality@gmail.com";
+		mail.setDe(de);
+		mail.setPara(new String[] { para });
+
+		// Email title
+		mail.setTitulo("Dosificación pendiente por validar");
+
+		// Variables a plantilla
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("titulo", "Dosificación pendiente por validar");
+		variables.put("cuerpoCorreo",
+				"Tienes una dosificación por validar de la materia " + carga.getMateria().getNombre());
+		mail.setVariables(variables);
+		try {
+			emailService.sendEmail(mail);
+		} catch (MessagingException | IOException e) {
+		}
+
 		return "ok";
 	}
 
@@ -261,39 +251,39 @@ public class DosificacionController {
 				corteActual);
 		if (!calendarios.isEmpty()) {
 
-		List<DosificacionTema> temas = new ArrayList<>();
+			List<DosificacionTema> temas = new ArrayList<>();
 
-		Dosificacion dosificacion = dosificacionService.buscarPorIdCargaHorariaEIdCorteEvaluativo(cargaActual.getId(),
-				corteActual.getId());
+			Dosificacion dosificacion = dosificacionService
+					.buscarPorIdCargaHorariaEIdCorteEvaluativo(cargaActual.getId(), corteActual.getId());
 
-		if (dosificacion != null) {
-			temas = dosiTemaService.buscarPorDosificacion(dosificacion);
-			model.addAttribute("dosiTemas", temas);
-			model.addAttribute("dosificacion", dosificacion);
-		}
-
-		List<DosificacionTemaDto> temasDto = new ArrayList<>();
-		for (UnidadTematica unidad : cargaActual.getMateria().getUnidadesTematicas()) {
-			for (TemaUnidad temaU : unidad.getTemasUnidad()) {
-				DosificacionTemaDto temaDto = new DosificacionTemaDto();
-				temaDto.setId(temaU.getId());
-				temaDto.setIdUnidad(unidad.getId());
-				temaDto.setNombre(temaU.getTema());
-
-				for (DosificacionTema temaD : temas) {
-					if (temaU.getId().equals(temaD.getTema().getId())) {
-						temaDto.setHorasPracticas(temaD.getHorasPracticas());
-						temaDto.setHorasTeoricas(temaD.getHorasTeoricas());
-						temaDto.setFechaFin(temaD.getFechaFin());
-						temaDto.setFechaInicio(temaD.getFechaInicio());
-					}
-				}
-				temasDto.add(temaDto);
+			if (dosificacion != null) {
+				temas = dosiTemaService.buscarPorDosificacion(dosificacion);
+				model.addAttribute("dosiTemas", temas);
+				model.addAttribute("dosificacion", dosificacion);
 			}
-		}
-		model.addAttribute("temasDto", temasDto);
-		model.addAttribute("calendarios", calendarios);		
-		}else {
+
+			List<DosificacionTemaDto> temasDto = new ArrayList<>();
+			for (UnidadTematica unidad : cargaActual.getMateria().getUnidadesTematicas()) {
+				for (TemaUnidad temaU : unidad.getTemasUnidad()) {
+					DosificacionTemaDto temaDto = new DosificacionTemaDto();
+					temaDto.setId(temaU.getId());
+					temaDto.setIdUnidad(unidad.getId());
+					temaDto.setNombre(temaU.getTema());
+
+					for (DosificacionTema temaD : temas) {
+						if (temaU.getId().equals(temaD.getTema().getId())) {
+							temaDto.setHorasPracticas(temaD.getHorasPracticas());
+							temaDto.setHorasTeoricas(temaD.getHorasTeoricas());
+							temaDto.setFechaFin(temaD.getFechaFin());
+							temaDto.setFechaInicio(temaD.getFechaInicio());
+						}
+					}
+					temasDto.add(temaDto);
+				}
+			}
+			model.addAttribute("temasDto", temasDto);
+			model.addAttribute("calendarios", calendarios);
+		} else {
 			model.addAttribute("activo", false);
 		}
 
@@ -306,23 +296,82 @@ public class DosificacionController {
 
 	@PostMapping(path = "/importar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String importarDosificacion(@RequestBody Map<String, String> obj) {
+	public String importarDosificacion(@RequestBody Map<String, String> obj, HttpSession session) {
 		Integer idCargaHoraria = Integer.parseInt(obj.get("idCargaHoraria"));
 		Integer idCargaCompartida = Integer.parseInt(obj.get("idDosificacion"));
 		if (idCargaHoraria != null && idCargaCompartida != null) {
 			CargaHoraria cargaHoraria = new CargaHoraria(idCargaHoraria);
 			CargaHoraria cargaCompartida = new CargaHoraria(idCargaCompartida);
+
+			// SE COMPARA QUE TANTO LAS UNIDADES COMO LOS INSTRUMENTOS ESTÉN VACÍOS
+			List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHoraria(cargaHoraria);
+			if (calendarios.size()>0) {
+				return "calInv";
+			}
+			
+			List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(cargaHoraria.getId(),
+					true);
+			if (mecanismos.size()>0) {
+				return "mecInv";
+			}
+			
+			// SE OBTIENEN LAS DOSIFICACIONES Y SE GUARDAN COMO NUEVAS USANDO LA CARGA
+			// COMPARTIDA
 			List<DosificacionCarga> dosificacionesCargas = dosiCargaService.buscarPorCargaHoraria(cargaCompartida);
 			for (DosificacionCarga dosificacionCarga : dosificacionesCargas) {
 				DosificacionCarga nuevaDC = new DosificacionCarga();
+				Dosificacion dosificacion = new Dosificacion();
+				dosificacion.setIdCorteEvaluativo(dosificacionCarga.getDosificacion().getIdCorteEvaluativo());
+				dosificacion.setPersona(new Persona((Integer) session.getAttribute("cvePersona")));
+				dosificacion.setFechaAlta(new Date());
+				dosificacion.setValidaDirector(false);
+				dosificacion.setTerminada(false);
+				dosificacion.setActivo(true);
+				
 				nuevaDC.setCargaHoraria(cargaHoraria);
-				nuevaDC.setDosificacion(dosificacionCarga.getDosificacion());
+				nuevaDC.setDosificacion(dosificacion);
 				nuevaDC.setActivo(true);
 				dosiCargaService.guardar(nuevaDC);
+				
+				List<DosificacionTema> dosificacionTemas = dosiTemaService.buscarPorDosificacion(dosificacionCarga.getDosificacion());
+				for (DosificacionTema dosiTema : dosificacionTemas) {
+					DosificacionTema dosiTemaCopia = new DosificacionTema();
+					dosiTemaCopia.setFechaFin(dosiTema.getFechaFin());
+					dosiTemaCopia.setFechaInicio(dosiTema.getFechaInicio());
+					dosiTemaCopia.setHorasPracticas(dosiTema.getHorasPracticas());
+					dosiTemaCopia.setHorasTeoricas(dosiTema.getHorasTeoricas());
+					dosiTemaCopia.setTema(dosiTema.getTema());
+					dosiTemaCopia.setDosificacion(dosificacion);
+					dosiTemaService.guardar(dosiTemaCopia);
+				}
+			}
+			
+			
+			calendarios = calendarioService.buscarPorCargaHoraria(cargaCompartida);
+			for (CalendarioEvaluacion calendario : calendarios) {
+				CalendarioEvaluacion calen = new CalendarioEvaluacion();
+				calen.setCargaHoraria(cargaHoraria);
+				calen.setCorteEvaluativo(calendario.getCorteEvaluativo());
+				calen.setUnidadTematica(calendario.getUnidadTematica());
+				calendarioService.guarda(calen);
+			}
+
+			mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCargaCompartida,
+					true);
+			for (MecanismoInstrumento mecanismo : mecanismos) {
+				MecanismoInstrumento meca = new MecanismoInstrumento();
+				meca.setActivo(true);
+				meca.setArchivo(mecanismo.getArchivo());
+				meca.setIdCargaHoraria(idCargaHoraria);
+				meca.setIdCorteEvaluativo(mecanismo.getIdCorteEvaluativo());
+				meca.setInstrumento(mecanismo.getInstrumento());
+				meca.setPonderacion(mecanismo.getPonderacion());
+				mecanismoService.guardar(meca);
 			}
 		}
 		return "ok";
 	}
+
 
 	@PostMapping(path = "/validar-comentario", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
@@ -380,9 +429,9 @@ public class DosificacionController {
 		Periodo periodo = new Periodo(usuario.getPreferencias().getIdPeriodo());
 
 		// se buscan los cortes del periodo actual
-		//List<CorteEvaluativo> cortes = corteService.buscarPorPeriodo(periodo);
- 		List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera(),periodo);
-
+		// List<CorteEvaluativo> cortes = corteService.buscarPorPeriodo(periodo);
+		List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera(),
+				periodo);
 
 		// se consulta el calendario evaluacion para obtener a que corte pertenece que
 		// tema
@@ -411,7 +460,6 @@ public class DosificacionController {
 		model.addAttribute("unidades", temaDto);
 		return "fragments/modal-dosificacion:: editarFechasEntrega";
 	}
-
 
 	@GetMapping("/ver-copiar-instrumentos")
 	public String verCopiarInstrumentos(Model model, HttpSession session) {
@@ -446,7 +494,8 @@ public class DosificacionController {
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = new Periodo(usuario.getPreferencias().getIdPeriodo());
 
-		List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera(),periodo);
+		List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera(),
+				periodo);
 		List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(cargaActual.getId(),
 				true);
 		List<Dosificacion> dosificaciones = dosificacionService.buscarPorIdCargaHoraria(cargaActual.getId());
@@ -468,10 +517,10 @@ public class DosificacionController {
 		}
 		return false;
 	}
-	
-	
+
 	@GetMapping(path = "/get/{id}")
-	public String getDosificacion(@PathVariable(name = "id", required = false) Integer idCarga, Model model, HttpSession session) {
+	public String getDosificacion(@PathVariable(name = "id", required = false) Integer idCarga, Model model,
+			HttpSession session) {
 		model.addAttribute("idCarga", idCarga);
 		CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(idCarga);
 		model.addAttribute("cargaHoraria", cargaHoraria);
@@ -481,17 +530,17 @@ public class DosificacionController {
 		model.addAttribute("dosificaciones", dosificaciones);
 		return "fragments/panel-dosificacion :: panel-dosificacion";
 	}
-	
+
 	@PostMapping(path = "/rechazar")
 	@ResponseBody
 	public String rechazarDosificacion(@RequestBody Map<String, String> obj, HttpSession session) {
-		//objetos de la persona en sesión 
+		// objetos de la persona en sesión
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona"));
-		//Usuario usuario = usuarioService.buscarPorPersona(persona);
+		// Usuario usuario = usuarioService.buscarPorPersona(persona);
 		int idCargaHoraria = Integer.valueOf(obj.get("idCargaHoraria"));
 		int idProfesor = Integer.valueOf(obj.get("idPersona"));
 		String comentario = obj.get("comentario");
-		//se crea el objeto de dosificacionComentario para insertar sus datos
+		// se crea el objeto de dosificacionComentario para insertar sus datos
 		DosificacionComentario dosificacionComentario = new DosificacionComentario();
 		dosificacionComentario.setIdCargaHoraria(idCargaHoraria);
 		dosificacionComentario.setIdPersona(persona.getId());
@@ -500,64 +549,61 @@ public class DosificacionController {
 		dosificacionComentario.setSolucionado(false);
 		dosificacionComentario.setComentario(comentario);
 		dosificacionComentarioService.guardar(dosificacionComentario);
-		//se envia correo al profesor 
+		// se envia correo al profesor
 		Persona profesor = personaService.buscarPorId(idProfesor);
 		CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(idCargaHoraria);
-		
+
 		Mail mail = new Mail();
 		String de = correo;
-		//se deberá enviar el correo al profesor
+		// se deberá enviar el correo al profesor
 		String para = profesor.getEmail();
 		mail.setDe(de);
-		mail.setPara(new String[] {para});
-		//Email title
+		mail.setPara(new String[] { para });
+		// Email title
 		mail.setTitulo("¡Dosificación rechazada!");
-		//Variables a plantilla
+		// Variables a plantilla
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("titulo", "Dosificación rechazada");
-		variables.put("cuerpoCorreo",
-				"Tu dosificación de la materia: " + cargaHoraria.getMateria().getNombre() + " fue rechazada por el siguiente motivo: " + comentario +".");
+		variables.put("cuerpoCorreo", "Tu dosificación de la materia: " + cargaHoraria.getMateria().getNombre()
+				+ " fue rechazada por el siguiente motivo: " + comentario + ".");
 		mail.setVariables(variables);
 		try {
 			emailService.sendEmail(mail);
-			System.out.println("Enviado");
 		} catch (MessagingException | IOException e) {
-			System.out.println("Error "+e);
-		} 
+		}
+
 		return "ok";
 	}
-	
+
 	@PostMapping(path = "/validar")
 	@ResponseBody
 	public String validarDosificacion(@RequestBody Map<String, Integer> obj, HttpSession session) {
-		//objetos de la persona en sesión 
+		// objetos de la persona en sesión
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona"));
 		int idCargaHoraria = obj.get("idCargaHoraria");
 		int idDosificacion = obj.get("idDosificacion");
 		CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(idCargaHoraria);
-		//para enviar el correo al director
+		// para enviar el correo al director
 		Persona profesor = personaService.buscarPorId(cargaHoraria.getProfesor().getId());
-		//se crea el objeto de la dosificacion
+		// se crea el objeto de la dosificacion
 		Dosificacion dosificacion = dosificacionService.buscarPorId(idDosificacion);
 		dosificacion.setValidaDirector(true);
 		dosificacionService.guardar(dosificacion);
-		//se crea el objeto dosificacionValida para guardar los datos
+		// se crea el objeto dosificacionValida para guardar los datos
 		DosificacionValida dosificacionValida = new DosificacionValida();
 		dosificacionValida.setDosificacion(dosificacion);
 		dosificacionValida.setDirector(persona);
 		dosificacionValida.setFechaAlta(new Date());
 		dosificacionValidaService.guardar(dosificacionValida);
-		//se envia correo al profesor 
-		
+		// se envia correo al profesor
+
 		Mail mail = new Mail();
-		String de = correo;
-		//se deberá enviar el correo al profesor
+		String de = correo; // se deberá enviar el correo al profesor
 		String para = profesor.getEmail();
 		mail.setDe(de);
-		mail.setPara(new String[] {para});
-		//Email title
+		mail.setPara(new String[] { para }); // Email title
 		mail.setTitulo("¡Dosificación validada!");
-		//Variables a plantilla
+		// Variables a plantilla
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("titulo", "Dosificación validada");
 		variables.put("cuerpoCorreo",
@@ -565,13 +611,10 @@ public class DosificacionController {
 		mail.setVariables(variables);
 		try {
 			emailService.sendEmail(mail);
-			System.out.println("Enviado");
 		} catch (MessagingException | IOException e) {
-			System.out.println("Error "+e);
-		} 
-		
+		}
+
 		return "ok";
 	}
-	
 
 }

@@ -87,6 +87,12 @@ public class GruposServiceJpa implements IGrupoService{
 	}
 
 	@Override
+	public List<Grupo> buscarPorCuatrimestreCarreraYPeriodoYTurno(Integer idCuatrimestre, Integer idCarrera,
+			Integer idPeriodo, Integer idTurno) {
+		return gruposRepository.findByCuatrimestreAndCarreraAndPeriodoAndTurno(idCuatrimestre, idCarrera, idPeriodo, idTurno);
+	}
+	
+	@Override
 	public List<Grupo> buscarPorCuatrimestreCarreraYPeriodo(Integer idCuatrimestre, Integer idCarrera,
 			Integer idPeriodo) {
 		// TODO Auto-generated method stub
@@ -138,5 +144,9 @@ public class GruposServiceJpa implements IGrupoService{
 		return gruposRepository.findByAlumnoYPeriodo(idAlumno, idPeriodo);
 	}
 
+
+	public Grupo buscarUltimoGrupoLibre(Integer idPeriodo, Integer idCarrera, Integer idTurno) {
+		return gruposRepository.findLastEmptyGrupo(idPeriodo, idCarrera, idTurno);
+	}
 
 }

@@ -29,6 +29,12 @@ public class Municipio {
 	/*@OneToMany(fetch = FetchType.EAGER)
 	@JoinColumn(name = "municipio_id", referencedColumnName = "id")
 	private List<Localidad> localidades; */
+	
+	public Municipio() {}
+	
+	public Municipio(Integer id) {
+		this.id = id;
+	}
 
 	public Integer getId() {
 		return id;

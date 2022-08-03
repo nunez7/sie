@@ -42,6 +42,7 @@ import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.PeriodoInscripcion;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Rol;
+import edu.mx.utdelacosta.model.Turno;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.UsuarioPreferencia;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
@@ -185,6 +186,7 @@ public class ApiController {
 		alumno.setEstadoDocumentosIngreso(0);
 		alumno.setCarreraInicio(carrera);
 		alumno.setEstatusGeneral(1);
+		alumno.setTurno(new Turno(datos.getIdTurno()));
 		//Se construye Alumno Familiar
 		alumnoFam.setNombre(datos.getNombreFamiliar());
 		alumnoFam.setTelefono(datos.getTelefonoFamiliar());
@@ -200,6 +202,8 @@ public class ApiController {
 		datosA.setDiscapacitado(datos.getDiscapacitado());
 		datosA.setTipoDiscapacidad(datos.getTipoDiscapacidad());
 		datosA.setIndigena(datos.getIndigena());
+		datosA.setDialecto(datos.getDialecto()!=null ? datos.getDialecto() : false);	
+		datosA.setTipoBeca(datos.getTipoBeca());
 		datosA.setPromocion(datos.getPromocion());
 		datosA.setAlumno(alumno);
 		//Se anexa alumnoFam a alumno
@@ -302,13 +306,12 @@ public class ApiController {
 						+ "<a style ='color:white' href='"+url+"/login' class='btn' target='_blank'>Link de acceso a sistema</a><br>"
 						+ "NOTA: En el documento adjunto encontrarás tu ficha para el depósito bancario.");
 		mail.setVariables(variables);
-		try {
+		try {			
 			emailService.sendEmailWithFichaPago(mail, pdfname);
+			return "ok";
 		} catch (MessagingException | IOException e) {
-			System.out.println("Error "+e);
+			return "error-"+e.getLocalizedMessage();
 		}
-		
-		return "ok";
 	}
 	
 	@PostMapping("/verificar-email")

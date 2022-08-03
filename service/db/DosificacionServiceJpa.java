@@ -32,12 +32,7 @@ public class DosificacionServiceJpa implements IDosificacionService{
 	public void guardar(Dosificacion dosificacion) {
 		dosificacionRepository.save(dosificacion);
 	}
-
-	@Override
-	public Dosificacion encontrarUltimo() {
-		return dosificacionRepository.findFirst1By();
-	}
-
+	
 	@Override
 	public List<Dosificacion> buscarPorCargaHoraria(Integer cargaHoraria) {
 		// TODO Auto-generated method stub
@@ -60,11 +55,6 @@ public class DosificacionServiceJpa implements IDosificacionService{
 	}
 
 	@Override
-	public Dosificacion encontrarUltimaDosificacion() {
-		return dosificacionRepository.findLastDosificacion();
-	}
-
-	@Override
 	public List<Dosificacion> buscarPorIdCargaHoraria(Integer idCargaHoraria) {
 		return dosificacionRepository.findByIdCargaHoraria(idCargaHoraria);
 	}
@@ -72,5 +62,10 @@ public class DosificacionServiceJpa implements IDosificacionService{
 	@Override
 	public Dosificacion buscarPorIdMateriaEIdPersona(Integer idMateria, Integer IdPersona) {
 		return dosificacionRepository.findByIdMateriaAndIdPersona(idMateria, IdPersona);
+	}
+
+	@Override
+	public Integer contarPendientesPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo) {
+		return dosificacionRepository.coountByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
 	}
 }

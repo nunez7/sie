@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
+import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
+import edu.mx.utdelacosta.model.dtoreport.AlumnoNoReinscritoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoRegularDTO;
 import edu.mx.utdelacosta.model.dtoreport.ProspectoEscolaresDTO;
@@ -196,6 +198,42 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	public List<Alumno> buscarPorGrupoYPeriodo(Integer idGrupo, Integer idPeriodo) {
 		return alumnosRepo.findByGrupoAndPeriodo(idGrupo, idPeriodo);
 	}
-	
 
+	@Override
+	public List<Alumno> buscarPorPersonaCarreraAndActivo(Integer idPersona, Integer idPeriodo) {
+		return alumnosRepo.findAllAlumnosByPersonaCarreraAndActivoAndPeriodo(idPersona, idPeriodo);
+	}
+
+	@Override
+	public List<Alumno> buscarPorCarreraAndPeriodoAndActivo(Integer idCarrera, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.findAllAlumnosByCarreraAndActivoAndPeriodo(idCarrera, idPeriodo);
+	}
+	
+	@Override
+	public Integer contarAlumnosRegularesPorGrupo(Integer idGrupo) {
+		return alumnosRepo.countAlumnosRegularesByGrupo(idGrupo);
+	}
+	
+	@Override
+	public List<ProspectoDTO> buscarProspectosActivos() {
+		return alumnosRepo.findAllActiveProspectos();
+	}
+
+	@Override
+	public List<Alumno> buscarProspectosAceptados(Integer idCarrera, Integer idPeriodo) {
+		return alumnosRepo.findAllAceptedProspectos(idCarrera, idPeriodo);
+	}
+	
+	@Override
+	 public List<AlumnoNoReinscritoDTO> buscarNoReinscritosPorPersonaCarreraYPeriodo(Integer idPersona,
+	   Integer idPeriodo) {
+	  return alumnosRepo.findNoReinscritosByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
+	 }
+
+	@Override
+	public List<AlumnoNoReinscritoDTO> BuscarNoReinscritosPorPeriodo(Integer idPeriodo) {
+		return alumnosRepo.findNoReinscritosByPeriodo(idPeriodo);
+	}
+	
 }

@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +25,6 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.CalendarioEvaluacion;
 import edu.mx.utdelacosta.model.Calificacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
-import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Dosificacion;
 import edu.mx.utdelacosta.model.Instrumento;
@@ -119,10 +119,15 @@ public class MecanismoInstrumentoController {
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		List<Instrumento> instrumentos = instrumentoService.buscarTodos();
-		List<CorteEvaluativo> corte = corteService.buscarPorCarreraYPeriodo(carga.getGrupo().getCarrera(),periodo);
+		List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(carga.getGrupo().getCarrera(),periodo);
+		List<Integer> totales = new ArrayList<>();
+		for (CorteEvaluativo corte : cortes) {
+			totales.add(mecanismoService.sumaPonderacionPorIdCargaHorariaEIdCorteEvaluativo(cveCarga, corte.getId()));
+		}
 		List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(cveCarga, true);
 		model.addAttribute("mecanismos", mecanismos);
-		model.addAttribute("cortes", corte);
+		model.addAttribute("cortes", cortes);
+		model.addAttribute("totales", totales);
 		model.addAttribute("instrumentos", instrumentos);
 		model.addAttribute("cActual", new CargaHoraria((Integer) session.getAttribute("cveCarga")));
 
@@ -349,7 +354,7 @@ public class MecanismoInstrumentoController {
 			String nombreImagen = SubirArchivo.guardarArchivo(multiPart, rutaDocs + "/profesor/instrumento/");
 			if (nombreImagen != null) { // La imagen si se subio
 				// Procesamos la variable nombreImagen
-				mecanismo.setRubrica(nombreImagen);
+				mecanismo.setArchivo(nombreImagen);
 				mecanismoService.guardar(mecanismo);
 			}
 		}
@@ -366,8 +371,8 @@ public class MecanismoInstrumentoController {
 		MecanismoInstrumento mecanismo = new MecanismoInstrumento();
 		if (idInstrumento != null) {
 			mecanismo = mecanismoService.buscarPorIdYActivo(idInstrumento, true);
-			SubirArchivo.borrarArchivo(rutaDocs + "/profesor/instrumento/" + mecanismo.getRubrica());
-			mecanismo.setRubrica(null);
+			SubirArchivo.borrarArchivo(rutaDocs + "/profesor/instrumento/" + mecanismo.getArchivo());
+			mecanismo.setArchivo(null);
 			mecanismoService.guardar(mecanismo);
 		}
 		return "ok";

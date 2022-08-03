@@ -27,6 +27,10 @@ public class Alumno {
 	
 	private Integer ceneval;
 	
+	@OneToOne
+	@JoinColumn(name = "id_turno")
+	private Turno turno;
+	
 	@Column(name="documentos_ingresos")
 	private Integer estadoDocumentosIngreso;
 	
@@ -162,9 +166,19 @@ public class Alumno {
 	public void setFolioCeneval(FolioCeneval folioCeneval) {
 		this.folioCeneval = folioCeneval;
 	}
+
+	public Turno getTurno() {
+		return turno;
+	}
+
+	public void setTurno(Turno turno) {
+		this.turno = turno;
+	}
 	
 	/*VARIABLES QUE NO SON DE ALUMNO*/
 
+
+	
 
 	public Grupo getUltimoGrupo() {
 		return ultimoGrupo;

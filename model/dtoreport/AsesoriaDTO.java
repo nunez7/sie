@@ -9,5 +9,6 @@ public interface AsesoriaDTO {
 	String getSexo();
 	
 	Integer getAsesorias();
-
+	
+	String getGrupo();
 }

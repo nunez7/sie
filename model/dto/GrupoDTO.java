@@ -8,6 +8,8 @@ public class GrupoDTO {
 	private int idCuatrimestre;
 	private String nombreGrupo;
 	private boolean activo;
+	private Integer cantidad;
+	private Integer idTurno;
 	
 	private double promedio;
 	private int promedioRed;
@@ -75,5 +77,18 @@ public class GrupoDTO {
 	public void setPromedioPre(Double promedioPre) {
 		this.promedioPre = promedioPre;
 	}
+	public Integer getCantidad() {
+		return cantidad;
+	}
+	public void setCantidad(Integer cantidad) {
+		this.cantidad = cantidad;
+	}
+	public Integer getIdTurno() {
+		return idTurno;
+	}
+	public void setIdTurno(Integer idTurno) {
+		this.idTurno = idTurno;
+	}
+	
 
 }

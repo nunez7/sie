@@ -32,4 +32,8 @@ public interface IAsistenciaService {
 
 	List<Asistencia> buscarRetardosPorIdAlumnoYIdCargaHoraria(Integer idAlumno, Integer idCargaHoraria);
 	
+	Integer contarAsistenciasPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria, Date fechaInicio, Date fechaFin);
+	
+	Integer contarFaltasPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria, Date fechaInicio, Date fechaFin);
+	
 }

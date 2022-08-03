@@ -10,11 +10,10 @@ public interface IDosificacionService {
 	List<Dosificacion> buscarPorPersona(Persona persona); 
 	Dosificacion buscarPorIdCargaHorariaEIdCorteEvaluativo(Integer idCargaHoraria, Integer idCorteEvaluativo);
 	void guardar(Dosificacion dosificacion);
-	Dosificacion encontrarUltimo();
 	List<Dosificacion> buscarPorCargaHoraria(Integer cargaHoraria);
 	Dosificacion buscarPorId(Integer id);
 	List<DosificacionPendienteDTO> obtenerPendientesPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo);
-	Dosificacion encontrarUltimaDosificacion();
 	List<Dosificacion> buscarPorIdCargaHoraria(Integer idCargaHoraria);
 	Dosificacion buscarPorIdMateriaEIdPersona(Integer idMateria, Integer IdPersona);
+	Integer contarPendientesPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo);
 }

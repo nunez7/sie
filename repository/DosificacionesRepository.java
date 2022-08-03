@@ -19,8 +19,6 @@ public interface DosificacionesRepository extends CrudRepository<Dosificacion, I
 			+ "WHERE dc.id_carga_horaria=:idCargaHoraria AND d.id_corte_evaluativo=:idCorteEvaluativo ", nativeQuery = true)
 	Dosificacion findByIdCargaHorariaAndIdCorteEvaluativo(@Param("idCargaHoraria") Integer icCargaHoraria, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
 	
-	Dosificacion findFirst1By();
-	
 	@Query(value="SELECT df.* FROM dosificaciones df "
 			+ "INNER JOIN dosificaciones_cargas dfc on dfc.id_dosificacion=df.id "
 			+ "WHERE dfc.id_carga_horaria = :idCargaHoraria", nativeQuery = true)
@@ -47,7 +45,17 @@ public interface DosificacionesRepository extends CrudRepository<Dosificacion, I
 			+ "INNER JOIN materias m on ch.id_materia = m.id "
 			+ "WHERE m.id = :idMateria AND d.id_persona<> :idPersona LIMIT 1 ", nativeQuery = true)
 	Dosificacion findByIdMateriaAndIdPersona(@Param("idMateria") Integer idMateria, @Param("idPersona") Integer idPersona);
+	
+	@Query(value = "SELECT COUNT(DISTINCT(ds.id)) as dosificaciones "
+			+ "FROM dosificaciones ds "
+			+ "INNER JOIN dosificaciones_cargas dc ON dc.id_dosificacion = ds.id "
+			+ "INNER JOIN cargas_horarias ch ON ch.id = dc.id_carga_horaria "
+			+ "INNER JOIN materias m ON m.id = ch.id_materia "
+			+ "INNER JOIN grupos g ON g.id = ch.id_grupo "
+			+ "INNER JOIN carreras c ON c.id = g.id_carrera "
+			+ "INNER JOIN personas p ON ds.id_persona = p.id "
+			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :persona) "
+			+ "AND ds.valida_director = 'False' AND g.id_periodo = :periodo", nativeQuery = true)
+	Integer coountByPersonaCarreraAndPeriodo(@Param("persona") Integer idPersona, @Param("periodo") Integer idPeriodo);
 
-	@Query(value = "SELECT d.* FROM dosificaciones d " + "ORDER BY d.id DESC LIMIT 1 ", nativeQuery = true)
-	Dosificacion findLastDosificacion();
 }

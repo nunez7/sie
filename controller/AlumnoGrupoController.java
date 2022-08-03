@@ -20,6 +20,7 @@ import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
+import edu.mx.utdelacosta.service.IGrupoService;
 
 @Controller
 @PreAuthorize("hasRole('Administrador') and hasRole('Servicios Escolares')")
@@ -28,6 +29,9 @@ public class AlumnoGrupoController {
 
 	@Autowired
 	private IAlumnoGrupoService alumnoGrupoService;
+	
+	@Autowired
+	private IGrupoService grupoService;
 
 	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Rector', 'Servicios Escolares')")
 	@PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -41,7 +45,12 @@ public class AlumnoGrupoController {
 			alumnoGrupo.setAlumno(new Alumno(Integer.parseInt(obj.get("idAl"))));
 			alumnoGrupo.setActivo(true);
 		}
-		alumnoGrupo.setGrupo(new Grupo(Integer.parseInt(obj.get("idGr"))));
+		Grupo grupo = grupoService.buscarPorId(Integer.parseInt(obj.get("idGr")));
+		Integer totalAlumno = alumnoGrupoService.contarAlumnosGruposPorGrupo(Integer.parseInt(obj.get("idGr")));
+		if (totalAlumno == grupo.getCapacidadMaxima()) {
+			return "limit";
+		}
+		alumnoGrupo.setGrupo(grupo);
 		alumnoGrupo.setFechaAlta(new Date());
 		alumnoGrupoService.guardar(alumnoGrupo);
 		return "ok";

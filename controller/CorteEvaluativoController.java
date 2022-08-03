@@ -4,10 +4,11 @@ import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Periodo;
+import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IPeriodosService;
+import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
@@ -40,10 +43,13 @@ public class CorteEvaluativoController {
 	@Autowired
 	private IUsuariosService usuariosService;
 	
+	@Autowired
+	private IPersonaService personaService;
+	
 
 	@PostMapping(path = "/agregar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String agregar(@RequestBody Map<String, String> obj, Authentication auth) {
+	public String agregar(@RequestBody Map<String, String> obj, HttpSession session) {
 		//se toman las variables que se envian del formulario
 		Date fc1 = Date.valueOf(obj.get("fc1"));
 		Date fc2 = Date.valueOf(obj.get("fc2"));
@@ -57,13 +63,12 @@ public class CorteEvaluativoController {
 		Date iex2 = Date.valueOf(obj.get("ie2"));
 		Date fex1 = Date.valueOf(obj.get("fe1"));
 		Date fex2 = Date.valueOf(obj.get("fe2"));
-		Date iev1 = Date.valueOf(obj.get("iev1"));
-		Date iev2 = Date.valueOf(obj.get("iev2"));
-		Date fev1 = Date.valueOf(obj.get("fev1"));
-		Date fev2 = Date.valueOf(obj.get("fev2"));
+		Date iev = Date.valueOf(obj.get("iev"));
+		Date fev = Date.valueOf(obj.get("fev"));
+		Date fd = Date.valueOf(obj.get("fd"));
 		//creamos el usuario de acuerdo a la authenticación 
-		String userName = auth.getName();
-		Usuario usuario = usuariosService.buscarPorUsuario(userName);
+		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona")); 
+		Usuario usuario = usuariosService.buscarPorPersona(persona);
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(usuario.getPersona().getId());
 		// hace el proceso de inserción o actualización
@@ -86,10 +91,11 @@ public class CorteEvaluativoController {
 			corteEvaluativo1.setFinRemedial(fr1);
 			corteEvaluativo1.setInicioExtraordinario(iex1);
 			corteEvaluativo1.setFinExtraordinario(fex1);
-			corteEvaluativo1.setInicioEvaluaciones(iev1);
-			corteEvaluativo1.setFinEvaluaciones(fev1);
+			corteEvaluativo1.setInicioEvaluaciones(iev);
+			corteEvaluativo1.setFinEvaluaciones(fev);
 			corteEvaluativo1.setFechaAsistencia(ff1);
 			corteEvaluativo1.setConsecutivo(1);
+			corteEvaluativo1.setFechaDosificacion(fd);
 			Carrera carrera1 = carrerasServices.buscarPorId(carreras.get(i).getId());
 			corteEvaluativo1.setCarrera(carrera1);
 			corteEvaluativoService.guardar(corteEvaluativo1);
@@ -101,10 +107,11 @@ public class CorteEvaluativoController {
 			corteEvaluativo2.setFinRemedial(fr2);
 			corteEvaluativo2.setInicioExtraordinario(iex2);
 			corteEvaluativo2.setFinExtraordinario(fex2);
-			corteEvaluativo2.setInicioEvaluaciones(iev2);
-			corteEvaluativo2.setFinEvaluaciones(fev2);
+			corteEvaluativo2.setInicioEvaluaciones(iev);
+			corteEvaluativo2.setFinEvaluaciones(fev);
 			corteEvaluativo2.setFechaAsistencia(ff2);
 			corteEvaluativo2.setConsecutivo(2);
+			corteEvaluativo2.setFechaDosificacion(fd);
 			Carrera carrera2 = carrerasServices.buscarPorId(carreras.get(i).getId());
 			corteEvaluativo2.setCarrera(carrera2);
 			corteEvaluativoService.guardar(corteEvaluativo2);

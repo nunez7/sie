@@ -34,13 +34,14 @@ import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.Remedial;
 import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.Testimonio;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoCalificacionDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
 import edu.mx.utdelacosta.model.dto.CalificacionDTO;
 import edu.mx.utdelacosta.model.dto.MateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.CalificacionInstrumentoDTO;
-import edu.mx.utdelacosta.model.dtoreport.CalificacionParcial;
+import edu.mx.utdelacosta.model.dtoreport.CalificacionParcialDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.ICalendarioEvaluacionService;
@@ -49,15 +50,14 @@ import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICalificacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.ICarrerasServices;
-import edu.mx.utdelacosta.service.IConceptoService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IMateriasService;
 import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
-import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
+import edu.mx.utdelacosta.service.ITestimonioCorteService;
 import edu.mx.utdelacosta.service.ITestimonioService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 import edu.mx.utdelacosta.util.ActualizarCalificacion;
@@ -118,20 +118,17 @@ public class CalificacionController {
 
 	@Autowired
 	private ITestimonioService testimonioService;
-	
-	@Autowired
-	private IPagoGeneralService pagoGeneralService;
-	
-	@Autowired
-	private IConceptoService conceptoService;
-	
+		
 	@Autowired
 	private ActualizarCalificacion actualizarCalificacion;
 	
 	@Autowired
 	private ActualizarRemedial actualizarRemedial;
 	
+	@Autowired
+	private ITestimonioCorteService testimonioCorteService;
 	
+	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 
 	// metodo que devuelve la tabla de calificaciones e instrumentos de una materia
 	// y corte seleccionado
@@ -168,7 +165,7 @@ public class CalificacionController {
 				}
 
 				al.setCalificaciones(calificaciones);
-
+				al.setStatus(testimonioCorteService.validarSDPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(), idCarga, idCorte).toString());
 				al.setCalificacionTotal(
 						calificacionCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(
 								alumno.getId(), idCarga, idCorte).floatValue());
@@ -209,18 +206,10 @@ public class CalificacionController {
 		// se busca el corte y las prorrogas para comprobar que se encuentra en periodo
 		// de calificaciones
 		CorteEvaluativo corteActual = corteEvaluativoService.buscarPorId(idCorteEvaluativo);
-		/*
-		if (corteActual.getInicioEvaluaciones().after(fechaHoy)) {
-			System.out.println("fecha mayor a hoy");
-			return "fechaLimit";
-		}
-		
-		*/
-
 
 		if (corteActual.getFechaFin().before(fechaHoy)) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoEIdTipoProrrgaYActivo(
-					new CargaHoraria(idCargaHoraria), new CorteEvaluativo(idCorteEvaluativo), 1, true);
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
+					new CargaHoraria(idCargaHoraria), new CorteEvaluativo(idCorteEvaluativo), new TipoProrroga(1), true);
 			if (prorroga != null) {
 				if (prorroga.getFechaLimite().before(fechaHoy)) {
 					return "fechaLimit";
@@ -235,6 +224,7 @@ public class CalificacionController {
 		RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 				new Alumno(idAlumno), new CargaHoraria(idCargaHoraria), new Remedial(1),
 				new CorteEvaluativo(idCorteEvaluativo));
+		
 		if (remedial != null) {
 			return "forbidden";
 		}
@@ -248,7 +238,11 @@ public class CalificacionController {
 		// se obtiene el mecanismo del alumno
 		MecanismoInstrumento mecanismo = mecanismoService.buscarPorIdYActivo(idMecanismo, true); //
 		// se actualiza la calificacion del instrumento en singular
-		actualizarCalificacion.actualizaCalificacionInstrumento(idAlumno, mecanismo, ponderacion);
+		String cali = actualizarCalificacion.actualizaCalificacionInstrumento(idAlumno, mecanismo, ponderacion);
+
+		if (cali.equals("noEdit") || cali.equals("SD")) {
+			return cali;
+		}
 
 		// se actualiza la calificacion del corte y se obtiene la calificacion total del
 		// corte
@@ -291,13 +285,18 @@ public class CalificacionController {
 						List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(grupoActual);
 						List<MecanismoInstrumento> mecanismoInstrumento = mecanismoService
 								.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(cargaActual, parcialActual, true);
-						List<CalificacionParcial> calificaciones = new ArrayList<>();
+						List<CalificacionParcialDTO> calificaciones = new ArrayList<>();
 						for (Alumno alumno : alumnos) {
-							CalificacionParcial calificacion = new CalificacionParcial();
+							CalificacionParcialDTO calificacion = new CalificacionParcialDTO();
 							calificacion.setMatricula(alumno.getMatricula());
 							calificacion.setNombre(alumno.getPersona().getNombreCompleto());
-							List<CalificacionInstrumentoDTO> mecanismos = calificacionService
-									.findByCargaHorariaAndCorteEvaluativo(alumno.getId(), cargaActual, parcialActual);
+							
+							List<CalificacionInstrumentoDTO> mecanismos = new ArrayList<>();
+							for (MecanismoInstrumento meca : mecanismoInstrumento) {
+								CalificacionInstrumentoDTO cali = calificacionService.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual, parcialActual, meca.getInstrumento().getId());
+								mecanismos.add(cali);
+							}
+							
 							calificacion.setMecanismos(mecanismos);
 							calificacion.setCalificacionOrdinaria(calificacionCorteService
 									.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(),
@@ -333,6 +332,8 @@ public class CalificacionController {
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
 			model.addAttribute("cargas", cargasHorarias);
 		}
+		
+		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);
 		return "profesor/reporteCalificaciones";
 	}
@@ -403,6 +404,7 @@ public class CalificacionController {
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
 			model.addAttribute("cargas", cargasHorarias);
 		}
+		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);
 		return "profesor/reporteSeguimiento";
 	}
@@ -466,9 +468,6 @@ public class CalificacionController {
 		
 		//se declaran las variables
 		Alumno alumno = new Alumno ((Integer) session.getAttribute("cveAlumno"));
-		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
-		Usuario usuario = usuarioService.buscarPorPersona(persona);
-		Periodo periodo = new Periodo(usuario.getPreferencias().getIdPeriodo());
 		CargaHoraria carga = cargaService.buscarPorIdCarga(idCarga);
 		
 		//se crea la calificacion materia

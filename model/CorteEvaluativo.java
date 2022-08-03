@@ -78,6 +78,12 @@ public class CorteEvaluativo {
 	@DateTimeFormat(pattern = "dd/MM/yyyy")
 	@Column(name = "fin_evaluaciones")
 	private Date finEvaluaciones;
+	
+	@Temporal(TemporalType.DATE) 
+	@DateTimeFormat(pattern = "dd/MM/yyyy") 
+	@Column(name = "fecha_dosificacion") 
+
+	private Date fechaDosificacion;
 
 	public CorteEvaluativo() {
 	}
@@ -188,6 +194,14 @@ public class CorteEvaluativo {
 
 	public void setFinEvaluaciones(Date finEvaluaciones) {
 		this.finEvaluaciones = finEvaluaciones;
+	}
+
+	public Date getFechaDosificacion() {
+		return fechaDosificacion;
+	}
+
+	public void setFechaDosificacion(Date fechaDosificacion) {
+		this.fechaDosificacion = fechaDosificacion;
 	}
 
 }

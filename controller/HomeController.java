@@ -22,8 +22,12 @@ import edu.mx.utdelacosta.model.Sesion;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IBajaService;
+import edu.mx.utdelacosta.service.IDosificacionCargaService;
+import edu.mx.utdelacosta.service.IDosificacionComentarioService;
+import edu.mx.utdelacosta.service.IDosificacionService;
 import edu.mx.utdelacosta.service.IModuloService;
 import edu.mx.utdelacosta.service.IPeriodosService;
+import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.ISesionesService;
 import edu.mx.utdelacosta.service.ISubmoduloService;
 import edu.mx.utdelacosta.service.ITutoriaIndividualService;
@@ -57,6 +61,18 @@ public class HomeController {
 	@Autowired
 	private IAlumnoService alumnoService;
 	
+	@Autowired 
+	private IProrrogaService prorrogaService;
+
+	@Autowired
+	private IDosificacionService dosificacionService;
+	
+	@Autowired
+	private IDosificacionComentarioService dosiComentaService;
+
+	@Autowired
+	private IDosificacionCargaService dosiCargaService;
+
 	@GetMapping("/index")
 	public String mostrarHome(Model model, HttpSession session) {
 		// Como el usuario ya ingreso, ya podemos agregar a la session el objeto
@@ -117,8 +133,11 @@ public class HomeController {
 		model.addAttribute("bajasDirector", rol == 3 ? bajaService.buscarPorPersonaYEstatus(usuario.getPersona().getId(), 0).size():0);
 		model.addAttribute("bajasEscolares", rol == 5 ? bajaService.buscarPorTipoYStatus(1, 1).size():0);
 		model.addAttribute("apTutorias", rol == 1 ? tutoriaIndService.buscarPorAlumnoYValidada(alumnoService.buscarPorPersona(new Persona(usuario.getPersona().getId())), false).size():0);
-		
 		model.addAttribute("periodos", periodosService.buscarTodos());
+		model.addAttribute("observacionesP", dosiComentaService.contarPorProfesorYPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()));
+		model.addAttribute("dosificacionesP", dosiCargaService.contarNoEntregadas(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()));
+		model.addAttribute("prorrogas", prorrogaService.contarProrrogasPendientesPorPersonaYPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()));
+		model.addAttribute("dosificaciones", dosificacionService.contarPendientesPorPersonaCarreraYPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()));
 		model.addAttribute("modulos", modulosService.buscarModulosPorRol(rol));
 		model.addAttribute("periodos", periodosService.buscarTodos());
 	}

@@ -34,6 +34,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Pregunta;
 import edu.mx.utdelacosta.model.Prorroga;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
 import edu.mx.utdelacosta.model.dto.HorarioDTO;
@@ -61,6 +62,7 @@ import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.IRespuestaCargaEvaluacionService;
 import edu.mx.utdelacosta.service.ITestimonioCorteService;
+import edu.mx.utdelacosta.service.ITipoProrrogaService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
@@ -133,6 +135,12 @@ public class ProfesorController {
 	
 	@Autowired
 	private ICargaEvaluacionService serviceCarEva;
+  
+  @Autowired
+	private IEvaluacionComentarioService serviceEvaCom;
+	
+	@Autowired
+	private ITipoProrrogaService tipoProrroService;
 
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 
@@ -254,7 +262,7 @@ public class ProfesorController {
 		   List<Dia> dias = diaService.buscarDias();
 		   model.addAttribute("dias", dias);
 		   //formato para horas
-		   DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss");
+		   DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 		   //Se extrae una lista de las horas que ahi asociadas a cada hora de calse con un disting por hora inicio y hora fin    
 		   List<Horario> horas = horarioService.buscarPorProfesorDistinctPorHoraInicio(persona.getId(), usuario.getPreferencias().getIdPeriodo());
 		   model.addAttribute("horas", horas);
@@ -336,6 +344,10 @@ public class ProfesorController {
 			model.addAttribute("cActual", cargaActual);
 			model.addAttribute("cveCarga", cargaActual.getId());
 		}
+		Date fechaActual = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		String format = formatter.format(fechaActual);
+		model.addAttribute("fecha", format);
 		model.addAttribute("asesoria", new Asesoria());
 		model.addAttribute("alumnos", alumnos);
 		model.addAttribute("cargas", cargas);
@@ -346,7 +358,6 @@ public class ProfesorController {
 	public String prorrogas(Model model, HttpSession session) {
 		Persona persona = personaService.buscarPorId((Integer)session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
-		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		CargaHoraria cargaActual = new CargaHoraria();
 		List<CorteEvaluativo> cortes = new ArrayList<>();
 		try {
@@ -356,12 +367,13 @@ public class ProfesorController {
 		}
 		if (cargaActual!=null) {
 			cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera() , cargaActual.getPeriodo());
-			System.out.println("numero de cortes: "+cortes.size());
 		}
-		System.out.println(cargaActual.getGrupo().getNombre());
+
+		List<TipoProrroga> tipos = tipoProrroService.buscarTodos();
 		List<CargaHoraria> cargas = cargaService.buscarPorProfesorYPeriodo(usuario.getPersona(), new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		List<Prorroga> prorrogas = prorrogaService.buscarPorProfesorYPeriodoYActivo(persona.getId(), usuario.getPreferencias().getIdPeriodo());
 		model.addAttribute("cargas", cargas);
+		model.addAttribute("tipos", tipos);
 		model.addAttribute("prorrogas", prorrogas);
 		model.addAttribute("cActual", cargaActual);
 		model.addAttribute("cortes", cortes);
@@ -399,7 +411,7 @@ public class ProfesorController {
 		
 		if (session.getAttribute("grupoActual")!=null) {
 			grupoActual= (Integer) session.getAttribute("grupoActual");
-			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYPeriodo(grupoActual, usuario.getPreferencias().getIdPeriodo());
+			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(grupoActual,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 			
 			if (session.getAttribute("cargaActual")!=null) {
 				//se crea la carga
@@ -459,7 +471,7 @@ public class ProfesorController {
 				indicadores.setNumeroBajas(noAlumnos);
 				indicadores.setPorcentajeBajas((noAlumnos*100)/alumnos);
 								
-				noAlumnos = alumnoService.obtenerRegulares(cargaActual.getGrupo().getCarrera().getId(), usuario.getPreferencias().getIdPeriodo(), cargaActual.getGrupo().getCuatrimestre().getId()).size();
+				noAlumnos = alumnoService.contarAlumnosRegularesPorGrupo(cargaActual.getGrupo().getId()); 
 				indicadores.setNumeroRegulares(noAlumnos);
 				indicadores.setPorcentajeRegulares((noAlumnos*100)/alumnos);
 				
@@ -475,13 +487,16 @@ public class ProfesorController {
 				indicadores.setPorcentajeExtra((totalExtra*100)/alumnos);
 				indicadores.setIndicadoresExtra(indicadoresExtra);
 				
+				
 				model.addAttribute("indicadores", indicadores);
 				model.addAttribute("cargaActual", cargaActual.getId());
-				model.addAttribute("cortes", cortes);			
+				model.addAttribute("cortes", cortes);	
+				model.addAttribute("noAlumnos", alumnos);
 			}
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
 			model.addAttribute("cargas", cargasHorarias);
 		}
+		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);
 		return "profesor/reporteIndicadores";
 	}

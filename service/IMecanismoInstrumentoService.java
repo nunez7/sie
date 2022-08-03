@@ -21,4 +21,5 @@ public interface IMecanismoInstrumentoService {
 	
 	List<MecanismoInstrumento> buscarPorIdCargaHorariaYActivo(Integer idCargaHoraria, Boolean activo);
 	
+	Integer sumaPonderacionPorIdCargaHorariaEIdCorteEvaluativo(Integer idCargaHoraria, Integer idCorteEvaluativo);
 }
