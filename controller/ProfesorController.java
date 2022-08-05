@@ -50,6 +50,7 @@ import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IDiaService;
 import edu.mx.utdelacosta.service.IDosificacionComentarioService;
 import edu.mx.utdelacosta.service.IDosificacionService;
+import edu.mx.utdelacosta.service.IEvaluacionComentarioService;
 import edu.mx.utdelacosta.service.IEvaluacionesService;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IHorarioService;
@@ -135,6 +136,9 @@ public class ProfesorController {
 	
 	@Autowired
 	private ICargaEvaluacionService serviceCarEva;
+
+	@Autowired
+	private IEvaluacionComentarioService serviceEvaCom;
 	
 	@Autowired
 	private ITipoProrrogaService tipoProrroService;

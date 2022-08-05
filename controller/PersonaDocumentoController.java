@@ -170,7 +170,7 @@ public class PersonaDocumentoController {
 			if (pagado != null && pagado == 1) {
 				//se envian los datos al util de reinscribir, siendo idAl el id de persona del alumno e idPersona
 				// el id de persona de quien realiza la accion
-				reinscripcion.reinscribir(alumnoService.buscarPorPersona(new Persona(idAl)), idPersona);
+				reinscripcion.inscribirNuevoAlumno(alumnoService.buscarPorPersona(new Persona(idAl)), idPersona);
 			}
 			
 		}

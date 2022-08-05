@@ -849,7 +849,6 @@ public class AlumnoController {
 							
 							//lista de adeudos 										
 							int cantidadAdeudos = servicePagoGeneral.contarPorAlumnoYStatus(alumno.getId(), 0);
-							System.out.println(cantidadAdeudos);
 							//promedio del grupo anterior
 							Grupo penultimoGrupo = serviceGrupo.buscarPorAlumnoPenultimoGrupo(alumno.getId());
 							double promedio = serviceGrupo.obtenerPromedioAlumn(alumno.getId(), penultimoGrupo.getId());				
@@ -1401,7 +1400,6 @@ public class AlumnoController {
 		
 		if(ultimoGrupo.getId().toString().equals(idGrupo.toString())) {						
 			AlumnoGrupo ag = alumnoGrService.checkInscrito(alumno.getId(), ultimoGrupo.getPeriodo().getId());		
-			System.out.println("alumno: "+alumno.getId()+", periodo: "+ultimoGrupo.getPeriodo().getId() + ", idGrupo: "+ultimoGrupo.getId());
 			if(ag == null) {
 				return "inv";
 			}

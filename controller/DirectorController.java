@@ -705,13 +705,13 @@ public class DirectorController {
 			mail.setTitulo("Nueva solicitud de baja.");		
 			//Variables a plantilla
 			Map<String, Object> variables = new HashMap<>();
-			variables.put("titulo", "Solitud de baja del alumn(a) "+baja.getAlumno().getPersona().getNombreCompleto());						
-			variables.put("cuerpoCorreo","El director(a) de carrera "+baja.getAlumno().getCarreraInicio().getDirectorCarrera()+" aprobó la solicitud de baja para el alumno con matrícula "+baja.getAlumno().getMatricula()+", diríjase al apartado de bajas en el panel del escolares para rechazar o aprobar la baja.");
+			variables.put("titulo", "Solicitud de baja del alumno(a) "+baja.getAlumno().getPersona().getNombreCompleto());						
+			variables.put("cuerpoCorreo","El director(a) de carrera "+baja.getAlumno().getCarreraInicio().getDirectorCarrera()+" aprobó la solicitud de baja para el alumno con matrícula "+baja.getAlumno().getMatricula()+", diríjase al apartado de bajas en el panel de escolares para rechazar o aprobar la baja.");
 			mail.setVariables(variables);			
 			try {							
 				emailService.sendEmail(mail);													
 			}catch (MessagingException | IOException e) {
-				
+				return "errorMen";
 		  	}
 			
 			return "ok";
@@ -739,8 +739,8 @@ public class DirectorController {
 			mail.setTitulo("Rechazo de solicitud de baja.");		
 			//Variables a plantilla
 			Map<String, Object> variables = new HashMap<>();
-			variables.put("titulo", "Baja rechazada por el director de la carrera.");						
-			variables.put("cuerpoCorreo","La solicitud de baja para el alumno "+baja.getAlumno().getPersona().getNombreCompleto()+" fue rechazada por el director de la carrera, debido al siguiente motivo: "+motivo);
+			variables.put("titulo", "Baja rechazada por el director(a) de la carrera.");						
+			variables.put("cuerpoCorreo","La solicitud de baja para el alumno(a) "+baja.getAlumno().getPersona().getNombreCompleto()+" fue rechazada por el director de la carrera, debido al siguiente motivo: "+motivo);
 			mail.setVariables(variables);			
 			try {							
 				emailService.sendEmail(mail);													
@@ -888,11 +888,6 @@ public class DirectorController {
 		model.addAttribute("cveCarrera", cveCarrera);
 		model.addAttribute("totalAlumnos", alumnos);
 		return "director/reporteIndicadoresCarrera";
-	}
-		
-	@GetMapping("/bajas")
-	public String bajasAlumnos(Model model) {
-		return "director/bajas";
 	}
 	
 	@GetMapping("/reporte-prorrogas")
