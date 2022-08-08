@@ -195,9 +195,6 @@ public class EscolaresController {
 	private String rutaDocs;
 
 	private Alumno alumno;
-
-	@Autowired
-	private EmailSenderService emailService;
 	
 	@Value("${spring.mail.username}")
 	private String correo;
