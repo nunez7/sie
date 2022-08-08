@@ -23,4 +23,11 @@ public interface CarrerasRepository extends JpaRepository<Carrera, Integer>{
 			+ "INNER JOIN persona_carrera pc on c.id = pc.id_carrera "
 			+ "WHERE pc.id_persona = :idPersona ORDER BY c.nombre " , nativeQuery = true)
 	List<Carrera> findCarrerasByIdPersona(@Param("idPersona") Integer idPersona);
+	
+	@Query(value = "SELECT DISTINCT(c.*) "
+			+ "	FROM carreras c "
+			+ "	INNER JOIN grupos g ON g.id_carrera = c.id "
+			+ "	INNER JOIN cargas_horarias ch ON ch.id_grupo = g.id "
+			+ "	WHERE ch.id_profesor = :profesor and ch.id_periodo = :periodo", nativeQuery = true)
+	List<Carrera> findCarrerasByPersonaAndPeriodo(@Param("profesor") Integer idPersona, @Param("periodo") Integer idPeriodo);
 }

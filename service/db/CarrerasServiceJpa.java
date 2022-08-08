@@ -46,4 +46,9 @@ public class CarrerasServiceJpa implements ICarrerasServices{
 		return carrerasRepository.findAllTSUExceptEnglishOrderByNombre();
 	}
 
+	@Override
+	public List<Carrera> buscarCarrerasPorPersonaYPeriodo(Integer idPersona, Integer idPeriodo) {
+		return carrerasRepository.findCarrerasByPersonaAndPeriodo(idPersona, idPeriodo) ;
+	}
+
 }

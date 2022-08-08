@@ -16,4 +16,7 @@ public interface IDosificacionService {
 	List<Dosificacion> buscarPorIdCargaHoraria(Integer idCargaHoraria);
 	Dosificacion buscarPorIdMateriaEIdPersona(Integer idMateria, Integer IdPersona);
 	Integer contarPendientesPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo);
+	List<Dosificacion> buscarImportadaPorCargaHoraria(Integer idCargaHoraria);
+	List<String> buscarColaboradoresPorDosificacion(Integer idDosificacion);
+	List<Integer> buscarIdporIdCargaHoraria(Integer idCargaHorararia);
 }

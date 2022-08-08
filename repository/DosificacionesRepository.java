@@ -14,9 +14,10 @@ public interface DosificacionesRepository extends CrudRepository<Dosificacion, I
 	List<Dosificacion> findByPersona(Persona persona); 
 	
 	@Query(value = "SELECT d.* "
-			+ "FROM dosificaciones d "
-			+ "INNER JOIN dosificaciones_cargas dc on d.id=dc.id_dosificacion "
-			+ "WHERE dc.id_carga_horaria=:idCargaHoraria AND d.id_corte_evaluativo=:idCorteEvaluativo ", nativeQuery = true)
+			+ "	FROM dosificaciones d "
+			+ "	left join dosificaciones_cargas dc on d.id=dc.id_dosificacion "
+			+ "	left join dosificacion_importada di on di.id_dosificacion = d.id "
+			+ "	WHERE (dc.id_carga_horaria=:idCargaHoraria or di.id_carga_horaria=:idCargaHoraria) AND d.id_corte_evaluativo=:idCorteEvaluativo ", nativeQuery = true)
 	Dosificacion findByIdCargaHorariaAndIdCorteEvaluativo(@Param("idCargaHoraria") Integer icCargaHoraria, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
 	
 	@Query(value="SELECT df.* FROM dosificaciones df "
@@ -57,5 +58,28 @@ public interface DosificacionesRepository extends CrudRepository<Dosificacion, I
 			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :persona) "
 			+ "AND ds.valida_director = 'False' AND g.id_periodo = :periodo", nativeQuery = true)
 	Integer coountByPersonaCarreraAndPeriodo(@Param("persona") Integer idPersona, @Param("periodo") Integer idPeriodo);
+	
+	@Query(value = "SELECT d.* "
+			+ " FROM dosificaciones d "
+			+ "	INNER JOIN dosificacion_importada di ON di.id_dosificacion = d.id "
+			+ "	WHERE di.id_carga_horaria = :cargaHoraria", nativeQuery = true)
+	List<Dosificacion> findImportedByCargaHoraria(@Param("cargaHoraria") Integer CargaHoraria);
+	
+	@Query(value = "SELECT CONCAT(ne.abreviatura,' ',p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) "
+			+ "	FROM dosificacion_importada di "
+			+ "	INNER JOIN cargas_horarias ch ON di.id_carga_horaria = ch.id "
+			+ "	INNER JOIN personas p ON ch.id_profesor = p.id "
+			+ "	INNER JOIN nivel_estudio ne ON p.id_nivel_estudio = ne.id "
+			+ "	WHERE di.id_dosificacion = :dosificacion ", nativeQuery = true)
+	List<String> findColaboradoresByDosificacion(@Param("dosificacion") Integer dosificacion);
+	
+	@Query(value="SELECT coalesce(d.id , d2.id) "
+			+ "	FROM cargas_horarias ch "
+			+ "	LEFT JOIN dosificaciones_cargas dc on dc.id_carga_horaria = ch.id "
+			+ "	LEFT JOIN dosificaciones d on d.id = dc.id_dosificacion "
+			+ "	LEFT JOIN dosificacion_importada di on di.id_carga_horaria = ch.id "
+			+ "	LEFT JOIN dosificaciones d2 on di.id_dosificacion = d2.id "
+			+ "	WHERE ch.id = :idCargaHoraria ", nativeQuery = true)
+	List<Integer> findIdByIdCargaHoraria(@Param("idCargaHoraria") Integer cargaHoraria);
 
 }

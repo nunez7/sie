@@ -15,4 +15,6 @@ public interface ICarrerasServices {
 	List<Carrera> buscarTodasMenosIngles();
 	
 	List<Carrera> buscarTodasTSUMenosIngles();
+	
+	List<Carrera> buscarCarrerasPorPersonaYPeriodo(Integer idPersona, Integer idPeriodo);
 }

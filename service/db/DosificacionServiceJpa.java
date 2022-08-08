@@ -68,4 +68,19 @@ public class DosificacionServiceJpa implements IDosificacionService{
 	public Integer contarPendientesPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo) {
 		return dosificacionRepository.coountByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
 	}
+
+	@Override
+	public List<Dosificacion> buscarImportadaPorCargaHoraria(Integer idCargaHoraria) {
+		return dosificacionRepository.findImportedByCargaHoraria(idCargaHoraria);
+	}
+
+	@Override
+	public List<String> buscarColaboradoresPorDosificacion(Integer idDosificacion) {
+		return dosificacionRepository.findColaboradoresByDosificacion(idDosificacion);
+	}
+
+	@Override
+	public List<Integer> buscarIdporIdCargaHoraria(Integer idCargaHorararia) {
+		return dosificacionRepository.findIdByIdCargaHoraria(idCargaHorararia);
+	}
 }

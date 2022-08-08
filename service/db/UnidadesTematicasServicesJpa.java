@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.service.db;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,11 @@ public class UnidadesTematicasServicesJpa implements IUnidadTematicaService{
 	@Override
 	public void guardar(UnidadTematica unidadTematica) {
 		unidadesTematicasRepository.save(unidadTematica);
+	}
+	
+	@Override
+	public List<UnidadTematica> buscarPorDosificacion(Integer idDosificacion) {
+		return unidadesTematicasRepository.findByDosificacion(idDosificacion);
 	}
 
 }

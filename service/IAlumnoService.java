@@ -89,5 +89,7 @@ public interface IAlumnoService {
 	List<AlumnoNoReinscritoDTO> buscarNoReinscritosPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo);
 	
 	List<AlumnoNoReinscritoDTO> BuscarNoReinscritosPorPeriodo(Integer idPeriodo);
+	
+	Integer contarAlumnosPorSexoYGrupo (String sexo, Integer idGrupo);
 
 }

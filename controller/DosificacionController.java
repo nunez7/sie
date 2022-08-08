@@ -29,6 +29,7 @@ import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Dosificacion;
 import edu.mx.utdelacosta.model.DosificacionCarga;
 import edu.mx.utdelacosta.model.DosificacionComentario;
+import edu.mx.utdelacosta.model.DosificacionImportada;
 import edu.mx.utdelacosta.model.DosificacionTema;
 import edu.mx.utdelacosta.model.DosificacionValida;
 import edu.mx.utdelacosta.model.Mail;
@@ -41,12 +42,14 @@ import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.UnidadTematica;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.DosificacionTemaDto;
+import edu.mx.utdelacosta.model.dto.DosificacionUnidadDTO;
 import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.ICalendarioEvaluacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IDosificacionCargaService;
 import edu.mx.utdelacosta.service.IDosificacionComentarioService;
+import edu.mx.utdelacosta.service.IDosificacionImportadaService;
 import edu.mx.utdelacosta.service.IDosificacionService;
 import edu.mx.utdelacosta.service.IDosificacionTemaService;
 import edu.mx.utdelacosta.service.IDosificacionValida;
@@ -54,7 +57,9 @@ import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IProrrogaService;
+import edu.mx.utdelacosta.service.IUnidadTematicaService;
 import edu.mx.utdelacosta.service.IUsuariosService;
+import edu.mx.utdelacosta.util.CodificarTexto;
 
 @Controller
 @PreAuthorize("hasRole('Administrador') and hasRole('Profesor') and hasRole('Rector') and hasRole('Informatica') and hasRole('Director')")
@@ -108,6 +113,12 @@ public class DosificacionController {
 	
 	@Autowired
 	private IProrrogaService prorrogaService;
+	
+	@Autowired
+	private IDosificacionImportadaService dosificacionImportadaService;
+	
+	@Autowired
+	private IUnidadTematicaService unidadTematicaService;
 
 	@PostMapping(path = "/asignar-corte-unidad", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
@@ -158,7 +169,6 @@ public class DosificacionController {
 		}
 
 		CorteEvaluativo corte = corteService.buscarPorId(Integer.parseInt(obj.get("idCorteEvaluativo")));
-		String AvanceYObservaciones = obj.get("AvanceYObservaciones");
 		Persona profesor = personaService.buscarPorId(Integer.parseInt(obj.get("idProfesor")));
 		Dosificacion dosificacion = dosificacionService.buscarPorIdCargaHorariaEIdCorteEvaluativo(carga.getId(),
 				corte.getId());
@@ -184,7 +194,7 @@ public class DosificacionController {
 		}  else {
 
 			// si la dosificacion ya esta validada
-			if (dosificacion.getValidaDirector() == true && AvanceYObservaciones != null) {
+			if (dosificacion.getValidaDirector() == true) {
 				dosificacion.setTerminada(true);
 				dosificacionService.guardar(dosificacion);
 				return "up";
@@ -221,7 +231,6 @@ public class DosificacionController {
 		Mail mail = new Mail();
 		String de = correo;
 		String para = carga.getGrupo().getCarrera().getEmailCarrera();
-		//String para = "rhekhienth.reality@gmail.com";
 		mail.setDe(de);
 		mail.setPara(new String[] { para });
 
@@ -244,7 +253,8 @@ public class DosificacionController {
 
 	@GetMapping("/editar/{carga}/{corte}")
 	public String editarDosificacion(@PathVariable(name = "carga", required = false) Integer carga,
-			@PathVariable(name = "corte", required = false) Integer corte, Model model, HttpSession session) {
+			@PathVariable(name = "corte", required = false) Integer corte, 
+			Model model, HttpSession session) {
 		CargaHoraria cargaActual = cargaService.buscarPorIdCarga(carga);
 		CorteEvaluativo corteActual = new CorteEvaluativo(corte);
 		List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHorariaYCorteEvaluativo(cargaActual,
@@ -253,9 +263,10 @@ public class DosificacionController {
 
 			List<DosificacionTema> temas = new ArrayList<>();
 
-			Dosificacion dosificacion = dosificacionService
-					.buscarPorIdCargaHorariaEIdCorteEvaluativo(cargaActual.getId(), corteActual.getId());
-
+			Dosificacion dosificacion;
+			
+			dosificacion = dosificacionService.buscarPorIdCargaHorariaEIdCorteEvaluativo(cargaActual.getId(), corteActual.getId());				
+			
 			if (dosificacion != null) {
 				temas = dosiTemaService.buscarPorDosificacion(dosificacion);
 				model.addAttribute("dosiTemas", temas);
@@ -319,31 +330,12 @@ public class DosificacionController {
 			// COMPARTIDA
 			List<DosificacionCarga> dosificacionesCargas = dosiCargaService.buscarPorCargaHoraria(cargaCompartida);
 			for (DosificacionCarga dosificacionCarga : dosificacionesCargas) {
-				DosificacionCarga nuevaDC = new DosificacionCarga();
-				Dosificacion dosificacion = new Dosificacion();
-				dosificacion.setIdCorteEvaluativo(dosificacionCarga.getDosificacion().getIdCorteEvaluativo());
-				dosificacion.setPersona(new Persona((Integer) session.getAttribute("cvePersona")));
-				dosificacion.setFechaAlta(new Date());
-				dosificacion.setValidaDirector(false);
-				dosificacion.setTerminada(false);
-				dosificacion.setActivo(true);
-				
-				nuevaDC.setCargaHoraria(cargaHoraria);
-				nuevaDC.setDosificacion(dosificacion);
-				nuevaDC.setActivo(true);
-				dosiCargaService.guardar(nuevaDC);
-				
-				List<DosificacionTema> dosificacionTemas = dosiTemaService.buscarPorDosificacion(dosificacionCarga.getDosificacion());
-				for (DosificacionTema dosiTema : dosificacionTemas) {
-					DosificacionTema dosiTemaCopia = new DosificacionTema();
-					dosiTemaCopia.setFechaFin(dosiTema.getFechaFin());
-					dosiTemaCopia.setFechaInicio(dosiTema.getFechaInicio());
-					dosiTemaCopia.setHorasPracticas(dosiTema.getHorasPracticas());
-					dosiTemaCopia.setHorasTeoricas(dosiTema.getHorasTeoricas());
-					dosiTemaCopia.setTema(dosiTema.getTema());
-					dosiTemaCopia.setDosificacion(dosificacion);
-					dosiTemaService.guardar(dosiTemaCopia);
-				}
+		
+				DosificacionImportada dImportada = new DosificacionImportada();
+				dImportada.setFecha(new Date());
+				dImportada.setCargaHoraria(cargaHoraria);
+				dImportada.setDosificacion(dosificacionCarga.getDosificacion());
+				dosificacionImportadaService.guardar(dImportada);
 			}
 			
 			
@@ -397,19 +389,70 @@ public class DosificacionController {
 
 	@GetMapping("/imprimir")
 	public String imprimirDosificacionProfesor(Model model, HttpSession session) {
+		// se obtienen las variab;es
 		Integer idDosificacion = (Integer) session.getAttribute("Dosificacion");
 		Integer idCargaHoraria = (Integer) session.getAttribute("DosificacionCarga");
 		Dosificacion dosificacion = dosificacionService.buscarPorId(idDosificacion);
 		CargaHoraria carga = cargaService.buscarPorIdCarga(idCargaHoraria);
 		int ponderacion = 0;
+		
+		//se consultan los mecanismos por carga y que esten activos
 		List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCargaHoraria, true);
 		for (MecanismoInstrumento mecanismo : mecanismos) {
 			if (mecanismo.getIdCorteEvaluativo() == dosificacion.getIdCorteEvaluativo()) {
 				ponderacion = ponderacion + mecanismo.getPonderacion();
 			}
 		}
-
-		model.addAttribute("director", carga.getGrupo().getCarrera().getDirectorCarrera());
+		
+		//se crea la lista de dosificacion
+		List<DosificacionUnidadDTO> unidadesDTO = new ArrayList<>();
+		
+		//se obtienen las unidades en base a la dosificacion
+		List<UnidadTematica> unidades = unidadTematicaService.buscarPorDosificacion(idDosificacion);
+	
+		//se iteran las unidades
+		for (UnidadTematica unidad : unidades) {
+			DosificacionUnidadDTO unidadDTO = new DosificacionUnidadDTO();
+			
+			//se rellena el DTO con la informacion del tema de la unidad y la dosificacion correspondiente al tema
+			unidadDTO.setConsecutivo(unidad.getConsecutivo());
+			unidadDTO.setUnidad(unidad.getNombre());
+			List<DosificacionTema> tema = dosiTemaService.buscarPorUnidadTematicaYDosificacion(unidad.getId(), idDosificacion);
+			unidadDTO.setTemas(tema);
+			unidadesDTO.add(unidadDTO);
+			tema = null;
+		}
+		
+		//se obtienen los colaboradores de la dosificacion
+		String firmaProfesor = "";
+		List<Persona> colaboradores = personaService.buscarColaboradoresPorDosificacion(idDosificacion);
+		
+		//se agrega el profesor actual a los colaboradores
+		colaboradores.add(carga.getProfesor());
+		for (Persona persona : colaboradores) {			
+			//se codifica el id de cada colaborador y se agrega a la cadena
+			try {
+				firmaProfesor += " - "+CodificarTexto.encriptAES(persona.getId().toString());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//se obtienen el id del director en base a la carga
+		Persona director = personaService.buscarDirectorPorCarga(carga.getId());
+ 		String firmaDirector = "";
+		//se cifra el id del director
+ 		try {
+			firmaDirector = CodificarTexto.encriptAES(director.getId().toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		model.addAttribute("unidades", unidadesDTO);
+		model.addAttribute("firmaProfesor", firmaProfesor);
+		model.addAttribute("firmaDirector", firmaDirector);
+		model.addAttribute("colaboradores", dosificacionService.buscarColaboradoresPorDosificacion(idDosificacion));
+		model.addAttribute("director", director.getNombreCompletoConNivelEstudio());
 		model.addAttribute("mecanismos", mecanismos);
 		model.addAttribute("ponderacion", ponderacion);
 		model.addAttribute("ds", dosificacion);
@@ -524,7 +567,13 @@ public class DosificacionController {
 		model.addAttribute("idCarga", idCarga);
 		CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(idCarga);
 		model.addAttribute("cargaHoraria", cargaHoraria);
-		List<Dosificacion> dosificaciones = dosificacionService.buscarPorCargaHoraria(idCarga);
+		List<Dosificacion> dosificaciones = new ArrayList<>();
+		List<Integer> dosi = dosificacionService.buscarIdporIdCargaHoraria(idCarga);
+		for (Integer dosificacion : dosi) {
+			if (dosificacion!=null) {				
+				dosificaciones.add(dosificacionService.buscarPorId(dosificacion));
+			}
+		}
 		List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCarga, true);
 		model.addAttribute("mecanismos", mecanismos);
 		model.addAttribute("dosificaciones", dosificaciones);

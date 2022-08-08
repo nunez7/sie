@@ -32,5 +32,10 @@ public class DosificacionTemaServiceJpa implements IDosificacionTemaService{
 	public List<DosificacionTema> buscarPorDosificacion(Dosificacion dosificacion) {
 		return dosiTemaRepository.findByDosificacion(dosificacion);
 	}
+	
+	@Override
+	public List<DosificacionTema> buscarPorUnidadTematicaYDosificacion(Integer unidadTematica, Integer dosificacion) {
+		return dosiTemaRepository.findByUnidadTematicaAndDosificacion(unidadTematica, dosificacion);
+	}
 
 }

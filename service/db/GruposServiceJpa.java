@@ -148,5 +148,11 @@ public class GruposServiceJpa implements IGrupoService{
 	public Grupo buscarUltimoGrupoLibre(Integer idPeriodo, Integer idCarrera, Integer idTurno) {
 		return gruposRepository.findLastEmptyGrupo(idPeriodo, idCarrera, idTurno);
 	}
+	
+	@Override
+	 public Grupo buscarUltimoGrupoCompatibleLibre(Integer idPeriodo, Integer idCarrera, Integer idTurno,
+	   Integer consecutivo, Integer idCuatrimestre) {
+	  return gruposRepository.findLastEmptyCompatibleGrupo(idPeriodo, idCarrera, idTurno, consecutivo, idCuatrimestre);
+	 }
 
 }
