@@ -1,11 +1,15 @@
 package edu.mx.utdelacosta.controller;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.mail.MessagingException;
+
 import javax.servlet.http.HttpSession;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -192,6 +196,9 @@ public class EscolaresController {
 
 	private Alumno alumno;
 
+	@Autowired
+	private EmailSenderService emailService;
+	
 	@Value("${spring.mail.username}")
 	private String correo;
 
@@ -1103,13 +1110,13 @@ public class EscolaresController {
 					mail.setTitulo("Solitud de baja aprobada.");		
 					//Variables a plantilla
 					Map<String, Object> variables = new HashMap<>();
-					variables.put("titulo", "Solitud de baja aprobada por escolares");						
-					variables.put("cuerpoCorreo","La solicitud de baja que solito para el alumno "+baja.getAlumno().getPersona().getNombreCompleto()+" fue aprobada por escolares.");
+					variables.put("titulo", "Solicitud de baja aprobada por escolares");						
+					variables.put("cuerpoCorreo","La solicitud de baja que solito para el alumno(a) "+baja.getAlumno().getPersona().getNombreCompleto()+" fue aprobada por escolares.");
 					mail.setVariables(variables);			
 					try {							
 						emailService.sendEmail(mail);													
-					}catch (Exception e) {
-						
+					}catch (MessagingException | IOException e) {
+						return "errorMen";
 				  	}
 					
 					return "ok";
@@ -1142,7 +1149,7 @@ public class EscolaresController {
 				//Variables a plantilla
 				Map<String, Object> variables = new HashMap<>();
 				variables.put("titulo", "Baja rechazada por escolares.");						
-				variables.put("cuerpoCorreo","La solicitud de baja para el alumno "+baja.getAlumno().getPersona().getNombreCompleto()+" fue rechazada por escolares, debido al siguiente motivo: "+motivo);
+				variables.put("cuerpoCorreo","La solicitud de baja para el alumno(a) "+baja.getAlumno().getPersona().getNombreCompleto()+" fue rechazada por escolares, debido al siguiente motivo: "+motivo);
 				mail.setVariables(variables);			
 				try {							
 					emailService.sendEmail(mail);													

@@ -51,7 +51,7 @@ public class AspiranteController {
 			return "noDocs";
 		}
 		
-		reinscripcion.reinscribir(alumno, (Integer) session.getAttribute("cvePersona"));
+		reinscripcion.inscribirNuevoAlumno(alumno, (Integer) session.getAttribute("cvePersona"));
 		
 		return "ok";
 	}
