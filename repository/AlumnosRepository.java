@@ -401,5 +401,11 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			   + "WHERE fecha_inscripcion IS NULL AND g.id_periodo = :idPeriodo "
 			   + "AND ag.activo = 'True' ORDER BY nombre", nativeQuery = true)
 	List<AlumnoNoReinscritoDTO> findNoReinscritosByPeriodo(@Param("idPeriodo") Integer idPeriodo);
+	
+	@Query(value = "SELECT COUNT(DISTINCT(a.*)) FROM alumnos a"
+			+ "	INNER JOIN personas p on a.id_persona = p.id "
+			+ "	INNER JOIN alumnos_grupos ag on ag.id_alumno = a.id "
+			+ "	WHERE p.sexo = :sexo and ag.id_grupo = :grupo ", nativeQuery = true)
+	Integer countAlumnosBySexoAndGrupo(@Param("sexo") String sexo, @Param("grupo") Integer idGrupo);
 			
 }

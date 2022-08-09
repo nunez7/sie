@@ -25,4 +25,6 @@ public interface IPersonaService {
 	List<AlumnoPersonalDTO> buscarPorMatriculaONoEmpledoONombre(String like);
 	
 	Persona buscarDirectorPorCarga(Integer idCargaHoraria);
+	
+	List<Persona> buscarColaboradoresPorDosificacion(Integer dosificacion);
 }

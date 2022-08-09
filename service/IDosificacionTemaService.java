@@ -10,4 +10,5 @@ public interface IDosificacionTemaService {
 	DosificacionTema buscarPorTemaYDosificacion(TemaUnidad tema, Dosificacion dosificacion);
 	void guardar (DosificacionTema dosificacionTema);
 	List<DosificacionTema> buscarPorDosificacion(Dosificacion dosificacion);
+	List<DosificacionTema> buscarPorUnidadTematicaYDosificacion(Integer unidadTematica, Integer dosificacion);
 }
