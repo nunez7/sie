@@ -28,14 +28,16 @@ public class TemasUnidadController {
 	@ResponseBody
 	public String guardar(@RequestBody TemasUnidadDTO temasDTO) {
 		TemaUnidad tema = null;
+		//sacamos la unidadTematica
+		UnidadTematica unidadTematica = null;
 		//actualiza el registro
 		if(temasDTO.getIdTema() > 0) {
 			tema = temasService.buscarPorId(temasDTO.getIdTema());
+			unidadTematica = unidadTematicaService.buscarPorId(temasDTO.getIdUnidad());
+			tema.setUnidadTematica(unidadTematica);
 		} else {
 			//se hace la inserción
 			tema = new TemaUnidad();
-			//sacamos la unidadTematica
-			UnidadTematica unidadTematica = null;
 			unidadTematica = unidadTematicaService.buscarPorId(temasDTO.getIdUnidad());
 			tema.setUnidadTematica(unidadTematica);
 		}

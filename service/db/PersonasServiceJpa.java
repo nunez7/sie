@@ -78,4 +78,10 @@ public class PersonasServiceJpa implements IPersonaService{
 	public Persona buscarDirectorPorCarga(Integer idCargaHoraria) {
 		return personasRepo.findDirectorCarreraByCarga(idCargaHoraria);
 	}
+	
+	@Override
+	public List<Persona> buscarColaboradoresPorDosificacion(Integer dosificacion) {
+		return personasRepo.findColaboradoresByDosificacion(dosificacion);
+	}
+
 }

@@ -77,4 +77,12 @@ public interface RemedialAlumnoRepository extends CrudRepository<RemedialAlumno,
 			+ "AND id_corte = :idCorte AND tipo_remedial = :tipo", nativeQuery = true)
 	Integer findByAlumnoAndCargaHorariaAndCorteEvaluativoAndTipo(@Param("idAlumno") Integer idAlumno, @Param("idCargaHoraria") Integer idCargaHoraria, @Param("idCorte") Integer idCorte, 
 				@Param("tipo") Integer tipo);
+	
+	@Query(value="SELECT CAST(COUNT(DISTINCT ra.id)AS INT)AS cantidad "
+			+ "FROM remedial_alumno ra "
+			+ "INNER JOIN cargas_horarias cg on ra.id_carga_horaria=cg.id "
+			+ "INNER JOIN grupos g ON g.id=cg.id_grupo "
+			+ "WHERE g.id_carrera=:idCarrera AND ra.tipo_remedial=:tipoRemedial "
+			+ "AND ra.id_corte=:idCorteEvaluativo AND g.id_turno = :idTurno ", nativeQuery = true)
+	Integer countByCarreraAndCorteEvaluativoAndTurno(@Param("idCarrera") Integer idCarrera, @Param("tipoRemedial") Integer tipoRemedial, @Param("idCorteEvaluativo") Integer idCorteEvaluativo, @Param("idTurno") Integer idTurno);
 }

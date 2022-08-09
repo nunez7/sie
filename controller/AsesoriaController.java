@@ -22,6 +22,7 @@ import edu.mx.utdelacosta.model.Asesoria;
 import edu.mx.utdelacosta.model.AsesoriaAlumno;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Grupo;
+import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dtoreport.AsesoriaDTO;
@@ -30,6 +31,7 @@ import edu.mx.utdelacosta.service.IAsesoriaAlumnoService;
 import edu.mx.utdelacosta.service.IAsesoriaService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.IGrupoService;
+import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
@@ -59,6 +61,9 @@ public class AsesoriaController {
 	
 	@Autowired
 	private IAlumnoService alumnoService;
+	
+	@Autowired
+	private IPeriodosService periodoService;
 	
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 
@@ -128,7 +133,11 @@ public class AsesoriaController {
 		Persona persona = personaService.buscarPorId((Integer)session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		List<AsesoriaDTO> asesorias = asesoriaService.buscarPorPersonaCarreraAndPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo());
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("cuatrimestre", periodo.getNombre());
 		model.addAttribute("asesorias", asesorias);
+		model.addAttribute("totalM", alumnoService.contarAlumnosPorSexoYPersonaCarreraYPeriodo("M", persona.getId(), usuario.getPreferencias().getIdPeriodo()));
+		model.addAttribute("totalH", alumnoService.contarAlumnosPorSexoYPersonaCarreraYPeriodo("H", persona.getId(), usuario.getPreferencias().getIdPeriodo()));
 		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteAsesorias";
 	 }

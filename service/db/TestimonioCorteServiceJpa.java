@@ -40,5 +40,10 @@ public class TestimonioCorteServiceJpa implements ITestimonioCorteService{
 			Integer idCorteEvaluativo) {
 		return testimonioRepository.checkSDByAlumnoAndCargaHorariaAndCorteEvaluativo(idAlumno, idCargaHoraria, idCorteEvaluativo);
 	}
+	
+	@Override
+	public Integer countAlumnosSDByCarreraYTurno(Integer idCarrera, Integer idCorteEvaluativo, Integer idTurno) {
+		return testimonioRepository.countAlumnosSDByCarreraAndTurno(idCarrera, idCorteEvaluativo, idTurno);
+	}
 
 }

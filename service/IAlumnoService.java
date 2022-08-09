@@ -89,5 +89,19 @@ public interface IAlumnoService {
 	List<AlumnoNoReinscritoDTO> buscarNoReinscritosPorPersonaCarreraYPeriodo(Integer idPersona, Integer idPeriodo);
 	
 	List<AlumnoNoReinscritoDTO> BuscarNoReinscritosPorPeriodo(Integer idPeriodo);
+	
+	List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorTodasCarreraYPeriodo(Integer idPeriodo);
+	
+	Integer contarAlumnosPorSexoYGrupo (String sexo, Integer idGrupo);
+	
+	Integer contarAlumnosPorSexoYPersonaCarreraYPeriodo(String sexo, Integer idPersona, Integer idPeriodo);
+	
+	Integer contarAlumnosPorCarreraYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
+	
+	Integer contarInscritosPorCarreraYPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
+	
+	Integer contarBajasPorCarreraYPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
+	
+	List<AlumnoRegularDTO> obtenerRegularesPorCarreraYPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
 
 }

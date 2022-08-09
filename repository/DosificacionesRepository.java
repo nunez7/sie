@@ -21,7 +21,8 @@ public interface DosificacionesRepository extends CrudRepository<Dosificacion, I
 	
 	@Query(value="SELECT df.* FROM dosificaciones df "
 			+ "INNER JOIN dosificaciones_cargas dfc on dfc.id_dosificacion=df.id "
-			+ "WHERE dfc.id_carga_horaria = :idCargaHoraria", nativeQuery = true)
+			+ "WHERE dfc.id_carga_horaria = :idCargaHoraria "
+			+ "ORDER BY df.id_corte_evaluativo ", nativeQuery = true)
 	List<Dosificacion> findByIdCargaHoraria(@Param("idCargaHoraria") Integer cargaHoraria);
 	
 	@Query(value="SELECT ds.id as idDosificacion, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as profesor, "
@@ -57,5 +58,12 @@ public interface DosificacionesRepository extends CrudRepository<Dosificacion, I
 			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :persona) "
 			+ "AND ds.valida_director = 'False' AND g.id_periodo = :periodo", nativeQuery = true)
 	Integer coountByPersonaCarreraAndPeriodo(@Param("persona") Integer idPersona, @Param("periodo") Integer idPeriodo);
+	
+	@Query(value = "SELECT CONCAT(ne.abreviatura,' ',p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) "
+			+ " FROM dosificacion_importada di " + " INNER JOIN cargas_horarias ch ON di.id_carga_horaria = ch.id "
+			+ " INNER JOIN personas p ON ch.id_profesor = p.id "
+			+ " INNER JOIN nivel_estudio ne ON p.id_nivel_estudio = ne.id "
+			+ " WHERE di.id_dosificacion = :dosificacion ", nativeQuery = true)
+	List<String> findColaboradoresByDosificacion(@Param("dosificacion") Integer dosificacion);
 
 }

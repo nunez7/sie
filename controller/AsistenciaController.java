@@ -46,6 +46,7 @@ import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IHorarioService;
+import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.ITestimonioCorteService;
@@ -96,6 +97,9 @@ public class AsistenciaController {
 	
 	@Autowired
 	private IProrrogaService prorrogaService;
+	
+	@Autowired
+	private IPeriodosService periodoService;
 	
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 
@@ -504,6 +508,8 @@ public class AsistenciaController {
 		
 		// lista de cortesEvalutivos
 		List<CorteEvaluativo> cortesEvaluativos = corteService.buscarPorCarreraYPeriodo(usuario.getPreferencias().getIdCarrera(), usuario.getPreferencias().getIdPeriodo());
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("cuatrimestre", periodo.getNombre());
 		model.addAttribute("cortes", cortesEvaluativos);
 		model.addAttribute("carreras", carrerasServices.buscarCarrerasPorIdPersona(persona.getId()));
 		model.addAttribute("nombreUT", NOMBRE_UT);
