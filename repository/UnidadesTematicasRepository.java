@@ -12,11 +12,11 @@ import edu.mx.utdelacosta.model.UnidadTematica;
 public interface UnidadesTematicasRepository extends JpaRepository<UnidadTematica, Integer>{
 	Optional<UnidadTematica> findById(Integer id);
 	
-	@Query(value = "SELECT ut.* "
+	@Query(value = "SELECT distinct(ut.*)  "
 			+ "FROM unidades_tematicas ut "
 			+ "INNER JOIN temas_unidad tu on tu.id_unidad_tematica=ut.id "
 			+ "INNER JOIN dosificacion_tema dt on dt.id_tema = tu.id "
-			+ "WHERE dt.id_dosificacion=:dosificacion "
-			+ "ORDER BY ut.consecutivo " , nativeQuery = true)
+			+ "WHERE dt.id_dosificacion=:dosificacion" , nativeQuery = true)
+
 	List<UnidadTematica> findByDosificacion(@Param("dosificacion") Integer idDosificacion);
 }

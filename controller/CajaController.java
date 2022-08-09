@@ -21,7 +21,6 @@ import edu.mx.utdelacosta.model.Estado;
 import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
-import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.ICarrerasServices;
@@ -31,7 +30,6 @@ import edu.mx.utdelacosta.service.IEstadoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
-import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
 @PreAuthorize("hasRole('Administrador') and hasRole('Caja')")
@@ -52,10 +50,7 @@ public class CajaController {
 	
 	@Autowired
 	private IPersonaService personaService;
-	
-	@Autowired
-	private IUsuariosService usuariosService;
-	
+		
 	@Autowired
 	private IPeriodosService periodosService;
 	

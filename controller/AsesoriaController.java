@@ -120,6 +120,8 @@ public class AsesoriaController {
 			  List<AsesoriaDTO> asesorias = asesoriaService.buscarPorIdGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());			
 			  model.addAttribute("asesorias", asesorias);
 			  model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
+			  model.addAttribute("totalM", alumnoService.contarAlumnosPorSexoYGrupo("M", cveGrupo));
+			  model.addAttribute("totalH", alumnoService.contarAlumnosPorSexoYGrupo("H", cveGrupo));
 		}
 		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);

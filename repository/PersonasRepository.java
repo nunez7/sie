@@ -62,11 +62,11 @@ public interface PersonasRepository extends CrudRepository<Persona, Integer> {
 				+ "ORDER BY p.id", nativeQuery = true)
 		Persona findDirectorCarreraByCarga(@Param("idCargaHoraria") Integer idCargaHoraria);
 		
-		@Query(value = "SELECT p.* " + " FROM dosificacion_importada di "
-				+ " INNER JOIN cargas_horarias ch ON di.id_carga_horaria = ch.id "
-				+ " INNER JOIN personas p ON ch.id_profesor = p.id "
-				+ " INNER JOIN nivel_estudio ne ON p.id_nivel_estudio = ne.id "
-				+ " WHERE di.id_dosificacion = :dosificacion ", nativeQuery = true)
+		@Query(value = "SELECT p.* "
+				+ "	FROM dosificacion_importada di "
+				+ "	INNER JOIN cargas_horarias ch ON di.id_carga_horaria = ch.id "
+				+ "	INNER JOIN personas p ON ch.id_profesor = p.id "
+				+ "	INNER JOIN nivel_estudio ne ON p.id_nivel_estudio = ne.id "
+				+ "	WHERE di.id_dosificacion = :dosificacion ", nativeQuery = true)
 		List<Persona> findColaboradoresByDosificacion(@Param("dosificacion") Integer dosificacion);
-		
 }

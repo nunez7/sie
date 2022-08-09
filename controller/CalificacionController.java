@@ -165,7 +165,8 @@ public class CalificacionController {
 				}
 
 				al.setCalificaciones(calificaciones);
-				al.setStatus(testimonioCorteService.validarSDPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(), idCarga, idCorte).toString());
+				Integer status = testimonioCorteService.validarSDPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(), idCarga, idCorte);
+				al.setStatus(status!=null ? status.toString() : "0");
 				al.setCalificacionTotal(
 						calificacionCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(
 								alumno.getId(), idCarga, idCorte).floatValue());

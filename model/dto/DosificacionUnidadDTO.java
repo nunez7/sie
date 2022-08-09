@@ -35,7 +35,5 @@ public class DosificacionUnidadDTO {
 	public void setTemas(List<DosificacionTema> temas) {
 		this.temas = temas;
 	}
-	
-	
 
 }

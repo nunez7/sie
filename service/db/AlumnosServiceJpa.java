@@ -241,6 +241,11 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	public List<AlumnoNoReinscritoDTO> BuscarNoReinscritosPorPeriodo(Integer idPeriodo) {
 		return alumnosRepo.findNoReinscritosByPeriodo(idPeriodo);
 	}
+
+	@Override
+	public Integer contarAlumnosPorSexoYGrupo(String sexo, Integer idGrupo) {
+		return alumnosRepo.countAlumnosBySexoAndGrupo(sexo, idGrupo);
+	}
 	
 	@Override
 	public List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorTodasCarreraYPeriodo(Integer idPeriodo) {
