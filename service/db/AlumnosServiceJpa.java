@@ -253,11 +253,6 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	}
 
 	@Override
-	public Integer contarAlumnosPorSexoYGrupo(String sexo, Integer idGrupo) {
-		return alumnosRepo.countAlumnosBySexoAndGrupo(sexo, idGrupo);
-	}
-
-	@Override
 	public Integer contarAlumnosPorSexoYPersonaCarreraYPeriodo(String sexo, Integer idPersona, Integer idPeriodo) {
 		return alumnosRepo.countAlumnosBySexoAndPersonaCarrera(sexo, idPersona, idPeriodo);
 	}

@@ -29,11 +29,6 @@ public class UnidadesTematicasServicesJpa implements IUnidadTematicaService{
 	public void guardar(UnidadTematica unidadTematica) {
 		unidadesTematicasRepository.save(unidadTematica);
 	}
-	
-	@Override
-	public List<UnidadTematica> buscarPorDosificacion(Integer idDosificacion) {
-		return unidadesTematicasRepository.findByDosificacion(idDosificacion);
-	}
 
 	@Override
 	public List<UnidadTematica> buscarPorDosificacion(Integer idDosificacion) {
