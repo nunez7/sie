@@ -247,4 +247,39 @@ public class AlumnosServiceJpa implements IAlumnoService{
 		return alumnosRepo.countAlumnosBySexoAndGrupo(sexo, idGrupo);
 	}
 	
+	@Override
+	public List<AlumnoAdeudoDTO> obtenerAlumnosAdeudoPorTodasCarreraYPeriodo(Integer idPeriodo) {
+		return alumnosRepo.getAllAlumnoAdeudoByAllCarreraAndPeriodo(idPeriodo);
+	}
+
+	@Override
+	public Integer contarAlumnosPorSexoYGrupo(String sexo, Integer idGrupo) {
+		return alumnosRepo.countAlumnosBySexoAndGrupo(sexo, idGrupo);
+	}
+
+	@Override
+	public Integer contarAlumnosPorSexoYPersonaCarreraYPeriodo(String sexo, Integer idPersona, Integer idPeriodo) {
+		return alumnosRepo.countAlumnosBySexoAndPersonaCarrera(sexo, idPersona, idPeriodo);
+	}
+
+	@Override
+	public Integer contarAlumnosPorCarreraYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
+		return alumnosRepo.countAlumnosByCarreraAndCarrera(idCarrera, idPeriodo, idTurno);
+	}
+
+	@Override
+	public Integer contarInscritosPorCarreraYPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
+		return alumnosRepo.countInscritosByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
+	}
+
+	@Override
+	public Integer contarBajasPorCarreraYPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
+		return alumnosRepo.countBajasByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
+	}
+
+	@Override
+	public List<AlumnoRegularDTO> obtenerRegularesPorCarreraYPeriodoYTurno(Integer idCarrera, Integer idPeriodo,
+			Integer idTurno) {
+		return alumnosRepo.obtenerRegularesByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
+	}
 }

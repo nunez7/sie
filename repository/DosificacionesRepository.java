@@ -22,7 +22,8 @@ public interface DosificacionesRepository extends CrudRepository<Dosificacion, I
 	
 	@Query(value="SELECT df.* FROM dosificaciones df "
 			+ "INNER JOIN dosificaciones_cargas dfc on dfc.id_dosificacion=df.id "
-			+ "WHERE dfc.id_carga_horaria = :idCargaHoraria", nativeQuery = true)
+			+ "WHERE dfc.id_carga_horaria = :idCargaHoraria "
+			+ "ORDER BY df.id_corte_evaluativo ", nativeQuery = true)
 	List<Dosificacion> findByIdCargaHoraria(@Param("idCargaHoraria") Integer cargaHoraria);
 	
 	@Query(value="SELECT ds.id as idDosificacion, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as profesor, "

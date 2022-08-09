@@ -17,5 +17,6 @@ public interface UnidadesTematicasRepository extends JpaRepository<UnidadTematic
 			+ "INNER JOIN temas_unidad tu on tu.id_unidad_tematica=ut.id "
 			+ "INNER JOIN dosificacion_tema dt on dt.id_tema = tu.id "
 			+ "WHERE dt.id_dosificacion=:dosificacion" , nativeQuery = true)
+
 	List<UnidadTematica> findByDosificacion(@Param("dosificacion") Integer idDosificacion);
 }

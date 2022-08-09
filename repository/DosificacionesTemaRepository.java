@@ -14,6 +14,7 @@ public interface DosificacionesTemaRepository extends CrudRepository<Dosificacio
 	
 	DosificacionTema findByTemaAndDosificacion(TemaUnidad tema, Dosificacion dosificacion);
 	List<DosificacionTema> findByDosificacion(Dosificacion dosificacion);
+
 	@Query(value = "SELECT dt.* "
 			+ "	FROM temas_unidad tu "
 			+ "	INNER JOIN dosificacion_tema dt on dt.id_tema = tu.id "

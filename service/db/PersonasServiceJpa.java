@@ -83,4 +83,5 @@ public class PersonasServiceJpa implements IPersonaService{
 	public List<Persona> buscarColaboradoresPorDosificacion(Integer dosificacion) {
 		return personasRepo.findColaboradoresByDosificacion(dosificacion);
 	}
+  
 }

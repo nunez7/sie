@@ -117,5 +117,10 @@ public class RemedialAlumnoServiceJpa implements IRemedialAlumnoService{
 		return remedialAlumnoRepository.findByAlumnoAndCargaHorariaAndCorteEvaluativoAndTipo(idAlumno, idCargaHoraria, idCorte, tipo);
 	}
 
+	@Override
+	public Integer contarPorCarreraYCorteEvaluativoYTurno(Integer idCarrera, Integer tipoRemedial,
+			Integer idCorteEvaluativo, Integer turno) {
+		return remedialAlumnoRepository.countByCarreraAndCorteEvaluativoAndTurno(idCarrera, tipoRemedial, idCorteEvaluativo, turno);
+	}
 	
 }

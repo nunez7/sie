@@ -41,6 +41,7 @@ import edu.mx.utdelacosta.model.TemaUnidad;
 import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.UnidadTematica;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.model.dto.DosificacionDTO;
 import edu.mx.utdelacosta.model.dto.DosificacionTemaDto;
 import edu.mx.utdelacosta.model.dto.DosificacionUnidadDTO;
 import edu.mx.utdelacosta.service.EmailSenderService;
@@ -447,7 +448,7 @@ public class DosificacionController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		model.addAttribute("unidades", unidadesDTO);
 		model.addAttribute("firmaProfesor", firmaProfesor);
 		model.addAttribute("firmaDirector", firmaDirector);
@@ -562,21 +563,48 @@ public class DosificacionController {
 	}
 
 	@GetMapping(path = "/get/{id}")
-	public String getDosificacion(@PathVariable(name = "id", required = false) Integer idCarga, Model model,
-			HttpSession session) {
-		model.addAttribute("idCarga", idCarga);
-		CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(idCarga);
-		model.addAttribute("cargaHoraria", cargaHoraria);
-		List<Dosificacion> dosificaciones = new ArrayList<>();
-		List<Integer> dosi = dosificacionService.buscarIdporIdCargaHoraria(idCarga);
-		for (Integer dosificacion : dosi) {
-			if (dosificacion!=null) {				
-				dosificaciones.add(dosificacionService.buscarPorId(dosificacion));
+	public String getDosificacion(@PathVariable(name = "id", required = false) Integer idCarga, Model model, HttpSession session) {
+		//se trae las dosificaciones por carga horaria 
+		List<Dosificacion> dosificaciones = dosificacionService.buscarPorCargaHoraria(idCarga);
+		CargaHoraria carga = cargaService.buscarPorIdCarga(idCarga);
+		//se crea una lista de dosificacionDTO
+		List<DosificacionDTO> dosificacionesDTO = new ArrayList<>();
+		// se iteran las dosificaciones y se guardan en un dto
+		for (Dosificacion d : dosificaciones) {
+			//se crea objeto de dosificacionDTO
+			DosificacionDTO dosiDTO = new DosificacionDTO();
+			//se agrega el objeto de dosificacion
+			dosiDTO.setDosificacion(d);
+			
+			//se crea la lista de instrumentos
+			List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCarga, true);
+			//se agregan los mecanismos a la dosificacion
+			dosiDTO.setMecanismos(mecanismos);
+
+			//se crea la lista de unidades temáticas
+			List<DosificacionUnidadDTO> unidadesDTO = new ArrayList<>();
+			List<UnidadTematica> unidades = unidadTematicaService.buscarPorDosificacion(d.getId());
+			for (UnidadTematica unidad : unidades) {
+				//se agregan las unidades y temas 
+				DosificacionUnidadDTO unidadDTO = new DosificacionUnidadDTO();
+				unidadDTO.setConsecutivo(unidad.getConsecutivo());
+				unidadDTO.setUnidad(unidad.getNombre());
+				List<DosificacionTema> tema = dosiTemaService.buscarPorUnidadTematicaYDosificacion(unidad.getId(),
+						d.getId());
+				//se agrega la lista de temas a la unidad
+				unidadDTO.setTemas(tema);
+				//se agrega la unidad a la lista de unidades
+				unidadesDTO.add(unidadDTO);
+				tema = null;
 			}
+			//se agrega la lista de unidades a la dosificación
+			dosiDTO.setUnidades(unidadesDTO);
+			// se agrega la dosificación a la lista de dosificaciones
+			dosificacionesDTO.add(dosiDTO);
 		}
-		List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCarga, true);
-		model.addAttribute("mecanismos", mecanismos);
-		model.addAttribute("dosificaciones", dosificaciones);
+		model.addAttribute("dosificaciones", dosificacionesDTO);
+		model.addAttribute("cargaHoraria", carga);
+		model.addAttribute("idCarga", idCarga);
 		return "fragments/panel-dosificacion :: panel-dosificacion";
 	}
 

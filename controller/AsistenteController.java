@@ -545,6 +545,8 @@ public class AsistenteController {
 			model.addAttribute("alumnos", alumnos);
 			model.addAttribute("cveCarrera", cveCarrera);
 		}
+		Periodo periodo = servicePeriodo.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("cuatrimestre", periodo.getNombre());
 		model.addAttribute("carreras", carrerasServices.buscarCarrerasPorIdPersona(persona.getId()));
 		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteDatosPersonales";
@@ -632,6 +634,8 @@ public class AsistenteController {
 			}
 			model.addAttribute("grupos",grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), cveCarrera)); //retorna los grupos de nivel TSU
 		}
+		Periodo periodo = servicePeriodo.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("cuatrimestre", periodo.getNombre());
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteHorario";
@@ -767,6 +771,8 @@ public class AsistenteController {
 				}
 			}
 		}
+		Periodo periodo = servicePeriodo.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("cuatrimestre", periodo.getNombre());
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteCalificacionesGenerales";

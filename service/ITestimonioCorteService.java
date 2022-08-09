@@ -8,4 +8,5 @@ public interface ITestimonioCorteService {
 	Integer contarAlumnoSD(Integer idCargaHoraria, Integer idCorteEvaluativo);
 	Integer countAlumnosSDByCarrera(Integer idCarrera, Integer idCorteEvaluativo);
 	Integer validarSDPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria, Integer idCorteEvaluativo);
+	Integer countAlumnosSDByCarreraYTurno(Integer idCarrera, Integer idCorteEvaluativo, Integer idTurno);
 }
