@@ -1,14 +1,21 @@
 package edu.mx.utdelacosta.model.dto;
 
+import java.util.List;
+
 public class CalificacionMateriaDTO {
 	
-	private Integer id;
+private Integer id;
 	
 	private String abreviatura;
 	
 	private Integer calificacion;
 	
 	private String status;
+	
+	// agregado Raul 14/06/2022
+	private String nombre;
+	
+	private List<CalificacionCorteDTO> cortes;
 
 	public Integer getId() {
 		return id;
@@ -41,6 +48,21 @@ public class CalificacionMateriaDTO {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
+	// agregado Raul 14/06/2022
+	public String getNombre() {
+		return nombre;
+	}
+
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
+	}
+
+	public List<CalificacionCorteDTO> getCortes() {
+		return cortes;
+	}
+
+	public void setCortes(List<CalificacionCorteDTO> cortes) {
+		this.cortes = cortes;
+	}
 
 }

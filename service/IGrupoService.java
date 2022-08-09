@@ -52,5 +52,7 @@ public interface IGrupoService {
 	Grupo buscarUltimoGrupoLibre(Integer idPeriodo, Integer idCarrera, Integer idTurno);
 	
 	Grupo buscarUltimoGrupoCompatibleLibre(Integer idPeriodo, Integer idCarrera, Integer idTurno, Integer consecutivo, Integer idCuatrimestre);
+	
+	List<Grupo> buscarUltimosPorAlumno(Integer idAlumno);
 
 }

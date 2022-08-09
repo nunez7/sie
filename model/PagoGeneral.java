@@ -70,15 +70,35 @@ public class PagoGeneral {
 	
 	private Double descuento;
 	
+	private String comentario;
+	
+	private Boolean factura;
+	
 	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
 	private PagoAlumno pagoAlumno;
 	
-	@OneToOne(fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
 	private PagoRecibe pagoRecibe;
 	
 	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "pagoGeneral")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private PagoAsignatura pagoAsignatura;
+	
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "pagoGeneral")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private PagoCliente pagoCliente;
+	
+	//pago de un personal
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "pagoGeneral")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private PagoPersona pagoPersona;
+	
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
+	private PagoCuatrimestre pagoCuatrimestre;
+	
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "pagoGeneral")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private PagoArea pagoArea;
 	
 	public Integer getId() {
 		return id;
@@ -232,6 +252,22 @@ public class PagoGeneral {
 		this.descuento = descuento;
 	}
 
+	public String getComentario() {
+		return comentario;
+	}
+
+	public void setComentario(String comentario) {
+		this.comentario = comentario;
+	}
+
+	public Boolean getFactura() {
+		return factura;
+	}
+
+	public void setFactura(Boolean factura) {
+		this.factura = factura;
+	}
+
 	public PagoAlumno getPagoAlumno() {
 		return pagoAlumno;
 	}
@@ -254,6 +290,38 @@ public class PagoGeneral {
 
 	public void setPagoAsignatura(PagoAsignatura pagoAsignatura) {
 		this.pagoAsignatura = pagoAsignatura;
+	}
+
+	public PagoCliente getPagoCliente() {
+		return pagoCliente;
+	}
+
+	public void setPagoCliente(PagoCliente pagoCliente) {
+		this.pagoCliente = pagoCliente;
+	}
+
+	public PagoPersona getPagoPersona() {
+		return pagoPersona;
+	}
+
+	public void setPagoPersona(PagoPersona pagoPersona) {
+		this.pagoPersona = pagoPersona;
+	}
+
+	public PagoCuatrimestre getPagoCuatrimestre() {
+		return pagoCuatrimestre;
+	}
+
+	public void setPagoCuatrimestre(PagoCuatrimestre pagoCuatrimestre) {
+		this.pagoCuatrimestre = pagoCuatrimestre;
+	}
+
+	public PagoArea getPagoArea() {
+		return pagoArea;
+	}
+
+	public void setPagoArea(PagoArea pagoArea) {
+		this.pagoArea = pagoArea;
 	}
 	
 }

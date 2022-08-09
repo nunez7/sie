@@ -32,6 +32,7 @@ import edu.mx.utdelacosta.model.Escuela;
 import edu.mx.utdelacosta.model.Estado;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.PagoAlumno;
+import edu.mx.utdelacosta.model.PagoCuatrimestre;
 import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.PrestamoDocumento;
@@ -404,6 +405,16 @@ public class ControlAlumnoController {
 			pa.setAlumno(alumno);
 			pa.setPagoGeneral(pGeneral);
 			pagoAlumnoService.guardar(pa);
+			pGeneral.setPagoAlumno(pa);
+			
+			//se crea el pago cuatrimestre
+			PagoCuatrimestre pc = new PagoCuatrimestre();
+			pc.setAlumnoGrupo(grupoBuscar);
+			pc.setPagoGeneral(pGeneral);
+			pc.setPeriodo(grupoBuscar.getGrupo().getPeriodo());
+			pGeneral.setPagoCuatrimestre(pc);
+			
+			pagoGeneralService.guardar(pGeneral);
 			//pago de reinscripción
 			PagoGeneral pg = new PagoGeneral();
 			pg.setCantidad(1);

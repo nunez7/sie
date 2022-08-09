@@ -42,4 +42,10 @@ public class ClienteServiceJpa implements IClienteService{
 		return clienteRepository.findLastClave();
 	}
 
+	@Override
+	public List<Cliente> buscarPorNombreORfc(String like) {
+		// TODO Auto-generated method stub
+		return clienteRepository.findByNombreOrRfc(like);
+	}
+
 }

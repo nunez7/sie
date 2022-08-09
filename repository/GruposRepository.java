@@ -123,14 +123,18 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 			+ "WHERE g2.id=g.id) ORDER BY g.id LIMIT 1 ", nativeQuery = true)
 	Grupo findLastEmptyGrupo(@Param("idPeriodo") Integer idPeriodo, @Param("idCarrera") Integer idCarrera, @Param("idTurno") Integer idTurno);
 	
+	@Query(value = "SELECT g.* " + "	FROM grupos g "
+			+ "	WHERE g.id_carrera = :idCarrera AND g.id_periodo = :idPeriodo "
+			+ "	AND g.id_cuatrimestre = :cuatrimestre  AND g.activo = 'True' AND g.id_turno = :idTurno AND g.consecutivo = :consecutivo "
+			+ "	AND g.capacidad_maxima > (SELECT count(ag.*) " + "	FROM alumnos_grupos ag "
+			+ "	INNER JOIN grupos g2 on ag.id_grupo=g2.id "
+			+ "	WHERE g2.id=g.id) ORDER BY g.id LIMIT 1 ", nativeQuery = true)
+	Grupo findLastEmptyCompatibleGrupo(@Param("idPeriodo") Integer idPeriodo, @Param("idCarrera") Integer idCarrera, @Param("idTurno") Integer idTurno, @Param("consecutivo") Integer consecutivo, @Param("cuatrimestre") Integer cuatrimestre);
+
 	@Query(value = "SELECT g.* "
-			   + "	FROM grupos g "
-			   + "	WHERE g.id_carrera = :idCarrera AND g.id_periodo = :idPeriodo "
-			   + "	AND g.id_cuatrimestre = :cuatrimestre  AND g.activo = 'True' AND g.id_turno = :idTurno AND g.consecutivo = :consecutivo "
-			   + "	AND g.capacidad_maxima > (SELECT count(ag.*) "
-			   + "	FROM alumnos_grupos ag "
-			   + "	INNER JOIN grupos g2 on ag.id_grupo=g2.id "
-			   + "	WHERE g2.id=g.id) ORDER BY g.id LIMIT 1 ", nativeQuery = true)
-			 Grupo findLastEmptyCompatibleGrupo(@Param("idPeriodo") Integer idPeriodo, @Param("idCarrera") Integer idCarrera, @Param("idTurno") Integer idTurno, @Param("consecutivo") Integer consecutivo, @Param("cuatrimestre") Integer cuatrimestre);
-	
+			+ "FROM alumnos_grupos ag "
+			+ "INNER JOIN grupos g ON ag.id_grupo=g.id "
+			+ "WHERE id_alumno = :alumno "
+			+ "ORDER BY id_grupo DESC LIMIT 3", nativeQuery = true)
+	List<Grupo> findLast3ByAlumno(@Param("alumno") Integer idAlumno);
 }

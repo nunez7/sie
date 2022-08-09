@@ -9,4 +9,5 @@ public interface IConceptoService {
 	Concepto buscarPorId(Integer id);
 	List<Concepto> buscarTodos();
 	void guardar(Concepto concepto);
+	List<Concepto> buscarOpcionales();
 }
