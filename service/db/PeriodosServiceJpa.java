@@ -57,5 +57,10 @@ public class PeriodosServiceJpa implements IPeriodosService{
 	public Periodo buscarPorFechaInicioYFechafin(Date inicio, Date fin) {
 		return periodosRepository.findAllByInicioLessThanEqualAndFinGreaterThanEqual(inicio, fin);
 	}
+	
+	@Override
+	public List<Periodo> buscarUltimosCaja() {
+		return periodosRepository.findLastCaja();
+	}
 
 }

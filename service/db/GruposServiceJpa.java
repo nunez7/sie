@@ -154,5 +154,10 @@ public class GruposServiceJpa implements IGrupoService{
 	   Integer consecutivo, Integer idCuatrimestre) {
 	  return gruposRepository.findLastEmptyCompatibleGrupo(idPeriodo, idCarrera, idTurno, consecutivo, idCuatrimestre);
 	 }
+	
+	@Override
+	public List<Grupo> buscarUltimosPorAlumno(Integer idAlumno) {
+		return gruposRepository.findLast3ByAlumno(idAlumno);
+	}
 
 }

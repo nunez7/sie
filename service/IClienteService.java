@@ -10,4 +10,5 @@ public interface IClienteService {
 	Cliente buscarPorId(Integer id);
 	void guardar(Cliente cliente);
 	String ultimaClave();
+	List<Cliente> buscarPorNombreORfc(String like);
 }

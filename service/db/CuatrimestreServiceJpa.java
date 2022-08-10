@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 
 import edu.mx.utdelacosta.model.Cuatrimestre;
+import edu.mx.utdelacosta.model.dto.PagoCuatrimestreDTO;
 import edu.mx.utdelacosta.repository.CuatrimestreRepository;
 import edu.mx.utdelacosta.service.ICuatrimestreService;
 
@@ -32,6 +33,11 @@ public class CuatrimestreServiceJpa implements ICuatrimestreService{
 	public List<Cuatrimestre> buscarTodos() {
 		// TODO Auto-generated method stub
 		return cuatriRepo.findAll(Sort.by(Order.asc("id")));
+	}
+	
+	@Override
+	public List<PagoCuatrimestreDTO> buscarConPagosGenerados(Integer idPeriodo) {
+		return cuatriRepo.findPagosGenerados(idPeriodo);
 	}
 
 }

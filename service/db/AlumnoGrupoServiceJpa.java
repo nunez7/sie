@@ -79,5 +79,20 @@ public class AlumnoGrupoServiceJpa implements IAlumnoGrupoService{
 	public AlumnoGrupo buscarPrimerGrupoProspecto(Integer idAlumno) {
 		return agRepositorio.findFirstGrupoProspecto(idAlumno);
 	}	
+	
+	@Override
+	public Integer contarPorPeriodoYCuatrimestreYPagoGenerado(Integer idPeriodo, Integer idCuatrimestre) {
+		return agRepositorio.countByPeriodoAndCuatrimestreAndPagoGenerado(idPeriodo, idCuatrimestre);
+	}
+	
+	@Override
+	public List<AlumnoGrupo> buscarPorPeriodoYCuatrimestre(Integer idPeriodo, Integer idCuatrimestre) {
+		return agRepositorio.findByPeriodoAndCuatrimestre(idPeriodo, idCuatrimestre);
+	}
+	
+	@Override
+	public Integer contarPorPeriodoAndCuatrimestre(Integer idPeriodo, Integer idCuatrimestre) {
+		return agRepositorio.contarPorPeriodoAndCuatrimestre(idPeriodo, idCuatrimestre);
+	}
 
 }

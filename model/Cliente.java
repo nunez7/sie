@@ -68,6 +68,14 @@ public class Cliente {
 	
 	@Column(name = "created")
 	private Date fechaAlta;
+	
+	public Cliente() {
+		
+	}
+	
+	public Cliente(Integer id) {
+		this.id = id;
+	}
 
 	public Integer getId() {
 		return id;

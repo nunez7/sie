@@ -38,4 +38,28 @@ public interface AlumnoGrupoRepository extends CrudRepository<AlumnoGrupo, Integ
 			+ "	INNER JOIN alumnos_grupos ag on ag.id_grupo=g.id "
 			+ "	WHERE ag.id_alumno =:idAlumno LIMIT 1", nativeQuery = true)
 	AlumnoGrupo findFirstGrupoProspecto(@Param("idAlumno") Integer idAlumno);
+	
+	@Query(value = "SELECT COUNT(DISTINCT(algr.*)) "
+			+ "FROM alumnos a "
+			+ "INNER JOIN alumnos_grupos algr on algr.id_alumno = a.id "
+			+ "INNER JOIN grupos gr on gr.id = algr.id_grupo "
+			+ "INNER JOIN pago_cuatrimestre pc on pc.id_alumno_grupo=algr.id "
+			+ "WHERE gr.id_periodo=:periodo and gr.id_cuatrimestre = :cuatrimestre " ,nativeQuery = true)
+	Integer countByPeriodoAndCuatrimestreAndPagoGenerado(@Param("periodo")Integer idPeriodo, @Param("cuatrimestre") Integer idCuatrimestre);
+	
+	@Query(value="SELECT algr.* "
+			+ "FROM alumnos a "
+			+ "INNER JOIN alumnos_grupos algr on algr.id_alumno = a.id "
+			+ "LEFT JOIN grupos gr on gr.id = algr.id_grupo "
+			+ "WHERE gr.id_periodo=:periodo and gr.id_cuatrimestre = :cuatrimestre "
+			+ "ORDER BY algr.id DESC ", nativeQuery = true)
+	List<AlumnoGrupo> findByPeriodoAndCuatrimestre(@Param("periodo")Integer idPeriodo, @Param("cuatrimestre") Integer idCuatrimestre);
+	
+	@Query(value = "SELECT count(distinct(algr.id)) " + "FROM alumnos a "
+			+ "INNER JOIN alumnos_grupos algr on algr.id_alumno = a.id "
+			+ "LEFT JOIN grupos gr on gr.id = algr.id_grupo "
+			+ "WHERE gr.id_periodo=:periodo and gr.id_cuatrimestre = :cuatrimestre ", nativeQuery = true)
+	Integer contarPorPeriodoAndCuatrimestre(@Param("periodo") Integer idPeriodo,
+			@Param("cuatrimestre") Integer idCuatrimestre);
+
 }

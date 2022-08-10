@@ -57,6 +57,8 @@ import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.PersonaDocumento;
+import edu.mx.utdelacosta.model.PersonaReferencia;
+import edu.mx.utdelacosta.model.ProrrogaAdeudo;
 import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.TutoriaIndividual;
 import edu.mx.utdelacosta.model.Turno;
@@ -86,7 +88,9 @@ import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaDocumentoService;
+import edu.mx.utdelacosta.service.IPersonaReferenciaService;
 import edu.mx.utdelacosta.service.IPersonaService;
+import edu.mx.utdelacosta.service.IProrrogaAdeudoService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.util.CodificarTexto;
@@ -162,6 +166,12 @@ public class AlumnoController {
 	
 	@Autowired
 	private IPeriodosService periodoService;
+	
+	@Autowired
+	private IPersonaReferenciaService personaReferenciaService;
+	
+	@Autowired
+	private IProrrogaAdeudoService prorrogaAdeudoService;
 	
 	@Value("${siestapp.ruta.docs}")
     private String ruta;
@@ -921,6 +931,12 @@ public class AlumnoController {
 				periodoAct = true;
 			}
 			
+			//busca si tiene una prorroga de adeudos
+			ProrrogaAdeudo prorroga = prorrogaAdeudoService.buscarUltimaPorPersona(cvePersona);
+			if(prorroga!=null && prorroga.getFechaCompromiso().after(fechaHoy)) {
+				periodoAct = true;
+			} 
+			
 			model.addAttribute("totalAdeudo", suma);
 			model.addAttribute("adeudos", adeudos);
 			model.addAttribute("periodoAct", periodoAct);
@@ -1067,162 +1083,203 @@ public class AlumnoController {
 
 	@GetMapping("/referencia-multiple-pago")
 	public String referenciaMultiplePago(Model model, HttpSession session, Authentication authentication) {
-		// Carga el usuario a partir del usuario cargado en sesión.
-		Usuario usuario = (Usuario) session.getAttribute("usuario");
-		int cvePersona;
-		try {
-			cvePersona = (Integer) session.getAttribute("cvePersona");
-		} catch (Exception e) {
-			cvePersona = usuario.getPersona().getId();
-		}
-		
-		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
-		
-		Date fechaHoy = new Date();		
-		
-		if (alumno != null) {
-			List<PagoGeneral> adeudos = servicePagoGeneral.buscarPorAlumno(alumno.getId(), 0);
-			
-			//Se recorre la lista de  adeudos para extraer las referencias fondos y comparar todas son iguales			
-			List<String> referenciasFondos = new ArrayList<>();			
-			for (PagoGeneral pagoGeneral : adeudos) {				
-				referenciasFondos.add(pagoGeneral.getReferenciaFondos());
-			}
-			
-			//válida que todas las regencias de fondos sean iguales			
-			if (new HashSet<String>(referenciasFondos).size() <= 1) {
-				
-				PagoGeneral adeudo = adeudos.get(0);
-				
-				if(adeudo.getReferenciaFondos() == null || adeudo.getReferenciaFondos().isEmpty()) {
-					ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
-					refereciaDTO.setCarrera(alumno.getCarreraInicio());			
-					refereciaDTO.setMatricula(alumno.getMatricula());			
-					refereciaDTO.setPago(adeudo.getMonto());
-					String cadena = generarReferenciaFondos.referenciaFondos(refereciaDTO);				
-					for (PagoGeneral pagoGeneral : adeudos) {																		
-						pagoGeneral.setReferenciaFondos(cadena);					
-						servicePagoGeneral.guardar(pagoGeneral);					
-					}
-					
+		// carga el usuario apartir del usuario cargado en cesion.
+				Usuario usuario = (Usuario) session.getAttribute("usuario");
+				int cvePersona;
+				try {
+					cvePersona = (Integer) session.getAttribute("cvePersona");
+				} catch (Exception e) {
+					cvePersona = usuario.getPersona().getId();
 				}
+				
+				Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
+				
+				Date fechaHoy = new Date();		
+				try {
+					if (alumno != null) {
+						// Extrae el ultmi grupo
+						Grupo ultimoGrupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());
+
+						List<PagoGeneral> adeudos = servicePagoGeneral.buscarPorAlumno(alumno.getId(), 0);
+
+						// Se recorre la lista de adeudos para extraer las referesias fondos y
+						// comparar todas son iguales
+						List<String> referenciasFondos = new ArrayList<>();
+						for (PagoGeneral pagoGeneral : adeudos) {
+							referenciasFondos.add(pagoGeneral.getReferenciaFondos());
+						}
 						
-			}else{				
-				PagoGeneral adeudo = adeudos.get(0);
-				
-				ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
-				refereciaDTO.setCarrera(alumno.getCarreraInicio());			
-				refereciaDTO.setMatricula(alumno.getMatricula());			
-				refereciaDTO.setPago(adeudo.getMonto());			
-				String cadena = generarReferenciaFondos.referenciaFondos(refereciaDTO);	
-								
-				for (PagoGeneral pagoGeneral : adeudos) {																		
-					pagoGeneral.setReferenciaFondos(cadena);					
-					servicePagoGeneral.guardar(pagoGeneral);					
-				}
-				
-			}
-			
-			//Se recorre la lista de  adeudos para extraer las referencias de pago y comparar todas son iguales			
-			List<String> referencias = new ArrayList<>();			
-			for (PagoGeneral pagoGeneral : adeudos) {				
-				referencias.add(pagoGeneral.getReferencia());
-			}
-			
-			//se valida si todos los adeudos tiene la misma referencia de pago 			
-			if (new HashSet<String>(referencias).size() <= 1) {
-				//Extrae uno de los adeudos para determinar la fecha de pago y referencia 
-				//ya que todos los adeudos comparten la misma referencia de pago
-				PagoGeneral adeudo = adeudos.get(0);
-				
-				if (adeudo.getFechaLimite() == null || adeudo.getFechaLimite().before(fechaHoy)) {																				
-					// Calcula el adeudo total
-					Double suma = 0.0;
-					for (PagoGeneral pagoGeneral : adeudos) {
-						suma = suma + pagoGeneral.getMonto();
+						// valida que todas las refencias de fodos sean iguales
+						if (new HashSet<String>(referenciasFondos).size() <= 1) {
+
+							PagoGeneral adeudo = adeudos.get(0);
+
+							if (adeudo.getReferenciaFondos() == null || adeudo.getReferenciaFondos().isEmpty()) {
+								ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();
+								refereciaDTO.setCarrera(ultimoGrupo.getCarrera());
+								refereciaDTO.setMatricula(alumno.getMatricula());
+								refereciaDTO.setPago(adeudo.getMonto());
+								String cadena = generarReferenciaFondos.referenciaFondos(refereciaDTO);
+								for (PagoGeneral pagoGeneral : adeudos) {
+									pagoGeneral.setReferenciaFondos(cadena);
+									servicePagoGeneral.guardar(pagoGeneral);
+								}
+							}
+						} else {
+							//si se cambia la referencia o tiene un nuevo concepto
+							PagoGeneral adeudo = adeudos.get(0);
+							
+							ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();
+							refereciaDTO.setCarrera(ultimoGrupo.getCarrera());
+							refereciaDTO.setMatricula(alumno.getMatricula());
+							refereciaDTO.setPago(adeudo.getMonto());
+							String cadena = generarReferenciaFondos.referenciaFondos(refereciaDTO);
+							for (PagoGeneral pagoGeneral : adeudos) {
+								pagoGeneral.setReferenciaFondos(cadena);
+								servicePagoGeneral.guardar(pagoGeneral);
+							}
+						}
+
+						// Se recorrere la lista de adeudos para extraer las referecias de pago y
+						// comparar que todas son iguales
+						List<String> referencias = new ArrayList<>();
+						for (PagoGeneral pagoGeneral : adeudos) {
+							referencias.add(pagoGeneral.getReferencia());
+						}
+
+						// se valida si todos los adeudos tiene la misma referencia de pago
+						if (new HashSet<String>(referencias).size() <= 1) {
+							// extrae uno de los adeudos para determinar la fecha de pago y referencia
+							// ya que todos los adeudos comparter la misma referencia de pago
+							PagoGeneral adeudo = adeudos.get(0);
+
+							if (adeudo.getFechaLimite() == null || adeudo.getFechaLimite().before(fechaHoy)) {
+								// Calcula el adeudo total
+								Double suma = 0.0;
+								for (PagoGeneral pagoGeneral : adeudos) {
+									suma = suma + pagoGeneral.getMonto();
+								}
+
+								// extrae la fecha actual y le suma 7 dias
+								SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+								Date dt = new Date();
+								Calendar c = Calendar.getInstance();
+								c.setTime(dt);
+								c.add(Calendar.DATE, 3);
+								String fechaLimite = format.format(c.getTime());
+								Date fechaLimiteP = c.getTime();
+
+								ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();
+								refereciaDTO.setCarrera(ultimoGrupo.getCarrera());
+								refereciaDTO.setMatricula(alumno.getMatricula());
+								refereciaDTO.setFechaLimite(fechaLimite);
+								refereciaDTO.setPago(suma);
+								String cadena = generarReferenciaSEP.generaReferencia(refereciaDTO);
+
+								for (PagoGeneral pagoGeneral : adeudos) {
+									pagoGeneral.setReferencia(cadena);
+									pagoGeneral.setFechaLimite(fechaLimiteP);
+									servicePagoGeneral.guardar(pagoGeneral);
+								}
+							}
+
+						} else {
+							// Calcula el adeudo total
+							Double suma = 0.0;
+							for (PagoGeneral pagoGeneral : adeudos) {
+								suma = suma + pagoGeneral.getMonto();
+							}
+
+							// extrae la fecha actual y le suma 7 dias
+							SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+							Date dt = new Date();
+							Calendar c = Calendar.getInstance();
+							c.setTime(dt);
+							c.add(Calendar.DATE, 7);
+							String fechaLimite = format.format(c.getTime());
+							Date fechaLimiteP = c.getTime();
+
+							ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();
+							refereciaDTO.setCarrera(ultimoGrupo.getCarrera());
+							refereciaDTO.setMatricula(alumno.getMatricula());
+							refereciaDTO.setFechaLimite(fechaLimite);
+							refereciaDTO.setPago(suma);
+							String cadena = generarReferenciaSEP.generaReferencia(refereciaDTO);
+
+							for (PagoGeneral pagoGeneral : adeudos) {
+								pagoGeneral.setReferencia(cadena);
+								pagoGeneral.setFechaLimite(fechaLimiteP);
+								servicePagoGeneral.guardar(pagoGeneral);
+							}
+						}
+
+						// buelbe a consultar la lista de adeudos por si estos fueron actulizados
+						List<PagoGeneral> adeudosActulizado = servicePagoGeneral.buscarPorAlumno(alumno.getId(), 0);
+
+						PagoGeneral adeudo = adeudosActulizado.get(0);
+
+						model.addAttribute("ultimoGrupo", ultimoGrupo);
+						String periodo = ultimoGrupo.getPeriodo().getNombre();
+						model.addAttribute("periodo", periodo);
+
+						// Calcula el adeudo total
+						Double suma = 0.0;
+						for (PagoGeneral pagoGeneral : adeudos) {
+							suma = suma + pagoGeneral.getMonto();
+						}
+
+						// extrae el monto del adeudo y lo comvierte a letras
+						String montoLetras = NumberToLetterConverter.convertNumberToLetter(suma);
+						model.addAttribute("montoLetras", montoLetras);
+
+						model.addAttribute("adeudo", adeudo);
+						model.addAttribute("totalAdeudo", suma);
+						model.addAttribute("adeudos", adeudos);
+						//se crea el objeto de persona referencia
+						PersonaReferencia peRef = personaReferenciaService.buscarPorReferencia(adeudo.getReferencia());
+						if(peRef == null) {
+							peRef = new PersonaReferencia();
+						}
+						String conceptos = ""; // cadena de concepto de todos los pagos(como en pago persona)
+						for (PagoGeneral ad : adeudosActulizado) {
+							String cadena = "";
+							cadena += ad.getConcepto().getId().toString() + "._."; //concepto
+							cadena += ad.getCantidad().toString() + "._."; //cantidad
+							cadena += ad.getMonto().toString() + "._."; //monto o importe
+							cadena += ad.getDescuento().toString() + "._."; //descuento
+							if (ad.getPagoAsignatura() != null) {
+								cadena += ad.getPagoAsignatura().getCargaHoraria().getId() + "._."; //si es nive (cargaHoraria.id)
+								cadena += ad.getPagoAsignatura().getIdCorteEvaluativo() + "._."; //corte_evaluativo (id)
+							} else {
+								cadena += "0" + "._."; // carga_horaria
+								cadena += "0"; // corte
+							}
+							// para separar las cadenas
+							cadena += "A";
+							// se añade la cadena a los conceptos para guardarlos todos
+							conceptos += cadena;
+						}
+						//se guarda la referencia y fecha limite en el objeto de personaReferencia
+						peRef.setReferencia(adeudo.getReferencia());
+						peRef.setReferenciaFondos(adeudo.getReferenciaFondos());
+						peRef.setFechaVencimiento(adeudo.getFechaLimite());
+						// se guarda el registro de la persona referencia
+						peRef.setTotal(0.0);
+						peRef.setImporte(suma);
+						peRef.setConceptos(conceptos);
+						peRef.setFechaAlta(fechaHoy);
+						peRef.setFechaPago(null);
+						peRef.setPagado(false);
+						peRef.setFolioPago("");
+						peRef.setPersona(new Persona(cvePersona));
+						//se guarda el objeto de persona referencia
+						personaReferenciaService.guardar(peRef);
 					}
-					
-					//extrae la fecha actual y le suma 3 dias
-					SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");				
-					Date dt = new Date();		        		        
-			        Calendar c = Calendar.getInstance();
-			        c.setTime(dt);
-			        c.add(Calendar.DATE, 3);		        
-			        String fechaLimite = format.format(c.getTime());
-			        Date fechaLimiteP = c.getTime();
-			        		        		      		   
-					ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
-					refereciaDTO.setCarrera(alumno.getCarreraInicio());
-					refereciaDTO.setMatricula(alumno.getMatricula());
-					refereciaDTO.setFechaLimite(fechaLimite);
-					refereciaDTO.setPago(suma);
-					String cadena = generarReferenciaSEP.generaReferencia(refereciaDTO);
-															
-					for (PagoGeneral pagoGeneral : adeudos) {																		
-						pagoGeneral.setReferencia(cadena);
-						pagoGeneral.setFechaLimite(fechaLimiteP);
-						servicePagoGeneral.guardar(pagoGeneral);					
-					}
-					
+				} catch (NullPointerException e) {
+					// TODO: handle exception
+					System.out.println("WTF" + e.getMessage());
 				}
-				
-			}else{									
-				// Calcula el adeudo total
-				Double suma = 0.0;
-				for (PagoGeneral pagoGeneral : adeudos) {
-					suma = suma + pagoGeneral.getMonto();
-				}
-				
-				//extrae la fecha actual y le suma 3 dias
-				SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");				
-				Date dt = new Date();		        		        
-		        Calendar c = Calendar.getInstance();
-		        c.setTime(dt);
-		        c.add(Calendar.DATE, 3);		        
-		        String fechaLimite = format.format(c.getTime());
-		        Date fechaLimiteP = c.getTime();
-		        		        		      		   
-				ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();			
-				refereciaDTO.setCarrera(alumno.getCarreraInicio());
-				refereciaDTO.setMatricula(alumno.getMatricula());
-				refereciaDTO.setFechaLimite(fechaLimite);
-				refereciaDTO.setPago(suma);
-				String cadena = generarReferenciaSEP.generaReferencia(refereciaDTO);
-				
-				for (PagoGeneral pagoGeneral : adeudos) {																		
-					pagoGeneral.setReferencia(cadena);
-					pagoGeneral.setFechaLimite(fechaLimiteP);
-					servicePagoGeneral.guardar(pagoGeneral);					
-				}
-												
-			}	
-			
-			//vuelve a consultar la lista de adeudos por si estos fueron actualizados			
-			List<PagoGeneral> adeudosActulizado = servicePagoGeneral.buscarPorAlumno(alumno.getId(), 0);
-			
-			PagoGeneral adeudo = adeudosActulizado.get(0);
-			
-			Periodo pe = periodoService.buscarUltimo();
-			String periodo = pe.getNombre();
-			model.addAttribute("periodo", periodo);
-			
-			// Calcula el adeudo total
-			Double suma = 0.0;
-			for (PagoGeneral pagoGeneral : adeudos) {
-				suma = suma + pagoGeneral.getMonto();
-			}
-	
-			// extrae el monto del adeudo y lo convierte a letras
-			String montoLetras = NumberToLetterConverter.convertNumberToLetter(suma);
-			model.addAttribute("montoLetras", montoLetras);
-	
-			model.addAttribute("adeudo", adeudo);
-			model.addAttribute("totalAdeudo", suma);
-			model.addAttribute("adeudos", adeudos);	
-									
-		}
-		
-		model.addAttribute("alumno", alumno);
+				model.addAttribute("alumno", alumno);
 		return "alumno/referencia-multiple-pago";
 	}
 

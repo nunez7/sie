@@ -35,5 +35,10 @@ public class ConceptosServiceJpa implements IConceptoService{
 	public void guardar(Concepto concepto) {
 		conceptosRepo.save(concepto);
 	}
+	
+	@Override 
+	public List<Concepto> buscarOpcionales() { 
+		return conceptosRepo.findAllOptionals(); 
+	}
 
 }
