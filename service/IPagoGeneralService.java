@@ -6,6 +6,8 @@ import java.util.List;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.dto.FolioDTO;
+import edu.mx.utdelacosta.model.dto.PagoConceptoDTO;
+import edu.mx.utdelacosta.model.dtoreport.CajaConcentradoDTO;
 import edu.mx.utdelacosta.model.dtoreport.PagosGeneralesDTO;
 
 public interface IPagoGeneralService {
@@ -29,12 +31,6 @@ public interface IPagoGeneralService {
 	PagoGeneral buscarPorAlumnoYConceptoYCargaHoraria(Integer idAlumno, Integer idConcepto, Integer idCargaHoraria);
 	
 	PagoGeneral buscarPorAlumnoYConceptoYCargaHorariaYCorte(Integer idAlumno, Integer idConcepto, Integer idCargaHoraria, Integer idCorteEvaluativo);
-	
-	/*
-	PagoGeneral buscarPorAlumnoYConceptoYAsignatura(Integer idAlumno, Integer idConcepto, Integer idAsignatura);
-	
-	PagoGeneral buscarPorAlumnoYConceptoYAsignaturaYCorte(Integer idAlumno, Integer idConcepto, Integer idAsignatura, Integer idCorteEvaluativo);
-	*/
 	
 	Integer contarPorAlumnoYStatus(Integer idAlumno, Integer status);
 	
@@ -68,4 +64,15 @@ public interface IPagoGeneralService {
 	
 	//busca los adeudos por referencia
 	List<PagoGeneral> buscarPorReferencia(String referencia);
+	
+	List<CajaConcentradoDTO> findCajaConcentradoByFechaInicioAndFechaFinAndCajero (Date fechaInicio, Date fechaFin, Integer cajero);
+	
+	List<CajaConcentradoDTO> findCajaConcentradoByFechaInicioAndFechaFin(Date fechaInicio, Date fechaFin);
+	
+	List<String> buscarFoliosPorFechaInicioYFechaFinTodosCajeros(Date fechaInicio, Date fechaFin);
+	
+	List<PagoConceptoDTO> buscarConceptoPagoPorFolio(String folio);
+	
+	Double sumarTotalMontoPorFolio(String folio);
+
 }

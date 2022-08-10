@@ -48,4 +48,6 @@ public interface FolioDTO {
 	
 	Integer getIdAlumno();
 	
+	Integer getFactura();
+	
 }

@@ -20,4 +20,7 @@ public interface PeriodosRepository extends JpaRepository<Periodo, Integer>{
 	Periodo findTopByOrderByIdDesc();
 	
 	Periodo findAllByInicioLessThanEqualAndFinGreaterThanEqual(Date inicio, Date fin);
+	
+	@Query(value = "SELECT p.* FROM periodos p ORDER BY id DESC LIMIT 3", nativeQuery = true)
+	List<Periodo> findLastCaja();
 }

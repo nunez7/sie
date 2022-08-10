@@ -89,9 +89,8 @@ public class BanamexController {
 				}
 			}
 		} catch (Exception e) {
-			return("e-"+e.getLocalizedMessage());
+			logger.warning(e.getLocalizedMessage());
 		}
-		
 		return "ok";
 	}
 	
@@ -119,7 +118,7 @@ public class BanamexController {
 				}
 			}
 		} catch (Exception e) {
-			return("e-"+e.getLocalizedMessage());
+			logger.warning(e.getLocalizedMessage());
 		}
 		finally {
 			fr.close();
@@ -150,14 +149,14 @@ public class BanamexController {
 						importe = "NA";
 						referencia = "NA";
 						br.close();
-						return("e-"+e.getLocalizedMessage());
+						logger.warning(e.getLocalizedMessage());
 					}
 
 				}
 			}
 			br.close();
 		} catch (Exception e) {
-			return("e-"+e.getLocalizedMessage());
+			logger.warning(e.getLocalizedMessage());
 		}
 		finally {
 			fr.close();
@@ -244,7 +243,7 @@ public class BanamexController {
 				}
 			}
 		} catch (Exception e) {
-			return("e-"+e.getLocalizedMessage());
+			logger.warning(e.getLocalizedMessage());
 		}
 		return "ok";
 	}

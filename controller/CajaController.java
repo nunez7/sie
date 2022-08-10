@@ -20,6 +20,7 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Cliente;
 import edu.mx.utdelacosta.model.Concepto;
+import edu.mx.utdelacosta.model.Cuatrimestre;
 import edu.mx.utdelacosta.model.Estado;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.PagoGeneral;
@@ -28,11 +29,13 @@ import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Personal;
 import edu.mx.utdelacosta.model.ProrrogaAdeudo;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
+import edu.mx.utdelacosta.model.dtoreport.CajaConcentradoDTO;
 import edu.mx.utdelacosta.model.dtoreport.PagosGeneralesDTO;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.IClienteService;
 import edu.mx.utdelacosta.service.IConceptoService;
+import edu.mx.utdelacosta.service.ICuatrimestreService;
 import edu.mx.utdelacosta.service.IEstadoService;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
@@ -75,6 +78,9 @@ public class CajaController {
 	
 	@Autowired
 	private IGrupoService grupoService;
+	
+	@Autowired
+	private ICuatrimestreService cuatrimestreService;
 	
 	@Autowired
 	private IProrrogaAdeudoService prorrogaAdeudoService;
@@ -123,7 +129,11 @@ public class CajaController {
 	}
 	
 	@GetMapping("/pagosCuatrimestre")
-	public String pagosCuatrimestre() {
+	public String pagosCuatrimestre(Model model) {
+		List<Periodo> periodos = periodosService.buscarUltimosCaja();
+		List<Cuatrimestre> cuatrimestres = cuatrimestreService.buscarTodos();
+		model.addAttribute("periodos", periodos);
+		model.addAttribute("cuatrimestres", cuatrimestres);
 		return "caja/pagosCuatrimestre";
 	}
 	
@@ -133,7 +143,41 @@ public class CajaController {
 	}
 	
 	@GetMapping("/reporteCorteCaja")
-	public String reporteCorteCaja(Model model) {
+	public String reporteCorteCaja(Model model, HttpSession session) {
+		Date fechaInicio;
+		Date fechaFin;
+		if (session.getAttribute("fechaInicio") == null) {
+			fechaInicio = new Date();
+		} else {
+			fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("fechaInicio"));
+		}
+
+		// cuando selecciona la fecha de fin
+		if (session.getAttribute("fechaFin") == null) {
+			fechaFin = new Date();
+		} else {
+			fechaFin = java.sql.Date.valueOf((String) session.getAttribute("fechaFin"));
+		}
+
+		if (session.getAttribute("cveCajero") != null) {
+			int cveCajero = (Integer) session.getAttribute("cveCajero");
+			model.addAttribute("cveCajero", cveCajero);
+			// lista que guardará los pagos
+			List<CajaConcentradoDTO> pagos = null;
+			if (cveCajero > 0) {
+				pagos = pagoGeneralService.findCajaConcentradoByFechaInicioAndFechaFinAndCajero(fechaInicio, fechaFin,
+						cveCajero);
+			} else {
+				pagos = pagoGeneralService.findCajaConcentradoByFechaInicioAndFechaFin(fechaInicio, fechaFin);
+			}
+			model.addAttribute("pagos", pagos);
+		}
+
+		List<Persona> cajeros = personaService.buscarCajeros();
+		model.addAttribute("fechaInicio", fechaInicio);
+		model.addAttribute("fechaFin", fechaFin);
+		model.addAttribute("fechaHoy", new Date());
+		model.addAttribute("cajeros", cajeros);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "caja/reporteCorteCaja";
 	}

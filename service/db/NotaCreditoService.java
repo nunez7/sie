@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import edu.mx.utdelacosta.model.NotaCredito;
 import edu.mx.utdelacosta.model.PagoGeneral;
+import edu.mx.utdelacosta.model.dto.NotaCreditoDTO;
 import edu.mx.utdelacosta.repository.NotaCreditoRepository;
 import edu.mx.utdelacosta.service.INotaCreditoService;
 
@@ -23,6 +24,11 @@ public class NotaCreditoService implements INotaCreditoService{
 	public void guardar(NotaCredito notaCredito) {
 		ncRepository.save(notaCredito);
 		
+	}
+
+	@Override
+	public NotaCreditoDTO BuscarPorFolio(String folio) {
+		return ncRepository.findByFolio(folio);
 	}
 
 }

@@ -68,6 +68,7 @@ public class PagoEmpresaController {
 			String fecha = obj.get("fecha");
 			String hora = obj.get("hora");
 			Date fechaHora = parsearfecha(fecha, hora);
+			String factura = String.valueOf(obj.get("factura"));
 			
 			//generá el folio para setearlo a los pagos
 			String folio = pagoGeneralService.generarFolio();
@@ -122,6 +123,7 @@ public class PagoEmpresaController {
 					pago.setDescuento(descuento);
 					pago.setComentario(comentario.equals("NOCOMENT") ? "" : comentario);
 					pago.setStatus(1);
+					pago.setFactura(Boolean.valueOf(factura));
 					//creamos el pago cliente
 					PagoCliente pc = new PagoCliente();
 					pc.setCliente(new Cliente(cveCliente));

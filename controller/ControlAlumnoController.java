@@ -411,7 +411,6 @@ public class ControlAlumnoController {
 			PagoCuatrimestre pc = new PagoCuatrimestre();
 			pc.setAlumnoGrupo(grupoBuscar);
 			pc.setPagoGeneral(pGeneral);
-			pc.setPeriodo(grupoBuscar.getGrupo().getPeriodo());
 			pGeneral.setPagoCuatrimestre(pc);
 			
 			pagoGeneralService.guardar(pGeneral);

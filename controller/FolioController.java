@@ -19,19 +19,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.Bitacora;
 import edu.mx.utdelacosta.model.Concepto;
+import edu.mx.utdelacosta.model.CorteEvaluativo;
+import edu.mx.utdelacosta.model.Cuatrimestre;
 import edu.mx.utdelacosta.model.NotaCredito;
 import edu.mx.utdelacosta.model.PagoAlumno;
+import edu.mx.utdelacosta.model.PagoArea;
 import edu.mx.utdelacosta.model.PagoAsignatura;
+import edu.mx.utdelacosta.model.PagoCliente;
+import edu.mx.utdelacosta.model.PagoCuatrimestre;
 import edu.mx.utdelacosta.model.PagoGeneral;
+import edu.mx.utdelacosta.model.PagoPersona;
 import edu.mx.utdelacosta.model.PagoRecibe;
+import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.Remedial;
+import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.dto.FolioDTO;
+import edu.mx.utdelacosta.model.dto.NotaCreditoDTO;
+import edu.mx.utdelacosta.model.dto.PagoConceptoDTO;
+import edu.mx.utdelacosta.model.dto.ReciboDTO;
+import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IBitacoraService;
 import edu.mx.utdelacosta.service.IConceptoService;
+import edu.mx.utdelacosta.service.ICuatrimestreService;
 import edu.mx.utdelacosta.service.INotaCreditoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
+import edu.mx.utdelacosta.service.IPeriodosService;
+import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.util.CodificarTexto;
 import edu.mx.utdelacosta.util.NumberToLetterConverter;
 
@@ -39,7 +56,7 @@ import edu.mx.utdelacosta.util.NumberToLetterConverter;
 @PreAuthorize("hasRole('Administrador') and hasRole('Caja')")
 @RequestMapping("/folio")
 public class FolioController {
-	
+
 	@Autowired
 	private IPagoGeneralService pagoGeneralService;
 
@@ -47,10 +64,22 @@ public class FolioController {
 	private IConceptoService conceptoService;
 
 	@Autowired
-	private INotaCreditoService notaCreditoService;	
+	private INotaCreditoService notaCreditoService;
+	
+	@Autowired
+	private IRemedialAlumnoService remedialAlumnoService;
 	
 	@Autowired
 	private IBitacoraService bitacoraService;
+	
+	@Autowired
+	private ICuatrimestreService cuatrimestreService;
+	
+	@Autowired
+	private IAlumnoGrupoService alGrService;
+	
+	@Autowired
+	private IPeriodosService periodoService;
 
 	@GetMapping("/ver-edicion/{folio}")
 	public String vistaEdicion(@PathVariable("folio") String noFolio, Model model) {
@@ -67,7 +96,7 @@ public class FolioController {
 	public String buscar(@PathVariable("dato") String dato, Model model) {
 		List<FolioDTO> folios = pagoGeneralService.buscarFolioPorFolioONombreOCliente(dato);
 		model.addAttribute("folios", folios);
-		return "fragments/buscar-folio :: lista-folios";
+		return "fragments/buscar-caja :: lista-folios";
 	}
 
 	@PostMapping(path = "/editar", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -92,7 +121,7 @@ public class FolioController {
 		Integer idPago = Integer.valueOf(obj.get("idPago"));
 		if (idPago != null && comentario != null) {
 			PagoGeneral pago = pagoGeneralService.buscarPorId(idPago);
-			pago.setComentario(comentario);
+			pago.setComentario(comentario.toUpperCase());
 			pagoGeneralService.guardar(pago);
 		}
 		return "ok";
@@ -106,6 +135,9 @@ public class FolioController {
 		if (idPago != null && descuento != null) {
 			PagoGeneral pago = pagoGeneralService.buscarPorId(idPago);
 			pago.setDescuento(descuento);
+			Double precioDescuento = pago.getConcepto().getMonto() - (pago.getConcepto().getMonto()*(descuento/100));
+			Double importe = pago.getCantidad() * precioDescuento;
+			pago.setMonto(importe);
 			pagoGeneralService.guardar(pago);
 		}
 		return "ok";
@@ -115,53 +147,55 @@ public class FolioController {
 	public String recibopago(Model model, HttpSession session) {
 
 		// se obtienen los datos
-		String folio = String.valueOf(session.getAttribute("folio"));
+		String folio = session.getAttribute("folio").toString();
 		Double totalPago = 0.0;
 		Double totalNota = 0.0;
 		String folioCifrado = "";
 		List<NotaCredito> notas = new ArrayList<>();
 
-		// se rellena la informacion del recibo
+		//se rellena la informacion del recibo
 		FolioDTO infoRecibo = pagoGeneralService.buscarReciboPorFolio(folio);
-
+		
 		if (folio != null) {
-			// se obtienen los pagos generales
+			//se obtienen los pagos generales
 			List<PagoGeneral> pagosFolio = pagoGeneralService.buscarTodosPorFolio(folio);
 			model.addAttribute("pagosFolio", pagosFolio);
-
-			// se obtiene el estado de los pagos
+			
+			//se obtiene el estado de los pagos
 			Boolean estatus = pagosFolio.get(0).getActivo();
-			// se comprara si el estado de recibo esta activo o cancelado, en caso de ser
-			// activo se obtiene el importe total, caso contrario se deja como 0.0 el
-			// importe
-			NotaCredito nota = new NotaCredito();
-			if (estatus == true) {
+			//se comprara si el estado de recibo esta activo o cancelado, en caso de ser activo se obtiene el importe total, caso contrario se deja como 0.0 el importe
+			NotaCredito nota = new NotaCredito(); 
+			if (estatus==true) {	
 				for (PagoGeneral pago : pagosFolio) {
 					totalPago = totalPago + pago.getMonto();
+
 					nota = notaCreditoService.buscarPorPagoGeneral(pago);
-					if (nota != null) {
+					if (nota!=null) {
 						notas.add(nota);
 						totalNota = totalNota + nota.getCantidad();
 					}
 				}
+				
 				totalPago = totalPago - totalNota;
 			}
+			
 			try {
 				folioCifrado = CodificarTexto.encriptAES(folio);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+
 		}
 
 		List<Integer> list = new ArrayList<>();
-		// se crea una lista que se iterara para tener ambas partes del recibo
-		if (infoRecibo.getActivo() == 0) {
+		//se crea una lista que se iterara para tener ambas partes del recibo
+		if (infoRecibo.getActivo()==0) {
 			list.add(1);
-		} else {
+		}else {
 			list.add(1);
 			list.add(2);
 		}
-
+		
 		// extrae el monto del adeudo y lo comvierte a letras
 		String montoLetras = NumberToLetterConverter.convertNumberToLetter(totalPago);
 		model.addAttribute("notas", notas);
@@ -171,6 +205,49 @@ public class FolioController {
 		model.addAttribute("folio", infoRecibo);
 		model.addAttribute("vueltas", list);
 		return "caja/recibo";
+	}
+	
+	@GetMapping("/reciboMultiple")
+	public String reciboPagoMultiple(Model model, HttpSession session) {
+
+		//obtencion de datos
+		Date fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("fechaInicio"));
+		Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("fechaFin"));
+		
+		//se buscan los folios de pago en base a las fechas
+		List<String> folios = pagoGeneralService.buscarFoliosPorFechaInicioYFechaFinTodosCajeros(fechaInicio, fechaFin);
+		List<ReciboDTO> recibos = new ArrayList<>();
+		for (String folio : folios) {
+			ReciboDTO recibo = new ReciboDTO();
+			FolioDTO datosFolio = pagoGeneralService.buscarReciboPorFolio(folio);
+			List<PagoConceptoDTO> pagos = pagoGeneralService.buscarConceptoPagoPorFolio(folio);
+			NotaCreditoDTO nota = notaCreditoService.BuscarPorFolio(folio);
+			
+			String folioCifrado = "";
+			
+			try {
+				folioCifrado = CodificarTexto.encriptAES(folio);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			recibo.setMontoLetras(NumberToLetterConverter.convertNumberToLetter(nota.getMontoTotal()));
+			recibo.setMontoTotal(nota.getMontoTotal());
+			recibo.setFolioCifrado(folioCifrado);
+			recibo.setPagos(pagos);
+			recibo.setNota(nota);
+			recibo.setFolio(datosFolio);
+			
+			recibos.add(recibo);
+		}
+		
+		List<Integer> list = new ArrayList<>();
+		list.add(1);
+		list.add(2);
+		
+		model.addAttribute("recibos", recibos);
+		model.addAttribute("vueltas", list);
+		return "caja/reciboMultiple";
 	}
 
 
@@ -218,24 +295,23 @@ public class FolioController {
 	public String alta(Map<String, String> obj, Bitacora bitacora) {
 		//se obtiene el folio
 		String folio = obj.get("numeroFolio");
-		
+		Boolean factura = Boolean.valueOf(obj.get("factura"));
 		//se obtienen todas las claves de los datos enviados desde la vista
 		ArrayList<String> keyList = new ArrayList<String>(obj.keySet());
 		PagoGeneral ultimoPago = pagoGeneralService.buscarUltimoPorFolio(folio);
+		if (factura!=ultimoPago.getFactura()) {
+			List<PagoGeneral> pagos = pagoGeneralService.buscarTodosPorFolio(folio);
+			for (PagoGeneral pago : pagos) {
+				pago.setFactura(factura);
+				pagoGeneralService.guardar(pago);
+			}			
+		}
 		//se iteran las claves 
-		Double total = 0d;
 		for (String string : keyList) {
 			
 			//se guarda en una variable cada valor de la clave obtenida en base a la iteracion
 			String resultado = obj.get(string);
 			
-			if (resultado.equals("on")) {
-				//se marca como pagado
-				PagoGeneral pagoExiste = pagoGeneralService.buscarPorId(Integer.parseInt(string));
-				pagoExiste.setStatus(1);
-				total = total + pagoExiste.getMonto();
-				
-			}
 			//se separa el resultado
 			String[] cadena = resultado.split("._.");
 			
@@ -244,7 +320,7 @@ public class FolioController {
 			if (cadena.length==10) {
 				
 				// se llama el metodo para guardar el pago general 
-				guardarNuevoConcepto(cadena, ultimoPago, folio);
+				guardarNuevoConcepto(cadena, ultimoPago, folio, factura);
 				
 			}
 		}
@@ -267,12 +343,42 @@ public class FolioController {
 		//se iteran los pagos para desactivar sus respectivos conceptos
 		for (PagoGeneral pago : pagos) {
 			
+			//se comprar si existen remediales en caso de ser asi estos se marcan como no pagados
+			if (pago.getPagoAsignatura()!=null) {
+				if (pago.getPagoAsignatura().getCargaHoraria()==null || pago.getPagoAsignatura().getIdCorteEvaluativo()==null) {
+					return "null";
+				}
+		
+				RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(pago.getPagoAlumno().getAlumno(), pago.getPagoAsignatura().getCargaHoraria(), new Remedial(2), new CorteEvaluativo(pago.getPagoAsignatura().getIdCorteEvaluativo()));
+				//se compara si el extraordinario es diferente a nulo	
+				if (remedial!=null) {
+					remedial.setPagado(false);
+					remedialAlumnoService.guardar(remedial);
+				}
+				
+				remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(pago.getPagoAlumno().getAlumno(), pago.getPagoAsignatura().getCargaHoraria(), new Remedial(1), new CorteEvaluativo(pago.getPagoAsignatura().getIdCorteEvaluativo()));
+				if (remedial!=null) {
+					remedial.setPagado(false);
+					remedialAlumnoService.guardar(remedial);
+				}
+			}
+			
+			
+			if (pago.getPagoCuatrimestre()!=null) {
+				AlumnoGrupo alumnoG = alGrService.buscarPorId(pago.getPagoCuatrimestre().getAlumnoGrupo().getId());
+				alumnoG.setPagado(false);
+				alGrService.guardar(alumnoG);
+			}
+			
+			
 			//se procede a duplicar el pagoGeneral para guardarlo como adeudo nuevamente
 			PagoGeneral nuevoPago = clonarPagoGeneral(pago);
 			
 			//se desactiva el pago
 			pago.setActivo(false);
 			pago.setStatus(0);
+			
+			
 			
 			//se guarda el pago
 			pagoGeneralService.guardar(pago);
@@ -300,10 +406,14 @@ public class FolioController {
 		}
 
 		if (folio != null && cantidad > 0) {
-			
-			PagoGeneral pago = pagoGeneralService.buscarTodosPorFolio(folio).get(0);
-			
-			if (pago != null) {
+
+			Double total = pagoGeneralService.sumarTotalMontoPorFolio(folio);
+			if (total == 0) {
+				return "inv";
+			}
+
+			if (cantidad > 0 && cantidad <= total) {
+				PagoGeneral pago = pagoGeneralService.buscarTodosPorFolio(folio).get(0);
 				NotaCredito notaCredito = notaCreditoService.buscarPorPagoGeneral(pago);
 				if (notaCredito == null) {
 					notaCredito = new NotaCredito();
@@ -318,14 +428,16 @@ public class FolioController {
 					notaCredito.setComentario(comentario);
 					notaCreditoService.guardar(notaCredito);
 				}
+			} else {
+				return "max";
 			}
 		} else {
 			return "inv";
 		}
 		
 		//guardar en bitacora
-		bitacora.setDetalle("LA PERSONA "+bitacora.getPersona().getId()+" GENERO UNA NOTA DE CREDITO PARA EL FOLIO: "+folio+", CON CANTIDAD DE: "+cantidad);
-		bitacora.setAccion("NOTA DE CREDITO");
+		bitacora.setDetalle("LA PERSONA "+bitacora.getPersona().getId()+" REGISTRÓ UNA NOTA DE CRÉDITO PARA EL FOLIO: "+folio+", CON CANTIDAD DE: "+cantidad);
+		bitacora.setAccion("NOTA DE CRÉDITO");
 		bitacoraService.guardar(bitacora);
 
 		return "ok";
@@ -367,13 +479,44 @@ public class FolioController {
 			pagoAsignatura.setIdCorteEvaluativo(pagoOriginal.getPagoAsignatura().getIdCorteEvaluativo());
 			pagoAsignatura.setOportunidad(pagoOriginal.getPagoAsignatura().getOportunidad());
 			pagoAsignatura.setPagoGeneral(pagoClon);
+			pagoClon.setPagoAsignatura(pagoAsignatura);
+		}
+		
+		// se comprueba si existe un pago de un pago de cuatrimestre, si es este el caso se clona
+		if (pagoOriginal.getPagoCuatrimestre()!=null) {
+			PagoCuatrimestre pagoCuatrimestre = new PagoCuatrimestre();
+			pagoCuatrimestre.setAlumnoGrupo(pagoOriginal.getPagoCuatrimestre().getAlumnoGrupo());
+			pagoCuatrimestre.setPagoGeneral(pagoClon);
+			pagoClon.setPagoCuatrimestre(pagoCuatrimestre);
+		}
+		
+		// se comprueba si existe un pago de parte de cliente
+		if (pagoOriginal.getPagoCliente()!=null) {
+			PagoCliente pagoCliente = new PagoCliente();
+			pagoCliente.setCliente(pagoOriginal.getPagoCliente().getCliente());
+			pagoCliente.setPagoGeneral(pagoClon);
+			pagoClon.setPagoCliente(pagoCliente);
+		}
+		
+		if (pagoOriginal.getPagoArea()!=null) {
+			PagoArea pagoArea = new PagoArea();
+			pagoArea.setArea(pagoOriginal.getPagoArea().getArea());
+			pagoArea.setPagoGeneral(pagoClon);
+			pagoClon.setPagoArea(pagoArea);
+		}
+		
+		if (pagoOriginal.getPagoPersona()!=null) {
+			PagoPersona pagoPersona = new PagoPersona();
+			pagoPersona.setPersona(pagoOriginal.getPagoPersona().getPersona());
+			pagoPersona.setPagoGeneral(pagoClon);
+			pagoClon.setPagoPersona(pagoPersona);
 		}
 		
 		// regresa el pago duplicado
 		return pagoClon;
 	}
 	
-	public void guardarNuevoConcepto(String[] cadena, PagoGeneral ultimoPago, String folio) {
+	public void guardarNuevoConcepto(String[] cadena, PagoGeneral ultimoPago, String folio, Boolean factura) {
 		//se separan los datos de la cadena
 		int idConcepto = Integer.parseInt(cadena[0]);
 		int cantidad = Integer.parseInt(cadena[1]);
@@ -404,6 +547,7 @@ public class FolioController {
 		pago.setFechaLimite(ultimoPago.getFechaLimite());
 		pago.setFolio(folio);
 		pago.setMonto(monto);
+		pago.setFactura(factura);
 		pago.setMontoUnitario(concepto.getMonto());
 		pago.setReferencia(ultimoPago.getReferencia()!=null ? ultimoPago.getReferencia() : "");
 		pago.setReferenciaFondos(null);
@@ -425,8 +569,198 @@ public class FolioController {
 			pAlumno.setPagoGeneral(pago);
 			pago.setPagoAlumno(pAlumno);
 		}
+		
+		if (ultimoPago.getPagoCliente()!=null) {
+			PagoCliente pCliente = new PagoCliente();
+			pCliente.setCliente(ultimoPago.getPagoCliente().getCliente());
+			pCliente.setPagoGeneral(pago);
+			pago.setPagoCliente(pCliente);
+		}
+		
+		//pago cliente
 			
 		pagoGeneralService.guardar(pago);
 	}
+	
+	@PostMapping(path = "/generar-adeudo-catrimestre", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String generarAdeudosCuatrimestre(@RequestBody Map<String, String> obj, HttpSession session) {
+		
+		// varaibles de la vista
+		Integer idCuatrimestre = Integer.valueOf(obj.get("cuatrimestre"));
+		Integer idPeriodo = Integer.valueOf(obj.get("periodo"));
+		
+		if (idCuatrimestre==null || idPeriodo == null || idCuatrimestre == 0 || idPeriodo == 0) {
+			return "null";
+		}
+		
+		Periodo periodo = periodoService.buscarPorId(idPeriodo);
+		
+		Cuatrimestre cuatrimestre = cuatrimestreService.buscarPorId(idCuatrimestre);
+		
+		
+		// se obtiene la fecha en base a los 3 selectores de datos
+		Date fecha = java.sql.Date.valueOf(obj.get("annioLimite")+"-"+obj.get("mesLimite")+"-"+obj.get("diaLimite"));
+		
+		//LISTA DE ALUMNOS DEL CUATRIMESTRE
+		List<AlumnoGrupo> alumnos = alGrService.buscarPorPeriodoYCuatrimestre(periodo.getId(), cuatrimestre.getId());
+			
+		List<Integer> conceptos = new ArrayList<>();
+		switch (cuatrimestre.getConsecutivo()) {
+		case 1:
+			conceptos.add(15);
+			conceptos.add(10);
+			break;
+			
+		case 2:
+		case 5:
+			conceptos.add(69);
+			conceptos.add(21);
+			conceptos.add(10);
+			break;
+			
+		case 3:
+		case 4:
+			conceptos.add(21);
+			conceptos.add(10);
+			break;
+		
+		case 6:
+			conceptos.add(51);
+			conceptos.add(32);
+			conceptos.add(28);
+			conceptos.add(21);
+			conceptos.add(10);
+			break;
+		
+		case 7:
+			conceptos.add(14);
+			conceptos.add(8);
+			break;
+		
+		case 8:
+			conceptos.add(69);
+			conceptos.add(20);
+			conceptos.add(8);
+			break;
+			
+		case 9:
+		case 10:
+			conceptos.add(20);
+			conceptos.add(8);
+			break;
+		
+		case 11:	
+			conceptos.add(69);
+			conceptos.add(50);
+			conceptos.add(32);
+			conceptos.add(28);
+			conceptos.add(8);
+			conceptos.add(20);
+			break;
+		
+		}
+		
+		//se itera la lista de alumnos
+		for (AlumnoGrupo ag : alumnos) {
+			
+			//se itera la lista de conceptos
+			for (Integer idConcepto : conceptos) {
+				
+				//se busca el concepto
+				Concepto concepto = conceptoService.buscarPorId(idConcepto);
+				
+				//se crea el pago general
+				PagoGeneral pago = crearPagoGenerico(concepto.getConcepto(), concepto.getId(), fecha, periodo);
+				
+				//se crea el pago alumno
+				PagoAlumno pAlumno = new PagoAlumno();
+				pAlumno.setAlumno(ag.getAlumno());
+				pAlumno.setPagoGeneral(pago);
+				pago.setPagoAlumno(pAlumno);
+				
+				
+				//se crea el pago del cuatrimestre
+				PagoCuatrimestre pCuatri = new PagoCuatrimestre();
+				pCuatri.setAlumnoGrupo(ag);
+				pCuatri.setPagoGeneral(pago);
+				pago.setPagoCuatrimestre(pCuatri);
+				
+				
+				//se comprueba si el pago pertenece a una colegiatura y si el alumno es de gastronomia
+				if ((pago.getConcepto().getId() == 10 || pago.getConcepto().getId() == 8) && ag.getAlumno().getCarreraInicio().getId()==9) {
+					// en caso de ser correcto se procede a ajustar el costo del mismo	
+					pago.setMonto(pago.getConcepto().getId() == 8 ? 2000d : 1550d);
+				}
+				
+				pagoGeneralService.guardar(pago);
+			}
+		}
+		
+		return "ok";
+	}
+	
+	public PagoGeneral crearPagoGenerico(String comentario, Integer idConcepto, Date fechaLimite , Periodo periodo) {
+		PagoGeneral pagoGenerico = new PagoGeneral();
+		
+		Concepto concepto = conceptoService.buscarPorId(idConcepto);
+		
+		//se crea el pago general
+        pagoGenerico.setCantidad(1);
+        pagoGenerico.setCliente(0);
+        pagoGenerico.setActivo(true);
+        pagoGenerico.setComentario(comentario);
+		pagoGenerico.setDescripcion(idConcepto==8 || idConcepto == 10 ? concepto.getConcepto().toUpperCase()+" "+periodo.getNombre() : concepto.getConcepto().toUpperCase());
+		pagoGenerico.setConcepto(concepto);
+		pagoGenerico.setDescuento(0.0);
+		pagoGenerico.setFechaAlta(new Date());
+		pagoGenerico.setFechaImportacion(null);
+		pagoGenerico.setFirmaDigital("");
+		pagoGenerico.setFechaLimite(fechaLimite);
+		pagoGenerico.setFolio("");
+		pagoGenerico.setMonto(concepto.getMonto());
+		pagoGenerico.setMontoUnitario(concepto.getMonto());
+		pagoGenerico.setReferencia("");
+		pagoGenerico.setReferenciaFondos(null);
+		pagoGenerico.setRefReconciliacion(null);
+		pagoGenerico.setStatus(0);
+		pagoGenerico.setTipo(1);
+		
+		return pagoGenerico;
+	}
+	
+	
+	@PostMapping(path = "/consultar-adeudo-catrimestre", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String consultarAdeudosGenerado(@RequestBody Map<String, String> obj, HttpSession session) {
+		Integer cuatrimestre = 0;
+		Integer periodo = 0;
+		
+		try {
+			cuatrimestre = Integer.valueOf(obj.get("cuatrimestre"));
+		} catch (Exception e) {
+			cuatrimestre = 0;
+		}
+		
+		try {
+			periodo = Integer.valueOf(obj.get("periodo"));
+		} catch (Exception e) {
+			periodo = 0;
+		}
+		
+		if (cuatrimestre > 0 && periodo > 0) {
+			
+			Integer alumnosConPago = alGrService.contarPorPeriodoYCuatrimestreYPagoGenerado(periodo, cuatrimestre);
+			if (alumnosConPago>0) {
+				return "gene";
+			}
+			
+			return "notGene";
+		}
+		
+		return "err";
+	
+	}
+	
 
 }

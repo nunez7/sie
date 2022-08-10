@@ -933,7 +933,7 @@ public class AlumnoController {
 			
 			//busca si tiene una prorroga de adeudos
 			ProrrogaAdeudo prorroga = prorrogaAdeudoService.buscarUltimaPorPersona(cvePersona);
-			if(prorroga.getFechaCompromiso()!=null && prorroga.getFechaCompromiso().after(fechaHoy)) {
+			if(prorroga!=null && prorroga.getFechaCompromiso().after(fechaHoy)) {
 				periodoAct = true;
 			} 
 			

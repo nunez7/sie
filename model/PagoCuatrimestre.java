@@ -21,10 +21,6 @@ public class PagoCuatrimestre {
 	private PagoGeneral pagoGeneral;
 
 	@OneToOne
-	@JoinColumn(name = "id_periodo", referencedColumnName = "id")
-	private Periodo periodo;
-
-	@OneToOne
 	@JoinColumn(name = "id_alumno_grupo", referencedColumnName = "id")
 	private AlumnoGrupo alumnoGrupo;
 
@@ -50,14 +46,6 @@ public class PagoCuatrimestre {
 
 	public void setPagoGeneral(PagoGeneral pagoGeneral) {
 		this.pagoGeneral = pagoGeneral;
-	}
-
-	public Periodo getPeriodo() {
-		return periodo;
-	}
-
-	public void setPeriodo(Periodo periodo) {
-		this.periodo = periodo;
 	}
 
 	public AlumnoGrupo getAlumnoGrupo() {

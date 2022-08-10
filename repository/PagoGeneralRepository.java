@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.dto.FolioDTO;
+import edu.mx.utdelacosta.model.dto.PagoConceptoDTO;
+import edu.mx.utdelacosta.model.dtoreport.CajaConcentradoDTO;
 import edu.mx.utdelacosta.model.dtoreport.PagosGeneralesDTO;
 
 public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integer>{
@@ -44,42 +46,24 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 				 + "ORDER BY pg.id DESC LIMIT 1 ", nativeQuery = true)
 	PagoGeneral findLastPagoGeneral();
 	
-	/*
-	@Query(value = "SELECT pg.* "
-			+ "FROM pagos_generales pg "
-			+ "INNER JOIN pago_asignatura pa on pg.id=pa.id_pago "
-			+ "INNER JOIN pago_alumno pal on pg.id=pal.id_pago "
-			+ "WHERE pal.id_alumno= :idAlumno and pg.id_concepto= :idConcepto AND pa.id_asignatura= :idAsignatura AND pg.activo=true", nativeQuery = true)
-	PagoGeneral findByAlumnoAndConceptoAndAsignatura(@Param("idAlumno") Integer idAlumno, @Param("idConcepto") Integer idConcepto, @Param("idAsignatura") Integer idAsignatura);
-	
-	@Query(value = "SELECT pg.* "
-			+ "FROM pagos_generales pg "
-			+ "INNER JOIN pago_asignatura pa on pg.id=pa.id_pago "
-			+ "INNER JOIN pago_alumno pal on pg.id=pal.id_pago "
-			+ "WHERE pal.id_alumno= :idAlumno and pg.id_concepto= :idConcepto AND pa.id_asignatura= :idAsignatura AND pa.id_corte_evaluativo=:idCorteEvaluativo AND pg.activo=true", nativeQuery = true)
-	PagoGeneral findByAlumnoAndConceptoAndAsignaturaAndCorteEvaluativo(@Param("idAlumno") Integer idAlumno, @Param("idConcepto") Integer idConcepto, @Param("idAsignatura") Integer idAsignatura, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
-	 */
-	
 	// metodo modificado
-		@Query(value = "SELECT pg.* "
-				+ "FROM pagos_generales pg "
-				+ "INNER JOIN pago_asignatura pa on pg.id=pa.id_pago "
-				+ "INNER JOIN pago_alumno pal on pg.id=pal.id_pago "
-				+ "WHERE pal.id_alumno= :idAlumno and pg.id_concepto= :idConcepto AND pa.id_carga_horaria= :idCargaHoraria AND pg.activo=true", nativeQuery = true)
-		PagoGeneral findByAlumnoAndConceptoAndCargaHoraria(@Param("idAlumno") Integer idAlumno, @Param("idConcepto") Integer idConcepto, @Param("idCargaHoraria") Integer idCargaHoraria);
-		
-		@Query(value = "SELECT pg.* "
-				+ "FROM pagos_generales pg "
-				+ "INNER JOIN pago_asignatura pa on pg.id=pa.id_pago "
-				+ "INNER JOIN pago_alumno pal on pg.id=pal.id_pago "
-				+ "WHERE pal.id_alumno= :idAlumno and pg.id_concepto= :idConcepto AND pa.id_carga_horaria=:idCargaHoraria AND pa.id_corte_evaluativo=:idCorteEvaluativo AND pg.activo=true", nativeQuery = true)
-		PagoGeneral findByAlumnoAndConceptoAndCargaHorariaAndCorteEvaluativo(@Param("idAlumno") Integer idAlumno, @Param("idConcepto") Integer idConcepto, @Param("idCargaHoraria") Integer idCargaHoraria, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
-		
-		@Query(value = "SELECT count(pg.*) FROM pagos_generales pg " 
-				 + "INNER JOIN pago_alumno pa ON pa.id_pago=pg.id "
-				 + "WHERE pa.id_alumno=:idAlumno AND pg.status=:status AND pg.activo=true", nativeQuery = true)
-		Integer countByAlumnoAndStatus(@Param("idAlumno") Integer idAlumno, @Param("status") Integer status);
-		
+	@Query(value = "SELECT pg.* " + "FROM pagos_generales pg " + "INNER JOIN pago_asignatura pa on pg.id=pa.id_pago "
+			+ "INNER JOIN pago_alumno pal on pg.id=pal.id_pago "
+			+ "WHERE pal.id_alumno= :idAlumno and pg.id_concepto= :idConcepto AND pa.id_carga_horaria= :idCargaHoraria AND pg.activo=true", nativeQuery = true)
+	PagoGeneral findByAlumnoAndConceptoAndCargaHoraria(@Param("idAlumno") Integer idAlumno,
+			@Param("idConcepto") Integer idConcepto, @Param("idCargaHoraria") Integer idCargaHoraria);
+
+	@Query(value = "SELECT pg.* " + "FROM pagos_generales pg " + "INNER JOIN pago_asignatura pa on pg.id=pa.id_pago "
+			+ "INNER JOIN pago_alumno pal on pg.id=pal.id_pago "
+			+ "WHERE pal.id_alumno= :idAlumno and pg.id_concepto= :idConcepto AND pa.id_carga_horaria=:idCargaHoraria AND pa.id_corte_evaluativo=:idCorteEvaluativo AND pg.activo=true", nativeQuery = true)
+	PagoGeneral findByAlumnoAndConceptoAndCargaHorariaAndCorteEvaluativo(@Param("idAlumno") Integer idAlumno,
+			@Param("idConcepto") Integer idConcepto, @Param("idCargaHoraria") Integer idCargaHoraria,
+			@Param("idCorteEvaluativo") Integer idCorteEvaluativo);
+
+	@Query(value = "SELECT count(pg.*) FROM pagos_generales pg " + "INNER JOIN pago_alumno pa ON pa.id_pago=pg.id "
+			+ "WHERE pa.id_alumno=:idAlumno AND pg.status=:status AND pg.activo=true", nativeQuery = true)
+	Integer countByAlumnoAndStatus(@Param("idAlumno") Integer idAlumno, @Param("status") Integer status);
+
 	// prueba para reporte de caja detallado
 	@Query(value="SELECT * FROM pagos_generales WHERE status = 1 ORDER BY id DESC LIMIT 50", nativeQuery = true)
 	List<PagoGeneral> findByLast100();	
@@ -131,39 +115,36 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 	
 	@Query(value = "SELECT pg.folio AS Folio, MAX(COALESCE(a.id, c.id)) as idCliente, MAX(CONCAT(COALESCE(c.nombre_cliente,' '), "
 			+ "COALESCE(p.primer_apellido,''), ' ' , COALESCE(p.segundo_apellido, '') , ' ' , COALESCE(p.nombre,''))) AS nombre, "
-			+ "SUM((pg.cantidad  * pg.monto_unitario) - ((COALESCE(pg.descuento,0) * (pg.cantidad * pg.monto_unitario))/100) ) AS Monto, "
+			+ "SUM((pg.cantidad  * c2.monto) - ((COALESCE(pg.descuento,0) * (pg.cantidad * c2.monto))/100) ) AS Monto, "
 			+ "MAX(CAST(pg.status AS INT)) AS Activo, MAX(pg.created) AS Fecha, MAX(pg.tipo)AS TipoPago "
 			+ "FROM pagos_generales pg "
+			+ "INNER JOIN conceptos c2 ON pg.id_concepto = c2.id "
 			+ "LEFT JOIN pago_cliente pc ON pc.id_pago = pg.id "
 			+ "LEFT JOIN clientes c  ON pc.id_cliente = c.id "
 			+ "LEFT JOIN pago_alumno pa ON pa.id_pago = pg.id "
 			+ "LEFT JOIN alumnos a ON pa.id_alumno = a.id "
 			+ "LEFT JOIN personas p  ON a.id_persona = p.id "
 			+ "WHERE (pg.folio iLIKE %:like% "
-//			+ "OR p.nombre iLIKE %:like% "
 			+ "OR CONCAT(p.nombre,' ',p.primer_apellido) iLIKE %:like% "
-//			+ "OR p.primer_apellido iLIKE %:like% "
 			+ "OR CONCAT(p.primer_apellido,' ',p.segundo_apellido) iLIKE %:like% "
-//			+ "OR p.segundo_apellido iLIKE %:like% "
 			+ "OR CONCAT(p.segundo_apellido, ' ',p.nombre) iLIKE %:like% "
 			+ "OR c.nombre_cliente iLIKE %:like% ) AND pg.folio NOT LIKE '' "
 			+ "GROUP BY pg.folio ORDER BY pg.folio DESC ", nativeQuery = true)
 	List<FolioDTO> FindByFolioOrNombreOrCliente(@Param("like") String like);
 	
+	// para buscar la info de edicion de un folio
 	@Query(value = "SELECT pg.folio AS Folio, MAX(CONCAT(COALESCE(c.nombre_cliente,' '), "
 			+ "COALESCE(p.primer_apellido,''), ' ' , COALESCE(p.segundo_apellido, '') , ' ' , COALESCE(p.nombre,''))) AS nombre, "
 			+ "SUM((pg.cantidad  * pg.monto_unitario) - ((COALESCE(pg.descuento,0) * (pg.cantidad * pg.monto_unitario))/100) ) AS Monto, "
-			+ "MAX(CAST(pg.activo AS INT)) AS Activo, MAX(pg.created) AS Fecha, MAX(pg.tipo)AS TipoPago "
-			+ "FROM pagos_generales pg "
-			+ "LEFT JOIN pago_cliente pc ON pc.id_pago = pg.id "
-			+ "LEFT JOIN clientes c  ON pc.id_cliente = c.id "
-			+ "LEFT JOIN pago_alumno pa ON pa.id_pago = pg.id "
-			+ "LEFT JOIN alumnos a ON pa.id_alumno = a.id "
-			+ "LEFT JOIN personas p  ON a.id_persona = p.id "
-			+ "WHERE pg.folio = :folio "
+			+ "MAX(CAST(pg.activo AS INT)) AS Activo, MAX(pg.created) AS Fecha, MAX(pg.tipo)AS TipoPago, MAX(cast(pg.factura as INT)) as factura, "
+			+ "COALESCE(MAX(nc.cantidad),0) as cantidadNota " + "FROM pagos_generales pg "
+			+ "LEFT JOIN nota_credito nc ON nc.id_pago_general = pg.id "
+			+ "LEFT JOIN pago_cliente pc ON pc.id_pago = pg.id " + "LEFT JOIN clientes c  ON pc.id_cliente = c.id "
+			+ "LEFT JOIN pago_alumno pa ON pa.id_pago = pg.id " + "LEFT JOIN alumnos a ON pa.id_alumno = a.id "
+			+ "LEFT JOIN personas p  ON a.id_persona = p.id " + "WHERE pg.folio = :folio "
 			+ "GROUP BY pg.folio ORDER BY pg.folio DESC ", nativeQuery = true)
-	FolioDTO findFolio (@Param("folio") String folio);
-	
+	FolioDTO findFolio(@Param("folio") String folio);
+
 	List<PagoGeneral> findByFolio(String folio);
 	
 	@Query(value = "SELECT * FROM pagos_generales pg "
@@ -219,4 +200,38 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "WHERE referencia = :referencia AND activo = 'True' "
 			+ "AND status = 0", nativeQuery = true)
 	List<PagoGeneral> findByReferencia(@Param("referencia") String referencia);
+	
+	@Query(value = "SELECT c.concepto, c.monto, ( " + "	SELECT (count(distinct(pg.id))) "
+			+ "	FROM pagos_generales pg " + "	INNER JOIN pago_recibe pr ON pr.id_pago = pg.id "
+			+ "	WHERE pg.id_concepto = c.id and pg.status = 1 AND pr.id = :cajero "
+			+ "	AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin " + "	) AS cantidad "
+			+ "	from conceptos c order by concepto ", nativeQuery = true)
+	List<CajaConcentradoDTO> findCajaConcentradoByFechaInicioAndFechaFinAndCajero(
+			@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin, @Param("cajero") Integer cajero);
+
+	@Query(value = "SELECT c.concepto, c.monto as costoUnitario, ( " + "	SELECT (count(distinct(pg.id))) "
+			+ "	FROM pagos_generales pg " + "	INNER JOIN pago_recibe pr ON pr.id_pago = pg.id "
+			+ "	WHERE pg.id_concepto = c.id AND pg.status = 1 "
+			+ "	AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin " + "	) AS cantidad "
+			+ "	from conceptos c order by concepto ", nativeQuery = true)
+	List<CajaConcentradoDTO> findCajaConcentradoByFechaInicioAndFechaFin(@Param("fechaInicio") Date fechaInicio,
+			@Param("fechaFin") Date fechaFin);
+	
+	@Query(value = "SELECT distinct(pg.folio)  FROM pagos_generales pg "
+			+ "	INNER JOIN pago_recibe pr ON pg.id = pr.id_pago " + "	INNER JOIN personas p ON p.id = pr.id_cajero "
+			+ "	WHERE pg.status = 1 " + "	AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin ", nativeQuery = true)
+	List<String> findFoliosByFechaInicioAndFechaFinAllCajero(@Param("fechaInicio") Date fechaInicio,
+			@Param("fechaFin") Date fechaFin);
+	
+	@Query(value = "SELECT pg.cantidad AS cantidad, c.monto, pg.concepto, pg.monto as montoTotal "
+			+ "	FROM pagos_generales pg " + "	INNER JOIN conceptos c ON pg.id_concepto = c.id "
+			+ "	WHERE folio = :folio ", nativeQuery = true)
+	List<PagoConceptoDTO> findConceptoPagoByFolio(@Param("folio") String folio);
+	
+	@Query(value = "SELECT COALESCE(SUM(pg.monto),0) AS Monto " 
+			+ " FROM pagos_generales pg "
+			+ " WHERE folio = :folio ", nativeQuery = true)
+	Double sumTotalMontoByFolio(@Param("folio") String folio);
+
+
 }
