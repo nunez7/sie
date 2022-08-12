@@ -13,4 +13,5 @@ public interface IBajaService {
 	List<Baja> buscarPorPersonaYEstatus(Integer idPersona, Integer estatus);
 	List<Baja> buscarPorTipoYStatus(Integer tipo, Integer estatus);
 	List<Baja> buscarPorTipoStatusGrupoYPeriodo(Integer tipo, Integer estatus, Integer idGrupo, Integer idPeriodo);
+	List<Baja> buscarPorTipoStatusCarreraYPeriodo(Integer tipo, Integer estatus, Integer idCarrera, Integer idPeriodo);
 }

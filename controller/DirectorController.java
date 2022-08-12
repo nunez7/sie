@@ -1,6 +1,5 @@
 package edu.mx.utdelacosta.controller;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -10,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +30,7 @@ import edu.mx.utdelacosta.model.Asistencia;
 import edu.mx.utdelacosta.model.Baja;
 import edu.mx.utdelacosta.model.BajaAutoriza;
 import edu.mx.utdelacosta.model.CambioGrupo;
+import edu.mx.utdelacosta.model.Canalizacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
@@ -47,6 +46,7 @@ import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Personal;
 import edu.mx.utdelacosta.model.PlanEstudio;
 import edu.mx.utdelacosta.model.Prorroga;
+import edu.mx.utdelacosta.model.TemaGrupal;
 import edu.mx.utdelacosta.model.TutoriaIndividual;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
@@ -74,6 +74,7 @@ import edu.mx.utdelacosta.service.IBajaAutorizaService;
 import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICambioGrupoService;
+import edu.mx.utdelacosta.service.ICanalizacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
@@ -90,6 +91,7 @@ import edu.mx.utdelacosta.service.IPlanEstudioService;
 import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
+import edu.mx.utdelacosta.service.ITemaGrupalService;
 import edu.mx.utdelacosta.service.ITestimonioCorteService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
@@ -185,6 +187,15 @@ public class DirectorController {
 	private IPeriodosService periodoService;
 	
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
+	
+	@Autowired
+	private ICanalizacionService canalizacionService;
+	
+	@Autowired
+	private ITutoriaIndividualService tutoriaIndiService;
+	
+	@Autowired
+	private ITemaGrupalService temaGrupalService;
 	
 	@GetMapping("/dosificacion")
 	public String dosificacion(Model model, HttpSession session) {
@@ -662,15 +673,15 @@ public class DirectorController {
 		return "director/bajas";
 	}
 	
-	@GetMapping("/bajas-cargar-tutorias/{idAlumno}")
-	public String cargarAlumnos(@PathVariable(name = "idAlumno", required = false) String idAlumno,  Model model) { 
-		if(idAlumno!=null){
-			Alumno alumno = alumnoService.buscarPorId(Integer.parseInt(idAlumno));
-			List<TutoriaIndividual> tutorias =  tutoriaIndService.buscarUltimas5PorAlumno(alumno);
+	@GetMapping("/bajas-cargar-tutorias/{idBaja}")
+	public String cargarAlumnos(@PathVariable(name = "idBaja", required = false) String idBaja,  Model model) { 
+		if(idBaja!=null){
+			Baja baja = bajaService.buscarPorId(Integer.parseInt(idBaja));
+			List<TutoriaIndividual> tutorias =  tutoriaIndService.buscarUltimas5PorAlumno(baja.getAlumno());
 			// Extrae el último grupo del alumno y se inserta en el modelo del alumno
-			Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
-			alumno.setUltimoGrupo(ultimoGrupo);
-			model.addAttribute("alumno", alumno);
+			Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(baja.getAlumno().getId());
+			baja.getAlumno().setUltimoGrupo(ultimoGrupo);
+			model.addAttribute("baja", baja);
 			model.addAttribute("tutorias", tutorias);
 		}
 		return "fragments/tutorias :: cargar-tutorias";
@@ -720,7 +731,7 @@ public class DirectorController {
 			mail.setVariables(variables);			
 			try {							
 				emailService.sendEmail(mail);													
-			}catch (MessagingException | IOException e) {
+			}catch (Exception e) {
 				return "errorMen";
 		  	}
 			
@@ -754,7 +765,7 @@ public class DirectorController {
 			mail.setVariables(variables);			
 			try {							
 				emailService.sendEmail(mail);													
-			}catch (MessagingException | IOException e) {
+			}catch (Exception e) {
 				return "errorMen";
 		  	}
 			return "ok";
@@ -772,24 +783,22 @@ public class DirectorController {
 		} catch (Exception e) {
 			cvePersona = usuario.getPersona().getId();
 		}
-					
-		List<Grupo> grupos = grupoService.buscarPorCarreraPeriodoAndPersonaCarrera(cvePersona, usuario.getPreferencias().getIdPeriodo());
-		Integer cveGrupo = (Integer) session.getAttribute("rb-cveGrupo");
+		
+		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(cvePersona);
+		Integer cveCarrera = (Integer) session.getAttribute("rb-cveCarrera");
+		
 		List<Baja> bajas = new ArrayList<>();
 		
-		if(cveGrupo!=null) {
-			Boolean GrupoEnPeriodo = grupoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
-			if(GrupoEnPeriodo==true) {
-				bajas = bajaService.buscarPorTipoStatusGrupoYPeriodo(2, 2, cveGrupo, usuario.getPreferencias().getIdPeriodo());
-			}
+		if(cveCarrera!=null) {
+			bajas = bajaService.buscarPorTipoStatusCarreraYPeriodo(2, 2, cveCarrera, usuario.getPreferencias().getIdPeriodo());
 		}
 		
 		model.addAttribute("rol", 2);
 		model.addAttribute("bajas", bajas);
-		model.addAttribute("grupos", grupos);
-		model.addAttribute("cveGrupo", cveGrupo);
+		model.addAttribute("carreras", carreras);
+		model.addAttribute("cveCarrera", cveCarrera);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
-		return "reportes/reporteBajas"; 
+		return "director/reporteBajas"; 
 	 } 
 
 	// reporte de indicadores por carrera
@@ -845,6 +854,7 @@ public class DirectorController {
 				indicadorExt.setPromedio(alumnos > 0 ? ((numSD * 100) / alumnos) : 0); // se promedia
 				totalExtra = totalExtra + numExt; // se suma a la lista general
 				indicadoresExtra.add(indicadorExt); // se agrega a la lista
+				
 
 			}
 			IndicadorMateriaProfesorDTO indicadores = new IndicadorMateriaProfesorDTO();
@@ -897,6 +907,34 @@ public class DirectorController {
 			}
 			indicadores.setIndicadoresExtra(indicadoresExtra);
 			
+			///////////brayan///////////
+			//--------tutoria Ind --------
+			int noTutoriasInd = tutoriaIndiService.totalPorCarreraPeriodoYTurno(cveCarrera, usuario.getPreferencias().getIdPeriodo(), cveTurno);
+			indicadores.setNumeroTutoriasInd(noTutoriasInd);
+			int AlumnosTutoradosInd = tutoriaIndiService.totalDistinctAlumnoPorCarreraPeriodoYTurno(cveCarrera, usuario.getPreferencias().getIdPeriodo(), cveTurno);
+			try {
+				indicadores.setPorcentajeTutoriasInd((AlumnosTutoradosInd * 100) / alumnos);
+			} catch (ArithmeticException e) {
+				indicadores.setPorcentajeTutoriasInd(0);
+			}
+			//--------tutoria Gru --------
+			int noTutoriasGru =  temaGrupalService.TotalPorCarreraPeriodoYTurno(cveCarrera, usuario.getPreferencias().getIdPeriodo(), cveTurno);
+			indicadores.setNumeroTutoriasGru(noTutoriasGru);
+			try {
+				indicadores.setPorcentajeTutoriasGru(100);
+			} catch (ArithmeticException e) {
+				indicadores.setPorcentajeTutoriasGru(0);
+			}
+			//--------canalizasion --------
+			int noCana =  canalizacionService.contarPorCarreraPeriodoYTurno(cveCarrera, usuario.getPreferencias().getIdPeriodo(), cveTurno);
+			indicadores.setNumeroCanalizaciones(noCana);
+			int alumnosCana = canalizacionService.contarDistinctAlumnoPorCarreraPeriodoYTurno(cveCarrera, usuario.getPreferencias().getIdPeriodo(), cveTurno);
+			try {
+				indicadores.setPorcentajeCanalizaciones((alumnosCana * 100) / alumnos);
+			} catch (ArithmeticException e) {
+				indicadores.setPorcentajeTutoriasGru(0);
+			}
+			///////////brayan///////////
 			model.addAttribute("indicadores", indicadores);
 		}
 		
@@ -1013,5 +1051,223 @@ public class DirectorController {
 		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "director/reporteNoReinscritos";
 	}
+	
+	/////////////////////////////////////////////////////////////////////////////////
+	//-----------------------------brayan 10/08/22---------------------------------
+	/////////////////////////////////////////////////////////////////////////////////
+	@GetMapping("/reporte-canalizaciones") 
+	 public String reporteCanalizaciones(Model model, HttpSession session) { 
+		// extrae el usuario a partir del usuario cargado en sesión
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+		
+		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(cvePersona);
+		Integer cveCarrera = (Integer) session.getAttribute("rc-cveCarrera");
+		List<Grupo> grupos = new ArrayList<>();
+		List<Alumno> alumnos = new ArrayList<>();
+		List<Canalizacion> canalizaciones = new ArrayList<>();
+		Integer cveGrupo = (Integer) session.getAttribute("rc-cveGrupo");
+		Integer cveAlumno = (Integer) session.getAttribute("rc-cveAlumno");
+		Boolean allAlumnos = false;
+		Boolean allGrupos = false;
+		
+		if(cveCarrera!=null) {
+			grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), cveCarrera);
+			if(cveGrupo==null || cveGrupo==0) {
+				canalizaciones = canalizacionService.buscarPorCarreraPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo());
+				allGrupos = true;
+				allAlumnos = true;
+			}else{
+				alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+				if(cveAlumno==null || cveAlumno==0) {
+					canalizaciones = canalizacionService.buscarPorGrupoPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+					allAlumnos = true;
+				}else{
+					canalizaciones = canalizacionService.buscarPorGrupoPeriodoYAlumno(cveGrupo, usuario.getPreferencias().getIdPeriodo(), cveAlumno);
+				}
+			}
+		}
+		
+		model.addAttribute("carreras", carreras);
+		model.addAttribute("cveCarrera", cveCarrera);
+		model.addAttribute("grupos", grupos);
+		model.addAttribute("alumnos", alumnos);
+		model.addAttribute("cveGrupo", cveGrupo);
+		model.addAttribute("allGrupos", allGrupos);
+		model.addAttribute("cveAlumno", cveAlumno);
+		model.addAttribute("allAlumnos", allAlumnos);
+		model.addAttribute("canalizaciones", canalizaciones);
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "director/reporteCanalizaciones"; 
+	 }
+	
+	 @GetMapping("/reporte-tutoria-individual") 
+	 public String reporteTutoriaIndividual(Model model, HttpSession session) {	
+			// Extrae el usuario a partir del usuario cargado en sesión.
+			Usuario usuario = (Usuario) session.getAttribute("usuario");
+			int cvePersona;
+			try {
+				cvePersona = (Integer) session.getAttribute("cvePersona");
+			} catch (Exception e) {
+				cvePersona = usuario.getPersona().getId();
+			}
+			int h=0;
+			int m=0;			
+			List<Grupo> grupos = new ArrayList<>();		
+			List<TutoriaIndividual> tutorias = new ArrayList<>();
+			List<Alumno> alumnos = new ArrayList<>();
+			List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(cvePersona);
+			Integer cveAlumno = (Integer) session.getAttribute("rti-cveAlumno");
+			Integer cveGrupo = (Integer) session.getAttribute("rti-cveGrupo");
+			Integer cveCarrera = (Integer) session.getAttribute("rtc-cveCarrera");
+			
+			Boolean allAlumnos = false;
+			Boolean allGrupos = false;
+			
+			if(cveCarrera!=null) {
+				grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), cveCarrera);
+				if(cveGrupo==null || cveGrupo==0) {	
+					if((String) session.getAttribute("rti-fechaInicio")!=null) {					
+						Date fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("rti-fechaInicio"));				
+						if((String) session.getAttribute("rti-fechaFin")!=null) {						
+							Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rti-fechaFin"));
+							tutorias = tutoriaIndiService.buscarEntreFechasPorCarrera(cveCarrera, usuario.getPreferencias().getIdPeriodo(), fechaInicio, fechaFin);
+							allAlumnos = true;
+							allGrupos = true;
+							model.addAttribute("fechaFin", fechaFin);
+						}
+						model.addAttribute("fechaInicio", fechaInicio);
+					}
+				}else{
+					alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
+					if((String) session.getAttribute("rti-fechaInicio")!=null) {					
+						Date fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("rti-fechaInicio"));				
+						if((String) session.getAttribute("rti-fechaFin")!=null) {						
+							Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rti-fechaFin"));
+							
+							if(cveAlumno==null || cveAlumno==0) {							
+								tutorias = tutoriaIndiService.buscarEntreFechasPorGrupo(cveGrupo, fechaInicio, fechaFin);							
+								allAlumnos = true;
+							}else{
+								tutorias = tutoriaIndiService.buscarEntreFechasPorGrupoYAlumno(cveGrupo, cveAlumno, fechaInicio, fechaFin);
+							}
+							model.addAttribute("fechaFin", fechaFin);
+						}
+						model.addAttribute("fechaInicio", fechaInicio);
+					}	
+				}
+				
+			}
+			
+			for(TutoriaIndividual tutoria : tutorias) {
+				if(tutoria.getAlumno().getPersona().getSexo().equals("M")){
+					++m;
+				}else{
+					++h;
+				}
+			}
+			
+			model.addAttribute("carreras", carreras);
+			model.addAttribute("cveCarrera", cveCarrera);
+			model.addAttribute("mujeres", m);
+			model.addAttribute("hombre", h);
+			model.addAttribute("allAlumnos", allAlumnos);				
+			model.addAttribute("cveGrupo", cveGrupo);
+			model.addAttribute("allGrupos", allGrupos);
+			model.addAttribute("cveAlumno", cveAlumno);
+			model.addAttribute("grupos", grupos);	
+			model.addAttribute("alumnos", alumnos);	
+			model.addAttribute("tutorias", tutorias);	
+			model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		 return "director/reporteTutoriaIndividual"; 
+	}
+	@GetMapping("/reporte-tutorias-grupales") 
+	public String reporteTutoriasGrupales(Model model, HttpSession session) { 
+		// Extrae el usuario a partir del usuario cargado en sesión.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+		int h=0;
+		int m=0;			
+		List<Grupo> grupos = new ArrayList<>();				
+		List<TemaGrupal> temasGrupales = new ArrayList<>();	
+		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(cvePersona);
+		Integer cveGrupo = (Integer) session.getAttribute("rtg-cveGrupo");	
+		Integer cveCarrera = (Integer) session.getAttribute("rtg-cveCarrera");
+		Boolean allGrupos = false;
+		
+		if(cveCarrera!=null) {
+			grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), cveCarrera);
+			if(cveGrupo==null || cveGrupo==0) {	
+				allGrupos = true;
+				if((String) session.getAttribute("rtg-fechaInicio")!=null) {					
+					Date fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("rtg-fechaInicio"));				
+					if((String) session.getAttribute("rtg-fechaFin")!=null) {						
+						Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rtg-fechaFin"));
+						temasGrupales = temaGrupalService.buscarEntreFechasPorCarrera(cveCarrera, usuario.getPreferencias().getIdPeriodo(), fechaInicio, fechaFin);
+						model.addAttribute("fechaFin", fechaFin);
+						
+						//total de alumnos por grupo
+						for(Grupo grupo : grupos) {
+							List<Alumno> alumnos = alumnoService.buscarPorGrupo(grupo.getId());
+							for(Alumno al : alumnos) {
+								if(al.getPersona().getSexo().equals("M")){
+									++m;
+								}else{
+									++h;
+								}
+							}
+						}
+						
+					}
+					model.addAttribute("fechaInicio", fechaInicio);
+				}
+			}else{
+				if((String) session.getAttribute("rtg-fechaInicio")!=null) {					
+					Date fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("rtg-fechaInicio"));				
+					if((String) session.getAttribute("rtg-fechaFin")!=null) {						
+						Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rtg-fechaFin"));
+						temasGrupales = temaGrupalService.buscarEntreFechasPorGrupo(cveGrupo,fechaInicio, fechaFin);
+						List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
+						
+						for(Alumno al : alumnos) {
+							if(al.getPersona().getSexo().equals("M")){
+								++m;
+							}else{
+								++h;
+							}
+						}
+						
+						model.addAttribute("fechaFin", fechaFin);
+					}
+					model.addAttribute("fechaInicio", fechaInicio);
+				}															
+			}
+		}
+		
+		model.addAttribute("carreras", carreras);
+		model.addAttribute("cveCarrera", cveCarrera);
+		model.addAttribute("mujeres", m);
+		model.addAttribute("hombre", h);
+		model.addAttribute("cveGrupo", cveGrupo);
+		model.addAttribute("grupos", grupos);	
+		model.addAttribute("allGrupos", allGrupos);
+		model.addAttribute("temas", temasGrupales);	
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "director/reporteTutoriaGrupal"; 
+	} 
+	  
+	/////////////////////////////////////////////////////////////////////////////////
+	//-----------------------------brayan 10/08/22---------------------------------
+	/////////////////////////////////////////////////////////////////////////////////
 
 }

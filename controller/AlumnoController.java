@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -93,6 +94,7 @@ import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IProrrogaAdeudoService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.ITutoriaIndividualService;
+import edu.mx.utdelacosta.service.IUsuariosService;
 import edu.mx.utdelacosta.util.CodificarTexto;
 import edu.mx.utdelacosta.util.NumberToLetterConverter;
 import edu.mx.utdelacosta.util.ReferenciaFondos;
@@ -184,6 +186,12 @@ public class AlumnoController {
 	
 	@Autowired
 	private ITutoriaIndividualService tutoriaIndService;
+	
+	@Autowired
+	private IUsuariosService usuarioService;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	
 	@PreAuthorize("hasAnyAuthority('Administrador', 'Servicios Escolares','Informatica', 'Rector')")
 	@GetMapping("/search/{id}")
@@ -1504,5 +1512,21 @@ public class AlumnoController {
 			return "ok";
 		}
 		return "error";
+	}
+	
+	@PostMapping(path="/validar-contra", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String validarContraseña(@RequestBody Map<String, String> obj) {
+		String contra = obj.get("contra");
+		String matricula = obj.get("matricula");
+		if(matricula!=null && contra!=null) {
+			Usuario usuario = usuarioService.buscarPorUsuario(matricula);							
+			Boolean valContra =  passwordEncoder.matches(contra, usuario.getContrasenia());
+			if(valContra == true) {
+				System.out.println(matricula+" "+contra);
+				return "ok";
+			}	
+		}
+		return "Error";
 	}
 }

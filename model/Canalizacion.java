@@ -25,7 +25,7 @@ public class Canalizacion {
 	@JoinColumn(name="id_alumno")
 	private Alumno alumno;
 	
-	@OneToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_tutoria_individual")
 	private TutoriaIndividual tutoriaIndividual;
 	

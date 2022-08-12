@@ -1,6 +1,5 @@
 package edu.mx.utdelacosta.controller;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -375,7 +373,7 @@ public class TutorController {
 		Integer servicio =  Integer.parseInt(obj.get("servicio"));
 		// Solo se utiliza para correo como complemento del servicio solicitado		
 		String resumen =  obj.get("resumen");
-		Integer materia =  Integer.parseInt(obj.get("materia"));
+		//Integer materia =  Integer.parseInt(obj.get("materia"));
 		//		
 		String razon =  obj.get("razon");
 		String comentario =  obj.get("comentario");
@@ -397,6 +395,16 @@ public class TutorController {
 					canalizacion.setStatus(1);
 					canalizacionService.guardar(canalizacion);
 					
+					//Recibo los motivos de la tutoría como un string y los convierto a una ArrayList<Integer>
+					String ma = obj.get("materias");							
+				    String s = ",";
+				    String[] mat = ma.split(s);		
+					List<String> mater = Arrays.asList(mat);				
+					ArrayList<Integer> materias = new ArrayList<Integer>();//lista de motivos seleccionados
+					for(int i = 0; i < mater.size(); i++) {
+						materias.add(Integer.parseInt(mater.get(i)));   
+					}
+					System.out.println(materias);
 					Alumno alumno = alumnoService.buscarPorId(Integer.parseInt(cveAlumno));				
 					// Sé crear un correo y se envía al director correspondiente			
 					Mail mail = new Mail();
@@ -404,51 +412,71 @@ public class TutorController {
 					String para = "brayan.bg499@gmail.com";
 					
 					//Se valida el tipo de servicio al que se canalizara para enviar el correo			
-//					if(servicio==1){
-//						
-//					}
+					if(servicio==1){
+						
+					}
 //					else if(servicio==2){
 //						
 //					}
-//					else if(servicio==3){
-					CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(materia);
-//					para = cargaHoraria.getProfesor().getEmail();
+					else if(servicio==3){
+						for(Integer cveMateria : materias) {
+							System.out.println(cveMateria);
+							CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(cveMateria);
+							//para = cargaHoraria.getProfesor().getEmail();
+							
+							mail.setDe(de);
+							mail.setPara(new String[] {para});		
+							//Email title
+							mail.setTitulo("Canalización de alumnos");		
+							//Variables a plantilla
+							Map<String, Object> variables = new HashMap<>();
+							variables.put("titulo", "Canalización del alumno(a) "+alumno.getPersona().getNombreCompleto());
+							
+							variables.put("cuerpoCorreo", "El tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
+									+", solicita una canalización para el día "+dFDia.format(fecha)+" a las "+dFHora.format(hora)
+									+" para la materia "+cargaHoraria.getMateria().getNombre()+" que imparte"
+									+", por esta razón: "+razon
+									+". "+comentario+". Espero su confirmación"+grupo.getProfesor().getEmail()+".");
+							
+							mail.setVariables(variables);			
+							try {
+								emailService.sendEmail(mail);
+							}catch (Exception e) {
+								return "errorCorre";
+						  	}
+						}
+						return "ok";
 //					}
 //					else if(servicio==4){
 //					
 //					}
 //					else if(servicio==5){
 //						
-//					}
-					
-					mail.setDe(de);
-					mail.setPara(new String[] {para});		
-					//Email title
-					mail.setTitulo("Canalización de alumnos");		
-					//Variables a plantilla
-					Map<String, Object> variables = new HashMap<>();
-					variables.put("titulo", "Canalización del alumno(a) "+alumno.getPersona().getNombreCompleto());
-					//La canalización a profesor cambia un poco la estructura del correo enviado
-					if(servicio==3){
-						variables.put("cuerpoCorreo", "El tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
-								+", solicita una canalización para el día "+dFDia.format(fecha)+" a las "+dFHora.format(hora)
-								+" para la materia "+cargaHoraria.getMateria().getNombre()+" que imparte"
-								+", por esta razón: "+razon
-								+". "+comentario+". Espero su confirmación"+grupo.getProfesor().getEmail()+".");
 					}else{
+					
+						mail.setDe(de);
+						mail.setPara(new String[] {para});		
+						//Email title
+						mail.setTitulo("Canalización de alumnos");		
+						//Variables a plantilla
+						Map<String, Object> variables = new HashMap<>();
+						variables.put("titulo", "Canalización del alumno(a) "+alumno.getPersona().getNombreCompleto());
+			
 						variables.put("cuerpoCorreo", "El tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
 								+", solicita una canalización para el día "+dFDia.format(fecha)+" a las "+dFHora.format(hora)
 								+" debido a que "+resumen
 								+", por esta razón: "+razon
 								+". "+comentario+". Espero su confirmación"+grupo.getProfesor().getEmail()+".");
+					
+						mail.setVariables(variables);			
+						try {
+							emailService.sendEmail(mail);
+							return "ok";
+						}catch (Exception e) {
+							return "errorCorre";
+					  	}
+						
 					}
-					mail.setVariables(variables);			
-					try {
-						emailService.sendEmail(mail);
-						return "ok";
-					}catch (MessagingException | IOException e) {
-						return "errorCorre";
-				  	}
 				}				
 				return "noTuto";
 			}
@@ -543,8 +571,8 @@ public class TutorController {
 					mail.setVariables(variables);			
 					try {							
 						emailService.sendEmail(mail);													
-					}catch (MessagingException | IOException e) {
-						
+					}catch (Exception e) {
+						return "errorMen";
 				  	}
 					
 					return "ok";

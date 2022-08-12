@@ -104,4 +104,19 @@ public class TutoriaIndividualServiceJpa implements ITutoriaIndividualService{
 		return tutoriaIndRepo.findBajasByUtNay();
 	}
 
+	@Override
+	public List<TutoriaIndividual> buscarEntreFechasPorCarrera(Integer idCarrera, Integer idPeriodo, Date fechaInicio, Date fechaFin) {
+		return tutoriaIndRepo.findByCarreraAndFechaTutoria(idCarrera, idPeriodo, fechaInicio, fechaFin);
+	}
+
+	@Override
+	public Integer totalPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
+		return tutoriaIndRepo.findTotalByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
+	}
+
+	@Override
+	public Integer totalDistinctAlumnoPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
+		return tutoriaIndRepo.findTotalDistinctAlumnoByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
+	}
+
 }

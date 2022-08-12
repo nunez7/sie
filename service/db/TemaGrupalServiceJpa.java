@@ -41,5 +41,15 @@ public class TemaGrupalServiceJpa implements ITemaGrupalService{
 	public List<TemaGrupal> buscarEntreFechasPorGrupo(Integer idGrupo, Date fechaInicio, Date fechaFin) {
 		return temaGrupalRepo.findByGrupoAndFechaProgramada(idGrupo, fechaInicio, fechaFin);
 	}
+
+	@Override
+	public List<TemaGrupal> buscarEntreFechasPorCarrera(Integer idCarrera, Integer idPeriodo, Date fechaInicio, Date fechaFin) {
+		return temaGrupalRepo.findByCarreraAndFechaProgramada(idCarrera, idPeriodo, fechaInicio, fechaFin);
+	}
+
+	@Override
+	public Integer TotalPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
+		return temaGrupalRepo.findTotalByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
+	}
 	
 }

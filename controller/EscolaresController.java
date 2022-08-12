@@ -1,14 +1,11 @@
 package edu.mx.utdelacosta.controller;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.mail.MessagingException;
 
 import javax.servlet.http.HttpSession;
 
@@ -1084,7 +1081,7 @@ public class EscolaresController {
 					
 					Usuario userAlumno = usuarioService.buscarPorUsuario(baja.getAlumno().getMatricula());
 					userAlumno.setActivo(false);
-					usuarioService.guardar(usuario);
+					usuarioService.guardar(userAlumno);
 					
 					Alumno alumno = baja.getAlumno();
 					alumno.setEstatusGeneral(0);
@@ -1112,7 +1109,7 @@ public class EscolaresController {
 					mail.setVariables(variables);			
 					try {							
 						emailService.sendEmail(mail);													
-					}catch (MessagingException | IOException e) {
+					}catch (Exception e) {
 						return "errorMen";
 				  	}
 					
@@ -1162,25 +1159,13 @@ public class EscolaresController {
 		@GetMapping("/reporte-bajas") 
 		public String reporteBajas(Model model, HttpSession session) { 
 			Usuario usuario = (Usuario) session.getAttribute("usuario");
-
 			List<Carrera> carreras = carreraService.buscarTodas();
 			Integer cveCarrera = (Integer) session.getAttribute("rb-cveCarrera");
-			List<Grupo> grupos = new ArrayList<>();
 			List<Baja> bajas = new ArrayList<>();
 			if(cveCarrera!=null) {
-				grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), cveCarrera);
-				Integer cveGrupo = (Integer) session.getAttribute("rb-cveGrupo");
-				if(cveGrupo!=null) {
-					Boolean GrupoEnPeriodo = grupoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
-					if(GrupoEnPeriodo==true) {
-						bajas = bajaService.buscarPorTipoStatusGrupoYPeriodo(2, 2, cveGrupo, usuario.getPreferencias().getIdPeriodo());
-					}
-				}
-				model.addAttribute("cveGrupo", cveGrupo);
+				bajas = bajaService.buscarPorTipoStatusCarreraYPeriodo(2, 2, cveCarrera, usuario.getPreferencias().getIdPeriodo());
 			}
-			
 			model.addAttribute("bajas", bajas);
-			model.addAttribute("grupos", grupos);
 			model.addAttribute("carreras", carreras);
 			model.addAttribute("cveCarrera", cveCarrera);
 			model.addAttribute("NOMBRE_UT", NOMBRE_UT);

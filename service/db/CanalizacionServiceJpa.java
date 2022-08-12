@@ -36,4 +36,19 @@ public class CanalizacionServiceJpa implements ICanalizacionService{
 		return canlizacionRepo.findByGrupoAndPeriodo(idGrupo, idPeriodo);
 	}
 
+	@Override
+	public List<Canalizacion> buscarPorCarreraPeriodo(Integer idCarrera, Integer idPeriodo) {
+		return canlizacionRepo.findByCarreraAndPeriodo(idCarrera, idPeriodo);
+	}
+
+	@Override
+	public Integer contarPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
+		return canlizacionRepo.findTotalByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
+	}
+
+	@Override
+	public Integer contarDistinctAlumnoPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
+		return canlizacionRepo.findTotalDistinctAlumnoByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
+	}
+
 }

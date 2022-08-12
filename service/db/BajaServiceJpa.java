@@ -51,5 +51,10 @@ public class BajaServiceJpa implements IBajaService{
 	public List<Baja> buscarPorTipoStatusGrupoYPeriodo(Integer tipo, Integer estatus, Integer idGrupo, Integer idPeriodo) {
 		return bajaRepo.findByTipoAndStatusAndGrupoAndPeriodo(tipo, estatus, idGrupo, idPeriodo);
 	}
+
+	@Override
+	public List<Baja> buscarPorTipoStatusCarreraYPeriodo(Integer tipo, Integer estatus, Integer idCarrera, Integer idPeriodo) {
+		return bajaRepo.findByTipoAndStatusAndCarreraAndPeriodo(tipo, estatus, idCarrera, idPeriodo);
+	}
 	
 }
