@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -101,7 +102,7 @@ import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
-@PreAuthorize("hasRole('Administrador') and hasRole('Profesor')")
+@PreAuthorize("hasRole('Administrador') and hasRole('Profesor') and hasRole('Director')")
 @RequestMapping("/tutorias")
 public class TutorController {
 	
@@ -204,7 +205,7 @@ public class TutorController {
 	private IPersonaService personaService;
 
     @GetMapping("/cargar-alumno/{dato}")
-   	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato,  Model model, HttpSession session) { 
+   	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato,  Model model, HttpSession session, Authentication auth) { 
 		// extrae el usuario apartir del usuario cargado en cesion.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
@@ -213,13 +214,32 @@ public class TutorController {
 		} catch (Exception e) {
 			cvePersona = usuario.getPersona().getId();
 		}
-				
-    	List<AlumnoInfoDTO> alumnos = new ArrayList<>();
-    	if(dato!=null) {    		    		
-    		alumnos = alumnoService.buscarPorProfesorPeriodoYNombreOMatricula(cvePersona, usuario.getPreferencias().getIdPeriodo(), dato);
-    	}else {    		
-    		alumnos = alumnoService.buscarPorProfesorYPeriodo(cvePersona, usuario.getPreferencias().getIdPeriodo());
-    	}
+		String rol = auth.getAuthorities().toString();
+		rol = rol.replace("[", "").replace("]", "");
+		//comparamos el rol 
+		List<AlumnoInfoDTO> alumnos = new ArrayList<>();
+		if(rol.equals("Profesor")) {
+			if(dato!=null) {    		    		
+	    		alumnos = alumnoService.buscarPorProfesorPeriodoYNombreOMatricula(cvePersona, usuario.getPreferencias().getIdPeriodo(), dato);
+	    	}else {    		
+	    		alumnos = alumnoService.buscarPorProfesorYPeriodo(cvePersona, usuario.getPreferencias().getIdPeriodo());
+	    	}
+		}
+		else if (rol.equals("Director")) {
+			if(dato!=null) {    		
+	    		alumnos = alumnoService.buscarPorPersonaCarreraYPeriodoYNombreOMatricula(cvePersona, usuario.getPreferencias().getIdPeriodo(), dato);
+	    	}else {    		
+	    		alumnos = alumnoService.buscarPorPersonaCarreraYPeriodoYActivos(cvePersona, usuario.getPreferencias().getIdPeriodo());
+	    	}
+		}
+		else {
+			if(dato!=null) {    		    		
+	    		alumnos = alumnoService.buscarTodosPorNombreOMatriculaYPeriodoYActivos(dato, usuario.getPreferencias().getIdPeriodo());
+	    	}else {    		
+	    		alumnos = alumnoService.buscarTodosPorPeriodo(usuario.getPreferencias().getIdPeriodo());
+	    	}
+		}
+    	
 		model.addAttribute("alumnos", alumnos);
 		
 		return "fragments/control-alumnos :: res-alumnos";

@@ -465,5 +465,50 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ " WHERE pa.id_alumno=a.id AND pg.status=0) "
 			+ "ORDER BY c.nombre, g.nombre DESC, p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
 	List<AlumnoRegularDTO> obtenerRegularesByCarreraAndPeriodoAndTurno(@Param("carrera") Integer carrera, @Param("periodo") Integer periodo, @Param("idTurno") Integer idTurno);
+	
+	@Query(value = "SELECT a.*,CONCAT(per.nombre,' ',per.primer_apellido,' ',per.segundo_apellido) AS nombreCompleto "
+			+ "FROM alumnos a "
+			+ "INNER JOIN personas per ON per.id=a.id_persona "
+			+ "INNER JOIN alumnos_grupos ag ON a.id=ag.id_alumno "
+			+ "INNER JOIN grupos g ON g.id = ag.id_grupo AND g.id_periodo=:idPeriodo "
+			+ "INNER JOIN carreras c ON c.id = g.id_carrera "
+			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) "
+			+ "WHERE CONCAT(per.nombre,' ',per.primer_apellido) iLIKE %:nombre% "
+			+ "OR CONCAT(per.segundo_apellido, ' ',per.nombre) iLIKE %:nombre% "
+			+ "OR CONCAT(per.primer_apellido,' ',per.segundo_apellido) iLIKE %:nombre% "
+			+ "OR a.matricula iLIKE %:nombre% "
+			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre", nativeQuery = true)
+	List<AlumnoInfoDTO> findByPersonaCarreraAndNombreAndPeriodo(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo, @Param("nombre") String nombre);
+	
+	@Query(value = "SELECT a.*,CONCAT(per.nombre,' ',per.primer_apellido,' ',per.segundo_apellido) AS nombreCompleto "
+			+ "FROM alumnos a "
+			+ "INNER JOIN personas per ON per.id=a.id_persona "
+			+ "INNER JOIN alumnos_grupos ag ON a.id=ag.id_alumno "
+			+ "INNER JOIN grupos g ON g.id = ag.id_grupo "
+			+ "INNER JOIN carreras c ON c.id = g.id_carrera "
+			+ "WHERE c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) "
+			+ "AND g.id_periodo = :idPeriodo AND a.estatus = 1", nativeQuery = true)
+	List<AlumnoInfoDTO> findByPersonaCarreraAndPeriodo(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
+	
+	@Query(value = "SELECT a.*,CONCAT(per.nombre,' ',per.primer_apellido,' ',per.segundo_apellido) AS nombreCompleto "
+			+ "FROM alumnos a "
+			+ "INNER JOIN personas per ON per.id=a.id_persona "
+			+ "INNER JOIN alumnos_grupos ag ON a.id=ag.id_alumno "
+			+ "INNER JOIN grupos g ON g.id = ag.id_grupo AND g.id_periodo = :idPeriodo "
+			+ "WHERE CONCAT(per.nombre,' ',per.primer_apellido) iLIKE %:nombre% "
+			+ "OR CONCAT(per.segundo_apellido, ' ',per.nombre) iLIKE %:nombre% "
+			+ "OR CONCAT(per.primer_apellido,' ',per.segundo_apellido) iLIKE %:nombre% "
+			+ "OR a.matricula iLIKE %:nombre% "
+			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre", nativeQuery = true)
+	List<AlumnoInfoDTO> findAllByNombreOrMatriculaAndPeriodo(@Param("nombre") String nombre, @Param("idPeriodo") Integer idPeriodo);
+	
+	@Query(value = "SELECT a.*,CONCAT(per.nombre,' ',per.primer_apellido,' ',per.segundo_apellido) AS nombreCompleto "
+			+ "FROM alumnos a "
+			+ "INNER JOIN personas per ON per.id=a.id_persona "
+			+ "INNER JOIN alumnos_grupos ag ON a.id=ag.id_alumno "
+			+ "INNER JOIN grupos g ON g.id = ag.id_grupo "
+			+ "WHERE g.id_periodo= :idPeriodo "
+			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre", nativeQuery = true)
+	List<AlumnoInfoDTO> findAllByPeriodo(@Param("idPeriodo") Integer idPeriodo);
 			
 }

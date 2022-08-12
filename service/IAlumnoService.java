@@ -103,5 +103,13 @@ public interface IAlumnoService {
 	Integer contarBajasPorCarreraYPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
 	
 	List<AlumnoRegularDTO> obtenerRegularesPorCarreraYPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
+	
+	List<AlumnoInfoDTO> buscarPorPersonaCarreraYPeriodoYNombreOMatricula(Integer idPersona,Integer idPeriodo,String nombre);
+	
+	List<AlumnoInfoDTO> buscarPorPersonaCarreraYPeriodoYActivos(Integer idPersona, Integer idPeriodo);
+	
+	List<AlumnoInfoDTO> buscarTodosPorNombreOMatriculaYPeriodoYActivos(String Nombre, Integer idPeriodo);
+	
+	List<AlumnoInfoDTO> buscarTodosPorPeriodo(Integer idPeriodo);
 
 }
