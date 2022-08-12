@@ -277,4 +277,29 @@ public class AlumnosServiceJpa implements IAlumnoService{
 			Integer idTurno) {
 		return alumnosRepo.obtenerRegularesByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
 	}
+
+	@Override
+	public List<AlumnoInfoDTO> buscarPorPersonaCarreraYPeriodoYNombreOMatricula(Integer idPersona, Integer idPeriodo,
+			String nombre) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.findByPersonaCarreraAndNombreAndPeriodo(idPersona, idPeriodo, nombre);
+	}
+
+	@Override
+	public List<AlumnoInfoDTO> buscarPorPersonaCarreraYPeriodoYActivos(Integer idPersona, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.findByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
+	}
+
+	@Override
+	public List<AlumnoInfoDTO> buscarTodosPorNombreOMatriculaYPeriodoYActivos(String Nombre, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.findAllByNombreOrMatriculaAndPeriodo(Nombre, idPeriodo);
+	}
+
+	@Override
+	public List<AlumnoInfoDTO> buscarTodosPorPeriodo(Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.findAllByPeriodo(idPeriodo);
+	}
 }

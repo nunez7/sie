@@ -88,9 +88,9 @@ import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IPersonalService;
 import edu.mx.utdelacosta.service.IPlanEstudioService;
 import edu.mx.utdelacosta.service.IProrrogaService;
-import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.ITestimonioCorteService;
+import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
@@ -213,18 +213,24 @@ public class DirectorController {
 		//creamos el usuario de acuerdo a la authenticación 
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona")); 
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
-		//buscamos las carreras de acuerdo a las preferencias y permisos del usuario
+		// buscamos las carreras de acuerdo a las preferencias y permisos del usuario
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(usuario.getPersona().getId());
-		List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(carreras.get(0).getId(), usuario.getPreferencias().getIdPeriodo());
-		if(cortes.size() > 0) {
-			model.addAttribute("corte1", cortes.get(0));
-			model.addAttribute("corte2", cortes.get(1));
-		}
-		else {
-			CorteEvaluativo corte1 = new CorteEvaluativo(); 
-			CorteEvaluativo corte2 = new CorteEvaluativo();
-			model.addAttribute("corte1", corte1);
-			model.addAttribute("corte2", corte2); 
+		if (carreras.size() > 0) {
+			model.addAttribute("carreras", carreras.size());
+			List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(carreras.get(0).getId(),
+					usuario.getPreferencias().getIdPeriodo());
+			if (cortes.size() > 0) {
+				model.addAttribute("corte1", cortes.get(0));
+				model.addAttribute("corte2", cortes.get(1));
+			} else {
+				CorteEvaluativo corte1 = new CorteEvaluativo();
+				CorteEvaluativo corte2 = new CorteEvaluativo();
+				model.addAttribute("corte1", corte1);
+				model.addAttribute("corte2", corte2);
+			}
+		} else {
+			// para decirle que no tiene permisos
+			model.addAttribute("carreras", 0);
 		}
 		return "director/fechas";
 	}
@@ -1013,5 +1019,4 @@ public class DirectorController {
 		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "director/reporteNoReinscritos";
 	}
-
 }
