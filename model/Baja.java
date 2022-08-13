@@ -58,6 +58,14 @@ public class Baja {
 	@Column(name="fecha_registro")
 	private Date fechaRegistro;
 
+	public Baja() {
+		
+	}
+	
+	public Baja(Integer id) {
+		this.id = id;
+	}
+
 	public Integer getId() {
 		return id;
 	}

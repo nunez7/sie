@@ -30,6 +30,7 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.AsistenciaTemaGrupal;
 import edu.mx.utdelacosta.model.Baja;
+import edu.mx.utdelacosta.model.BajaAutoriza;
 import edu.mx.utdelacosta.model.Canalizacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.CausaBaja;
@@ -72,6 +73,7 @@ import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAsistenciaTemaGrupalService;
+import edu.mx.utdelacosta.service.IBajaAutorizaService;
 import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
@@ -200,6 +202,9 @@ public class TutorController {
 	
 	@Autowired
 	private IPersonaService personaService;
+	
+	@Autowired
+	private IBajaAutorizaService bajaAutorizaService;
 
     @GetMapping("/cargar-alumno/{dato}")
    	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato,  Model model, HttpSession session) { 
@@ -1297,9 +1302,10 @@ public class TutorController {
 		if(cveGrupo!=null) {
 			Boolean GrupoEnPeriodo = grupoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 			if(GrupoEnPeriodo==true) {
-				bajas = bajaService.buscarPorTipoStatusGrupoYPeriodo(2, 2, cveGrupo, usuario.getPreferencias().getIdPeriodo());
+				bajas = bajaService.buscarPorTipoStatusGrupoYPeriodo(1, 1, cveGrupo, usuario.getPreferencias().getIdPeriodo());
 			}
 		}
+		
 		model.addAttribute("rol", 1);
 		model.addAttribute("bajas", bajas);
 		model.addAttribute("grupos", grupos);
@@ -1467,7 +1473,7 @@ public class TutorController {
 		model.addAttribute("evaluacion", evaluacion);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "reportes/reporteEntrevistaInicial"; 
-	 }  
+	}
 	
 	// consulta	
 	@GetMapping("/informacionEstudiante")
@@ -1485,5 +1491,18 @@ public class TutorController {
 	@GetMapping("/reportes") 
 	 public String reportesTutoria() { 
 		return "tutorias/reportes"; 
-	 } 
+	} 
+	
+	@GetMapping("/cargar-baja/{idBaja}")
+	public String cargaBaja(@PathVariable(name = "idBaja", required = false) String idBaja,  Model model) {
+		if(idBaja!=null){
+			Integer cveBaja = Integer.parseInt(idBaja);
+			BajaAutoriza bajaAutoriza = bajaAutorizaService.buscarPorBaja(new Baja(cveBaja));
+			AlumnoGrupo grupo =  alumnoGrupoService.checkInscrito(bajaAutoriza.getBaja().getAlumno().getId(), bajaAutoriza.getBaja().getPeriodo().getId());
+			model.addAttribute("baja", bajaAutoriza.getBaja());
+			model.addAttribute("autoriza", bajaAutoriza.getPersona().getNombreCompletoConNivelEstudio());
+			model.addAttribute("grupo", grupo!=null?grupo.getGrupo():null);
+		}
+		return "tutorias/solicitud_baja";
+	}
 }
