@@ -246,7 +246,7 @@ public class AdeudoCuatrimestreController {
 				return "inv";
 			}
 			
-			if (alGrService.buscarPorPeriodoYCuatrimestre(periodo, cuatrimestre).size()==0) {
+			if (alGrService.contarPorPeriodoAndCuatrimestre(periodo, cuatrimestre)==0) {
 			    return "emp";
 			}
 			

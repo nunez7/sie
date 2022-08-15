@@ -90,4 +90,9 @@ public class CorteEvaluativoServiceJpa implements ICorteEvaluativoService{
 			Integer idCarrera, Integer idCorteEvaluativo) {
 		return corteEvaluativoRepository.findByFechaDosificacionAndPeriodoAndCarreraAndCorteEvaluativo(fechaInicio, idPeriodo, idCarrera, idCorteEvaluativo);
 	}
+
+	@Override
+	public Integer buscarPorCargaHorariaYCalendarioEvaluacion(Integer idCargaHoraria, Integer idCorteEvaluativo) {
+		return corteEvaluativoRepository.findByCargaHorariaAndCalendarioEvaluacion(idCargaHoraria, idCorteEvaluativo);
+	}
 }
