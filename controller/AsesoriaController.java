@@ -75,12 +75,18 @@ public class AsesoriaController {
 		Date fecha = Date.valueOf(obj.get("fecha"));
 		String tema = obj.get("tema");
 
+		if(obj.size()<=4) {
+			return "inv";
+		}
+		
 		Integer tipoAsesoria = Integer.parseInt(obj.get("tipoAsesoria"));
 		if (tipoAsesoria == 1) {
 			if (obj.size() > 5) {
 				return "max";
 			}
 		}
+		
+		
 		CargaHoraria carga = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cveCarga"));
 		Asesoria asesoria = new Asesoria();
 		asesoria.setCargaHoraria(carga);

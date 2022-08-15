@@ -23,7 +23,6 @@ import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.Bitacora;
 import edu.mx.utdelacosta.model.Concepto;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
-import edu.mx.utdelacosta.model.Cuatrimestre;
 import edu.mx.utdelacosta.model.NotaCredito;
 import edu.mx.utdelacosta.model.PagoAlumno;
 import edu.mx.utdelacosta.model.PagoArea;
@@ -44,10 +43,8 @@ import edu.mx.utdelacosta.model.dto.ReciboDTO;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IBitacoraService;
 import edu.mx.utdelacosta.service.IConceptoService;
-import edu.mx.utdelacosta.service.ICuatrimestreService;
 import edu.mx.utdelacosta.service.INotaCreditoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
-import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.util.CodificarTexto;
 import edu.mx.utdelacosta.util.NumberToLetterConverter;
@@ -73,14 +70,8 @@ public class FolioController {
 	private IBitacoraService bitacoraService;
 	
 	@Autowired
-	private ICuatrimestreService cuatrimestreService;
-	
-	@Autowired
 	private IAlumnoGrupoService alGrService;
 	
-	@Autowired
-	private IPeriodosService periodoService;
-
 	@GetMapping("/ver-edicion/{folio}")
 	public String vistaEdicion(@PathVariable("folio") String noFolio, Model model) {
 		FolioDTO folio = pagoGeneralService.buscarPorFolio(noFolio);
@@ -582,124 +573,6 @@ public class FolioController {
 		pagoGeneralService.guardar(pago);
 	}
 	
-	@PostMapping(path = "/generar-adeudo-catrimestre", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
-	public String generarAdeudosCuatrimestre(@RequestBody Map<String, String> obj, HttpSession session) {
-		
-		// varaibles de la vista
-		Integer idCuatrimestre = Integer.valueOf(obj.get("cuatrimestre"));
-		Integer idPeriodo = Integer.valueOf(obj.get("periodo"));
-		
-		if (idCuatrimestre==null || idPeriodo == null || idCuatrimestre == 0 || idPeriodo == 0) {
-			return "null";
-		}
-		
-		Periodo periodo = periodoService.buscarPorId(idPeriodo);
-		
-		Cuatrimestre cuatrimestre = cuatrimestreService.buscarPorId(idCuatrimestre);
-		
-		
-		// se obtiene la fecha en base a los 3 selectores de datos
-		Date fecha = java.sql.Date.valueOf(obj.get("annioLimite")+"-"+obj.get("mesLimite")+"-"+obj.get("diaLimite"));
-		
-		//LISTA DE ALUMNOS DEL CUATRIMESTRE
-		List<AlumnoGrupo> alumnos = alGrService.buscarPorPeriodoYCuatrimestre(periodo.getId(), cuatrimestre.getId());
-			
-		List<Integer> conceptos = new ArrayList<>();
-		switch (cuatrimestre.getConsecutivo()) {
-		case 1:
-			conceptos.add(15);
-			conceptos.add(10);
-			break;
-			
-		case 2:
-		case 5:
-			conceptos.add(69);
-			conceptos.add(21);
-			conceptos.add(10);
-			break;
-			
-		case 3:
-		case 4:
-			conceptos.add(21);
-			conceptos.add(10);
-			break;
-		
-		case 6:
-			conceptos.add(51);
-			conceptos.add(32);
-			conceptos.add(28);
-			conceptos.add(21);
-			conceptos.add(10);
-			break;
-		
-		case 7:
-			conceptos.add(14);
-			conceptos.add(8);
-			break;
-		
-		case 8:
-			conceptos.add(69);
-			conceptos.add(20);
-			conceptos.add(8);
-			break;
-			
-		case 9:
-		case 10:
-			conceptos.add(20);
-			conceptos.add(8);
-			break;
-		
-		case 11:	
-			conceptos.add(69);
-			conceptos.add(50);
-			conceptos.add(32);
-			conceptos.add(28);
-			conceptos.add(8);
-			conceptos.add(20);
-			break;
-		
-		}
-		
-		//se itera la lista de alumnos
-		for (AlumnoGrupo ag : alumnos) {
-			
-			//se itera la lista de conceptos
-			for (Integer idConcepto : conceptos) {
-				
-				//se busca el concepto
-				Concepto concepto = conceptoService.buscarPorId(idConcepto);
-				
-				//se crea el pago general
-				PagoGeneral pago = crearPagoGenerico(concepto.getConcepto(), concepto.getId(), fecha, periodo);
-				
-				//se crea el pago alumno
-				PagoAlumno pAlumno = new PagoAlumno();
-				pAlumno.setAlumno(ag.getAlumno());
-				pAlumno.setPagoGeneral(pago);
-				pago.setPagoAlumno(pAlumno);
-				
-				
-				//se crea el pago del cuatrimestre
-				PagoCuatrimestre pCuatri = new PagoCuatrimestre();
-				pCuatri.setAlumnoGrupo(ag);
-				pCuatri.setPagoGeneral(pago);
-				pago.setPagoCuatrimestre(pCuatri);
-				
-				
-				//se comprueba si el pago pertenece a una colegiatura y si el alumno es de gastronomia
-				if ((pago.getConcepto().getId() == 10 || pago.getConcepto().getId() == 8) && ag.getAlumno().getCarreraInicio().getId()==9) {
-					// en caso de ser correcto se procede a ajustar el costo del mismo	
-					pago.setMonto(pago.getConcepto().getId() == 8 ? 2000d : 1550d);
-				}
-				
-				pagoGeneralService.guardar(pago);
-			}
-		}
-		
-		return "ok";
-	}
-	
 	public PagoGeneral crearPagoGenerico(String comentario, Integer idConcepto, Date fechaLimite , Periodo periodo) {
 		PagoGeneral pagoGenerico = new PagoGeneral();
 		
@@ -730,37 +603,6 @@ public class FolioController {
 	}
 	
 	
-	@PostMapping(path = "/consultar-adeudo-catrimestre", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
-	public String consultarAdeudosGenerado(@RequestBody Map<String, String> obj, HttpSession session) {
-		Integer cuatrimestre = 0;
-		Integer periodo = 0;
-		
-		try {
-			cuatrimestre = Integer.valueOf(obj.get("cuatrimestre"));
-		} catch (Exception e) {
-			cuatrimestre = 0;
-		}
-		
-		try {
-			periodo = Integer.valueOf(obj.get("periodo"));
-		} catch (Exception e) {
-			periodo = 0;
-		}
-		
-		if (cuatrimestre > 0 && periodo > 0) {
-			
-			Integer alumnosConPago = alGrService.contarPorPeriodoYCuatrimestreYPagoGenerado(periodo, cuatrimestre);
-			if (alumnosConPago>0) {
-				return "gene";
-			}
-			
-			return "notGene";
-		}
-		
-		return "err";
-	
-	}
 	
 
 }

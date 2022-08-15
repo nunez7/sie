@@ -43,7 +43,9 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 	@Query(value = "SELECT COUNT(*) as inscritos "
 			+ "FROM alumnos_grupos ag "
 			+ "INNER JOIN alumnos a on a.id=ag.id_alumno "
-			+ "WHERE ag.id_grupo=:idGrupo AND ag.activo='False' AND a.estatus=0 ", nativeQuery = true)
+			+ "INNER JOIN personas p on a.id_persona = p.id "
+			+ "INNER JOIN usuarios u ON u.id_persona = p.id "
+			+ "WHERE ag.id_grupo=:idGrupo AND u.activo = 'False' AND a.estatus=0 ", nativeQuery = true)
 	Integer countAlumnosBajaByGrupoAndActivo(@Param("idGrupo") Integer idGrupo);
 	
 	@Query(value = "SELECT COUNT(ag.id) as inscritos "
