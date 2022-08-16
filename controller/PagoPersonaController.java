@@ -188,7 +188,7 @@ public class PagoPersonaController {
 				pr.setFechaCobro(new Date());
 				pr.setPagoGeneral(pagoExiste);
 				pagoExiste.setPagoRecibe(pr);
-				if(pagoExiste.getPagoAsignatura() != null) {
+				if(pagoExiste.getPagoAsignatura() != null && pagoExiste.getPagoAsignatura().getIdCorteEvaluativo() != null) {
 					RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 							pagoExiste.getPagoAlumno().getAlumno(), pagoExiste.getPagoAsignatura().getCargaHoraria(),
 							new Remedial(2), new CorteEvaluativo(pagoExiste.getPagoAsignatura().getIdCorteEvaluativo()));
@@ -207,7 +207,7 @@ public class PagoPersonaController {
 					}
 				}
 
-				if(pagoExiste.getPagoCuatrimestre() != null) {
+				if(pagoExiste.getPagoCuatrimestre() != null && pagoExiste.getPagoCuatrimestre().getAlumnoGrupo() != null) {
 					//se actualiza la variable de alumno grupo 
 					ag = pagoExiste.getPagoCuatrimestre().getAlumnoGrupo().getId();
 					idAlumno = pagoExiste.getPagoCuatrimestre().getAlumnoGrupo().getAlumno().getId();
