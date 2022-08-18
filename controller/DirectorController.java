@@ -682,7 +682,7 @@ public class DirectorController {
 		return "fragments/tutorias :: cargar-tutorias";
 	}
 	
-	@PostMapping(path="/aprobar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(path = "/aprobar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String aprobarBaja(@RequestBody Map<String, String> obj, HttpSession session) {
 		// extrae el usuario apartir del usuario cargado en cesion.
@@ -693,44 +693,68 @@ public class DirectorController {
 		} catch (Exception e) {
 			cvePersona = usuario.getPersona().getId();
 		}
-		
-		Date fechaHoy = new Date();	
-		String cveBaja = obj.get("id");		
-		if(cveBaja!=null){
-			
+
+		Date fechaHoy = new Date();
+		String cveBaja = obj.get("id");
+		if (cveBaja != null) {
+
 			Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
 			baja.setEstatus(1);
-			//baja.setFechaAutorizacion(fechaHoy);
+			baja.setFechaAutorizacion(fechaHoy);
 			bajaService.guardar(baja);
-			
-			BajaAutoriza  bajaAutorizada = new BajaAutoriza();
+
+			BajaAutoriza bajaAutorizada = new BajaAutoriza();
 			bajaAutorizada.setBaja(baja);
 			bajaAutorizada.setFechaRegistro(fechaHoy);
 			bajaAutorizada.setPersona(new Persona(cvePersona));
 			bajaAutorizada.setTipo(1);
 			bajaAutorizaService.guardar(bajaAutorizada);
-			
-			//correo
-			Mail mail = new Mail();
-			String de = correo;
-			//String para = "servicios.escolares@utnay.edu.mx";
-			String para = "brayan.bg499@gmail.com";
-			mail.setDe(de);
-			mail.setPara(new String[] {para});		
-			//Email title
-			mail.setTitulo("Nueva solicitud de baja.");		
-			//Variables a plantilla
-			Map<String, Object> variables = new HashMap<>();
-			variables.put("titulo", "Solicitud de baja del alumno(a) "+baja.getAlumno().getPersona().getNombreCompleto());						
-			variables.put("cuerpoCorreo","El director(a) de carrera "+baja.getAlumno().getCarreraInicio().getDirectorCarrera()+" aprobó la solicitud de baja para el alumno con matrícula "+baja.getAlumno().getMatricula()+", diríjase al apartado de bajas en el panel de escolares para rechazar o aprobar la baja.");
-			mail.setVariables(variables);			
-			try {							
-				emailService.sendEmail(mail);													
-			}catch (MessagingException | IOException e) {
-				return "errorMen";
-		  	}
-			
-			return "ok";
+
+			// Se valida y actualiza el estado del alumno, usuario, alumno Grupo la false
+			if (baja.getAlumno().getEstatusGeneral() != 0) {
+
+				Alumno alumno = baja.getAlumno();
+				alumno.setEstatusGeneral(0);
+				alumnoService.guardar(alumno);
+
+				// Se desactiva la relación alumno grupo del último grupo al que el alumno allá
+				// pertenecido
+				Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
+				AlumnoGrupo alumnoGrupo = alumnoGrupoService.buscarPorAlumnoYGrupo(alumno, ultimoGrupo);
+				alumnoGrupo.setActivo(false);
+				alumnoGrupoService.guardar(alumnoGrupo);
+				
+				//se desactiva el usuario del alumno
+				Usuario userAlumno = usuariosService.buscarPorPersona((baja.getAlumno().getPersona()));
+				userAlumno.setActivo(false);
+				usuariosService.guardar(userAlumno);
+
+				// correo
+				Mail mail = new Mail();
+				String de = correo;
+				String para1 = "servicios.escolares@utnay.edu.mx";
+				String para2 = baja.getAlumno().getPersona().getEmail();
+				mail.setDe(de);
+				mail.setPara(new String[] { para1, para2 });
+				// Email title
+				mail.setTitulo("Nueva solicitud de baja.");
+				// Variables a plantilla
+				Map<String, Object> variables = new HashMap<>();
+				variables.put("titulo", "Solicitud de baja aprobada");
+				variables.put("cuerpoCorreo",
+						"La solicitud de baja del alumno(a) " + baja.getAlumno().getPersona().getNombreCompleto()
+								+ " con matrícula " + baja.getAlumno().getMatricula()
+								+ " fue aprobada por el director(a) de carrera.");
+				mail.setVariables(variables);
+				try {
+					emailService.sendEmail(mail);
+				} catch (Exception e) {
+					return "errorMen";
+				}
+				return "ok";
+			} else {
+				return "alumnoInactivo";
+			}
 		}
 		return "error";
 	}
