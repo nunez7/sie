@@ -9,4 +9,5 @@ public interface IFocosAtencionService {
 	void guardar(FocosAtencion focosAtencion);
 	void eliminar(FocosAtencion focosAtencion);
 	List<FocosAtencion> buscarPorGrupo(Grupo grupo);
+	FocosAtencion buscarPorId(Integer id);
 }

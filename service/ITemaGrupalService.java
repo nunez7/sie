@@ -10,6 +10,8 @@ public interface ITemaGrupalService {
 
 	void guardar(TemaGrupal temaGrupal);
 	
+	void eliminar(TemaGrupal temaGrupal);
+	
 	List<TemaGrupal> buscarPorGrupo(Grupo grupo);
 	
 	TemaGrupal  bucarPorId(Integer id);

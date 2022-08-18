@@ -1032,7 +1032,8 @@ public class EscolaresController {
 		List<Carrera> carreras = carreraService.buscarTodas();
 		Integer cveCarrera = (Integer) session.getAttribute("rb-cveCarrera");
 		List<Baja> bajas = new ArrayList<>();
-
+		int h=0;
+		int m=0;
 		if((String) session.getAttribute("reb-fechaInicio")!=null) {					
 			Date fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("reb-fechaInicio"));				
 			if((String) session.getAttribute("reb-fechaFin")!=null) {						
@@ -1046,7 +1047,17 @@ public class EscolaresController {
 			}
 			model.addAttribute("fechaInicio", fechaInicio);
 		}
-
+		
+		for(Baja baja : bajas) {
+			if(baja.getAlumno().getPersona().getSexo().equals("M")){
+				++m;
+			}else{
+				++h;
+			}
+		}
+		
+		model.addAttribute("mujeres", m);
+		model.addAttribute("hombre", h);
 		model.addAttribute("bajas", bajas);
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("cveCarrera", cveCarrera);

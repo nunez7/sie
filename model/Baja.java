@@ -21,8 +21,8 @@ public class Baja {
 	private Integer id;
 	
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "id_periodo")
-	private Periodo periodo;
+	@JoinColumn(name="id_grupo")
+	private Grupo grupo; 
 	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_persona")
@@ -74,12 +74,12 @@ public class Baja {
 		this.id = id;
 	}
 
-	public Periodo getPeriodo() {
-		return periodo;
+	public Grupo getGrupo() {
+		return grupo;
 	}
 
-	public void setPeriodo(Periodo periodo) {
-		this.periodo = periodo;
+	public void setGrupo(Grupo grupo) {
+		this.grupo = grupo;
 	}
 
 	public Persona getPersona() {

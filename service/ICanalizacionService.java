@@ -14,4 +14,8 @@ public interface ICanalizacionService {
 	
 	Integer contarPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
 	Integer contarDistinctAlumnoPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
+	
+	List<Canalizacion> buscarPorGrupoPeriodoAlumnoYServicio(Integer idGrupo, Integer idPeriodo, Integer idAlumno, Integer idServicio);
+	List<Canalizacion> buscarPorGrupoPeriodoYServicio(Integer idGrupo, Integer idPeriodo, Integer idServicio);
+	List<Canalizacion> buscarPorCarreraPeriodoYServicio(Integer idCarrera, Integer idPeriodo, Integer idServicio);
 }

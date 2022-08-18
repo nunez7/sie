@@ -59,6 +59,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.PersonaDocumento;
 import edu.mx.utdelacosta.model.PersonaReferencia;
+import edu.mx.utdelacosta.model.ProgramacionTutoria;
 import edu.mx.utdelacosta.model.ProrrogaAdeudo;
 import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.TutoriaIndividual;
@@ -91,6 +92,7 @@ import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaDocumentoService;
 import edu.mx.utdelacosta.service.IPersonaReferenciaService;
 import edu.mx.utdelacosta.service.IPersonaService;
+import edu.mx.utdelacosta.service.IProgramacionTutoriaService;
 import edu.mx.utdelacosta.service.IProrrogaAdeudoService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.ITutoriaIndividualService;
@@ -192,6 +194,9 @@ public class AlumnoController {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private IProgramacionTutoriaService programacionTutoriaService;
 	
 	@PreAuthorize("hasAnyAuthority('Administrador', 'Servicios Escolares','Informatica', 'Rector')")
 	@GetMapping("/search/{id}")
@@ -1477,8 +1482,9 @@ public class AlumnoController {
 		return "fail";
 	}
 	
-	@GetMapping("/cargar-tutorias-no-aprobadas")
+	@GetMapping("/tutorias")
 	public String tutoriasNoAprobadas(Model model, HttpSession session) {
+		Date fechaHoy = new Date();
 		// Extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
@@ -1488,11 +1494,34 @@ public class AlumnoController {
 			cvePersona = usuario.getPersona().getId();
 		}
 		Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
-		
-		List<TutoriaIndividual> tutorias = tutoriaIndService.buscarPorAlumnoYValidada(alumno, false);
+		if(alumno!=null) {
+			//tutorias no aprobadas
+			List<TutoriaIndividual> naTutorias = tutoriaIndService.buscarPorAlumnoYValidada(alumno, false);
+			//tutorias aprobadas
+			List<TutoriaIndividual> aTutorias = tutoriaIndService.buscarPorAlumnoYValidada(alumno, true);
+			//busqueda de tutorias programadas del ultimo grupo asociado al alumno
+			Grupo grupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());
+			List<ProgramacionTutoria> ptutorias = programacionTutoriaService.buscarPorAlumnoYGrupo(alumno, grupo);
+			Boolean tp = false;
+			ProgramacionTutoria pTutoria = ptutorias.get(0);
+			List<TutoriaIndividual> tutorias = tutoriaIndService.buscarPorAlumno(alumno);
+			for(TutoriaIndividual tutoria : tutorias) {
+				//Se valida si hay algun registro de tutoria impartida, el dia en el que el profesor le agendo una al alumno
+				if(ptutorias.get(0).getFecha().equals(tutoria.getFechaTutoria())){
+					pTutoria = null;
+				//se valida si la fecha en la que se agendo al tutoria ya paso
+				}else if(ptutorias.get(0).getFecha().after(fechaHoy)){
+					tp=true;
+				}
+			}
+	
+			model.addAttribute("naTutorias", naTutorias);
+			model.addAttribute("aTutorias", aTutorias);
+			model.addAttribute("pTutoria", pTutoria);
+			model.addAttribute("pTutoriaPasada", tp);
+		}
 		model.addAttribute("alumno", alumno);
-		model.addAttribute("tutorias", tutorias);
-		return "alumno/aprobarTutoria";		
+		return "alumno/tutorias";		
 	}
 	
 	@PostMapping(path="/aprobar-tutoria", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -1523,7 +1552,6 @@ public class AlumnoController {
 			Usuario usuario = usuarioService.buscarPorUsuario(matricula);							
 			Boolean valContra =  passwordEncoder.matches(contra, usuario.getContrasenia());
 			if(valContra == true) {
-				System.out.println(matricula+" "+contra);
 				return "ok";
 			}	
 		}

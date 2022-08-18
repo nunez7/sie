@@ -15,4 +15,8 @@ public interface IAsistenciaTemaGrupalService {
 	
 	AsistenciaTemaGrupal buscarPorTemaGrupalYAlumno(TemaGrupal temaGrupal, Alumno alumno);
 	
+	List<AsistenciaTemaGrupal> buscarPorTemaGrupal(TemaGrupal temaGrupal);
+	
+	void eliminar(AsistenciaTemaGrupal asistencia);
+	
 }

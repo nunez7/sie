@@ -18,4 +18,8 @@ public interface IBajaService {
 	List<Baja> buscarPorTipoStatusCarreraEntreFechas(Integer tipo, Integer estatus, Integer idCarrera, Date fechaInicio, Date fechaFin);
 	List<Baja> buscarPorTipoStatusPersonaEntreFechas(Integer tipo, Integer estatus, Integer idPersona, Date fechaInicio, Date fechaFin);
 	List<Baja> buscarPorTipoStatusEntreFechas(Integer tipo, Integer estatus, Date fechaInicio, Date fechaFin);
+	
+	List<Baja> buscarPorAlumno(Alumno alumno);
+	
+	void eliminar(Baja baja);
 }

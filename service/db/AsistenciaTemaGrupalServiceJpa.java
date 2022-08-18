@@ -32,5 +32,15 @@ public class AsistenciaTemaGrupalServiceJpa implements IAsistenciaTemaGrupalServ
 	public AsistenciaTemaGrupal buscarPorTemaGrupalYAlumno(TemaGrupal temaGrupal, Alumno alumno) {
 		return asiTemaGruRepo.findByTemaGrupalAndAlumno(temaGrupal, alumno);
 	}
+
+	@Override
+	public List<AsistenciaTemaGrupal> buscarPorTemaGrupal(TemaGrupal temaGrupal) {
+		return asiTemaGruRepo.findByTemaGrupal(temaGrupal);
+	}
+
+	@Override
+	public void eliminar(AsistenciaTemaGrupal asistencia) {
+		asiTemaGruRepo.delete(asistencia);
+	}
 	
 }

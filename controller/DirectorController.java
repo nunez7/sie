@@ -720,10 +720,7 @@ public class DirectorController {
 			
 			// Se valida y actualiza el estado del alumno, usuario, alumno Grupo la false 
 			if(baja.getAlumno().getEstatusGeneral() != 0) {
-				Usuario userAlumno = usuarioService.buscarPorUsuario(baja.getAlumno().getMatricula());
-				userAlumno.setActivo(false);
-				usuarioService.guardar(userAlumno);
-				
+		
 				Alumno alumno = baja.getAlumno();
 				alumno.setEstatusGeneral(0);
 				alumnoService.guardar(alumno);
@@ -733,6 +730,10 @@ public class DirectorController {
 				AlumnoGrupo alumnoGrupo = alumnoGrupoService.buscarPorAlumnoYGrupo(alumno, ultimoGrupo);
 				alumnoGrupo.setActivo(false);
 				alumnoGrupoService.guardar(alumnoGrupo);
+				
+				Usuario userAlumno = usuarioService.buscarPorPersona((baja.getAlumno().getPersona()));
+				userAlumno.setActivo(false);
+				usuarioService.guardar(userAlumno);
 				
 				//correo
 				Mail mail = new Mail();
@@ -1111,34 +1112,57 @@ public class DirectorController {
 		} catch (Exception e) {
 			cvePersona = usuario.getPersona().getId();
 		}
-		
+		int h=0;
+		int m=0;
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(cvePersona);
-		Integer cveCarrera = (Integer) session.getAttribute("rc-cveCarrera");
 		List<Grupo> grupos = new ArrayList<>();
 		List<Alumno> alumnos = new ArrayList<>();
 		List<Canalizacion> canalizaciones = new ArrayList<>();
+		Integer cveCarrera = (Integer) session.getAttribute("rc-cveCarrera");
 		Integer cveGrupo = (Integer) session.getAttribute("rc-cveGrupo");
 		Integer cveAlumno = (Integer) session.getAttribute("rc-cveAlumno");
+		Integer cveServicio = (Integer) session.getAttribute("rc-cveServicio");
 		Boolean allAlumnos = false;
 		Boolean allGrupos = false;
 		
 		if(cveCarrera!=null) {
 			grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), cveCarrera);
 			if(cveGrupo==null || cveGrupo==0) {
-				canalizaciones = canalizacionService.buscarPorCarreraPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo());
+				if(cveServicio==null || cveServicio==0){
+					canalizaciones = canalizacionService.buscarPorCarreraPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo());
+				}else{
+					canalizaciones = canalizacionService.buscarPorCarreraPeriodoYServicio(cveCarrera, usuario.getPreferencias().getIdPeriodo(), cveServicio);
+				}
 				allGrupos = true;
 				allAlumnos = true;
 			}else{
 				alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 				if(cveAlumno==null || cveAlumno==0) {
-					canalizaciones = canalizacionService.buscarPorGrupoPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+					if(cveServicio==null || cveServicio==0){
+						canalizaciones = canalizacionService.buscarPorGrupoPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+					}else{
+						canalizaciones = canalizacionService.buscarPorGrupoPeriodoYServicio(cveGrupo, usuario.getPreferencias().getIdPeriodo(), cveServicio);
+					}
 					allAlumnos = true;
 				}else{
+					if(cveServicio==null || cveServicio==0){
 					canalizaciones = canalizacionService.buscarPorGrupoPeriodoYAlumno(cveGrupo, usuario.getPreferencias().getIdPeriodo(), cveAlumno);
+					}else{
+						canalizaciones = canalizacionService.buscarPorGrupoPeriodoAlumnoYServicio(cveGrupo, usuario.getPreferencias().getIdPeriodo(), cveAlumno, cveServicio);
+					}
+				}
+			}
+			
+			for(Canalizacion canalizacion : canalizaciones) {
+				if(canalizacion.getAlumno().getPersona().getSexo().equals("M")){
+					++m;
+				}else{
+					++h;
 				}
 			}
 		}
-		
+		model.addAttribute("mujeres", m);
+		model.addAttribute("hombre", h);
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("cveCarrera", cveCarrera);
 		model.addAttribute("grupos", grupos);
@@ -1148,6 +1172,7 @@ public class DirectorController {
 		model.addAttribute("cveAlumno", cveAlumno);
 		model.addAttribute("allAlumnos", allAlumnos);
 		model.addAttribute("canalizaciones", canalizaciones);
+		model.addAttribute("cveServicio", cveServicio);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "director/reporteCanalizaciones"; 
 	 }
@@ -1241,9 +1266,7 @@ public class DirectorController {
 			cvePersona = (Integer) session.getAttribute("cvePersona");
 		} catch (Exception e) {
 			cvePersona = usuario.getPersona().getId();
-		}
-		int h=0;
-		int m=0;			
+		}		
 		List<Grupo> grupos = new ArrayList<>();				
 		List<TemaGrupal> temasGrupales = new ArrayList<>();	
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(cvePersona);
@@ -1260,20 +1283,7 @@ public class DirectorController {
 					if((String) session.getAttribute("rtg-fechaFin")!=null) {						
 						Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rtg-fechaFin"));
 						temasGrupales = temaGrupalService.buscarEntreFechasPorCarrera(cveCarrera, usuario.getPreferencias().getIdPeriodo(), fechaInicio, fechaFin);
-						model.addAttribute("fechaFin", fechaFin);
-						
-						//total de alumnos por grupo
-						for(Grupo grupo : grupos) {
-							List<Alumno> alumnos = alumnoService.buscarPorGrupo(grupo.getId());
-							for(Alumno al : alumnos) {
-								if(al.getPersona().getSexo().equals("M")){
-									++m;
-								}else{
-									++h;
-								}
-							}
-						}
-						
+						model.addAttribute("fechaFin", fechaFin);			
 					}
 					model.addAttribute("fechaInicio", fechaInicio);
 				}
@@ -1283,16 +1293,6 @@ public class DirectorController {
 					if((String) session.getAttribute("rtg-fechaFin")!=null) {						
 						Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rtg-fechaFin"));
 						temasGrupales = temaGrupalService.buscarEntreFechasPorGrupo(cveGrupo,fechaInicio, fechaFin);
-						List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
-						
-						for(Alumno al : alumnos) {
-							if(al.getPersona().getSexo().equals("M")){
-								++m;
-							}else{
-								++h;
-							}
-						}
-						
 						model.addAttribute("fechaFin", fechaFin);
 					}
 					model.addAttribute("fechaInicio", fechaInicio);
@@ -1302,8 +1302,6 @@ public class DirectorController {
 		
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("cveCarrera", cveCarrera);
-		model.addAttribute("mujeres", m);
-		model.addAttribute("hombre", h);
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("grupos", grupos);	
 		model.addAttribute("allGrupos", allGrupos);

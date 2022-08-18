@@ -10,6 +10,10 @@ import edu.mx.utdelacosta.model.ProgramacionTutoria;
 
 public interface ProgramacionTutoriaRepository extends CrudRepository<ProgramacionTutoria, Integer>{
 
-	List<ProgramacionTutoria> findByAlumnoAndGrupo(Alumno alumno, Grupo grupo);		
+	List<ProgramacionTutoria> findByAlumnoAndGrupoOrderByFechaAsc(Alumno alumno, Grupo grupo);	
+	
+	List<ProgramacionTutoria> findByGrupoOrderByFechaAsc(Grupo grupo);
+	
+	List<ProgramacionTutoria> findByAlumnoOrderByFechaAsc(Alumno alumno);
 	
 }

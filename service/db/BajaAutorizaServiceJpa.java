@@ -34,4 +34,9 @@ public class BajaAutorizaServiceJpa implements IBajaAutorizaService{
 	public BajaAutoriza buscarPorBaja(Baja baja) {
 		return bajaAutoRepo.findByBaja(baja);
 	}
+
+	@Override
+	public void eliminar(BajaAutoriza bajaAutorizada) {
+		bajaAutoRepo.delete(bajaAutorizada);
+	}
 }

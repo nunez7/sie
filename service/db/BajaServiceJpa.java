@@ -71,5 +71,15 @@ public class BajaServiceJpa implements IBajaService{
 	public List<Baja> buscarPorTipoStatusEntreFechas(Integer tipo, Integer estatus, Date fechaInicio, Date fechaFin) {
 		return bajaRepo.findByTipoAndStatusAndFechas(tipo, estatus, fechaInicio, fechaFin);
 	}
+
+	@Override
+	public List<Baja> buscarPorAlumno(Alumno alumno) {
+		return bajaRepo.findByAlumnoOrderByFechaRegistroDesc(alumno);
+	}
+
+	@Override
+	public void eliminar(Baja baja) {
+		bajaRepo.delete(baja);
+	}
 	
 }

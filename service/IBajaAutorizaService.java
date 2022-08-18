@@ -7,4 +7,6 @@ public interface IBajaAutorizaService {
 	void guardar(BajaAutoriza bajaAutorizada);
 	BajaAutoriza buscarPorId(Integer id);
 	BajaAutoriza buscarPorBaja(Baja baja);
+	
+	void eliminar(BajaAutoriza bajaAutorizada);
 }

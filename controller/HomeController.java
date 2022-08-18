@@ -131,16 +131,14 @@ public class HomeController {
 		int rol = usuario.getRoles().get(0).getId();
 		//notificaciones 
 		int bajasDirector = rol == 3 ? bajaService.buscarPorPersonaYEstatus(usuario.getPersona().getId(), 0).size():0;
-		int bajasEscolares = rol == 5 ? bajaService.buscarPorTipoYStatus(1, 1).size():0;
 		int apTutorias = rol == 1 ? tutoriaIndService.buscarPorAlumnoYValidada(alumnoService.buscarPorPersona(new Persona(usuario.getPersona().getId())), false).size():0;
 		int observacionesP = rol == 2 ? dosiComentaService.contarPorProfesorYPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()):0;
 		int dosificacionesP = rol == 2 ? dosiCargaService.contarNoEntregadas(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()):0;
 		int prorrogas = rol == 3 ? prorrogaService.contarProrrogasPendientesPorPersonaYPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()):0;
 		int dosificaciones = rol == 3 ? dosificacionService.contarPendientesPorPersonaCarreraYPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()):0;
-		int totalNoti = bajasDirector+bajasEscolares+apTutorias+observacionesP+dosificacionesP+prorrogas+dosificaciones;
+		int totalNoti = bajasDirector+apTutorias+observacionesP+dosificacionesP+prorrogas+dosificaciones;
 		
 		model.addAttribute("bajasDirector", bajasDirector);
-		model.addAttribute("bajasEscolares", bajasEscolares);
 		model.addAttribute("apTutorias", apTutorias);
 		model.addAttribute("observacionesP", observacionesP);
 		model.addAttribute("dosificacionesP", dosificacionesP);
