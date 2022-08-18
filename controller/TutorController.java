@@ -529,9 +529,7 @@ public class TutorController {
 			if(causaBaja!=null) {
 				Baja ComprobarBaja = bajaService.buscarPorEstadoAlumnoYFechaAutorizacion(0, new Alumno(Integer.parseInt(cveAlumno)), null);
 				if(ComprobarBaja==null) {
-					Periodo periodo = periodoService.buscarUltimo();
 					Baja baja = new Baja();
-					baja.setPeriodo(periodo);
 					baja.setPersona(new Persona(cvePersona));
 					baja.setAlumno(new Alumno(Integer.parseInt(cveAlumno)));
 					baja.setTipoBaja(Integer.parseInt(tipoBaja));

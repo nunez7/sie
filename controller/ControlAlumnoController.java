@@ -2,6 +2,7 @@ package edu.mx.utdelacosta.controller;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.AlumnoReingreso;
+import edu.mx.utdelacosta.model.Baja;
+import edu.mx.utdelacosta.model.BajaAutoriza;
+import edu.mx.utdelacosta.model.BajaEliminada;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Concepto;
@@ -31,6 +35,7 @@ import edu.mx.utdelacosta.model.Documento;
 import edu.mx.utdelacosta.model.Escuela;
 import edu.mx.utdelacosta.model.Estado;
 import edu.mx.utdelacosta.model.Grupo;
+import edu.mx.utdelacosta.model.Mail;
 import edu.mx.utdelacosta.model.PagoAlumno;
 import edu.mx.utdelacosta.model.PagoCuatrimestre;
 import edu.mx.utdelacosta.model.PagoGeneral;
@@ -43,9 +48,13 @@ import edu.mx.utdelacosta.model.dto.AlumnoDocumentoDTO;
 import edu.mx.utdelacosta.model.dto.DocumentoDTO;
 import edu.mx.utdelacosta.model.dto.MateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
+import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoReingresoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
+import edu.mx.utdelacosta.service.IBajaAutorizaService;
+import edu.mx.utdelacosta.service.IBajaEliminadaService;
+import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.ICarrerasServices;
@@ -59,6 +68,7 @@ import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaDocumentoService;
 import edu.mx.utdelacosta.service.IPrestamoDocumentoService;
 import edu.mx.utdelacosta.service.ITestimonioService;
+import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
 @PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Rector', 'Servicios Escolares')")
@@ -109,6 +119,27 @@ public class ControlAlumnoController {
 	
 	@Autowired
 	private IAlumnoReingresoService alumnoReingresoService;
+	
+	@Autowired
+	private IBajaService bajaService;
+
+	@Autowired
+	private IBajaAutorizaService bajaAutorizaService;
+
+	@Autowired
+	private IBajaEliminadaService bajaEliminadaService;
+
+	@Autowired
+	private EmailSenderService emailService;
+
+	@Value("${spring.mail.username}")
+	private String correo;
+
+	@Autowired
+	private IAlumnoGrupoService alumnoGrupoService;
+
+	@Autowired
+	private IUsuariosService usuariosService;
 
 	@Value("${siestapp.ruta.docs}")
 	private String rutaDocs;
@@ -210,7 +241,10 @@ public class ControlAlumnoController {
 				gruposInscribir = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(),
 						alumno.getCarreraInicio().getId());
 			}
-
+			
+			//lista para historial de bajas
+			List<Baja> bajas = bajaService.buscarPorAlumno(alumno);
+			
 			// para checar que no este inscrito
 			AlumnoGrupo isncrito = alumnoGrService.checkInscrito(cveAlumno, usuario.getPreferencias().getIdPeriodo());
 			model.addAttribute("inscrito", isncrito);
@@ -222,6 +256,7 @@ public class ControlAlumnoController {
 			model.addAttribute("pagos", pagos);
 			model.addAttribute("adeudos", adeudos);
 			model.addAttribute("alumno", alumno);
+			model.addAttribute("bajas", bajas);
 		}
 		model.addAttribute("cveAlumno", cveAlumno);
 		return "escolares/editarAlumno";
@@ -447,30 +482,7 @@ public class ControlAlumnoController {
 		}
 		return "ok";
 	}
-
-	// para regresar aspirante alumno
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Servicios Escolares')")
-	@PostMapping(path = "/regresar-aspirante", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
-	public String regresarAspirante(@RequestBody Map<String, Integer> obj, HttpSession session) {
-		int cveAlumno = obj.get("idAlumno");
-		// se desactivan los adeudos
-		List<PagoGeneral> adeudos = pagoGeneralService.buscarPorAlumno(cveAlumno, 0);
-		for (PagoGeneral adeudo : adeudos) {
-			if (adeudo.getStatus() == 0) {
-				// se desactiva el adeudo
-				adeudo.setActivo(false);
-				pagoGeneralService.guardar(adeudo);
-			}
-		}
-		// se eliminan los registro de alumno grupo
-		List<AlumnoGrupo> grupos = alumnoGrService.buscarPorIdAlumnoDesc(cveAlumno);
-		for (AlumnoGrupo ag : grupos) {
-			alumnoGrService.eliminar(ag);
-		}
-		return "ok";
-	}
-
+	
 	// para consultar el historial
 	@PreAuthorize("hasAnyAuthority('Administrador', 'Servicios Escolares')")
 	@GetMapping(path = "/consultar-historial/{grupos}")
@@ -520,6 +532,81 @@ public class ControlAlumnoController {
 		}
 
 		return "reportes/escolares/historialCalificaciones";
+	}
+	
+	@PostMapping(path = "/deshacer-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String deshacerBaja(@RequestBody Map<String, String> obj, HttpSession session) {
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		String cveBaja = obj.get("id");
+		String motivo = obj.get("motivo");
+		Date fechaHoy = new Date();
+		if (cveBaja != null) {
+			if (motivo != null && !motivo.isEmpty()) {
+				Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
+				String MailTutor = baja.getPersona().getEmail();
+
+				// se cambia el estado del alumno de 0 a 1
+				Alumno alumno = baja.getAlumno();
+				alumno.setEstatusGeneral(1);
+				alumnoService.guardar(alumno);
+
+				// se reactiva el alumno grupo del ultimo grupo que fue desactivado al aprobar
+				// la baja
+				Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
+				AlumnoGrupo alumnoGrupo = alumnoGrupoService.buscarPorAlumnoYGrupo(alumno, ultimoGrupo);
+				alumnoGrupo.setActivo(true);
+				alumnoGrupoService.guardar(alumnoGrupo);
+
+				// se reactiva el usuario del alumno
+				Usuario userAlumno = usuariosService.buscarPorPersona((baja.getAlumno().getPersona()));
+				userAlumno.setActivo(true);
+				usuariosService.guardar(userAlumno);
+
+				// se registra que se deshizo el registro de baja
+				BajaEliminada bajaEliminada = new BajaEliminada();
+				bajaEliminada.setBaja(baja.getId());
+				bajaEliminada.setPersona(usuario.getPersona());
+				bajaEliminada.setAlumno(alumno);
+				bajaEliminada.setMotivo(motivo);
+				bajaEliminada.setFechaRegistro(fechaHoy);
+				bajaEliminadaService.guardar(bajaEliminada);
+
+				// se eliminan los registros de la baja en baja y baja autoriza
+				BajaAutoriza bajaAutoriza = bajaAutorizaService.buscarPorBaja(baja);
+				bajaAutorizaService.eliminar(bajaAutoriza);
+				bajaService.eliminar(baja);
+
+				// se envia un correo notificando que deshizo la baja y el motivo
+				Mail mail = new Mail();
+				String de = correo;
+				// String para1 = MailTutor;
+				// String para2 = alumno.getPersona().getEmail();
+				// String para3 = bajaAutoriza.getPersona().getEmail();
+				String para1 = "brayan.bg499@gmail.com";
+				String para2 = "brayan.bg499@gmail.com";
+				String para3 = "brayan.bg499@gmail.com";
+				mail.setDe(de);
+				mail.setPara(new String[] { para1, para2, para3 });
+				// Email title
+				mail.setTitulo("Baja eliminada.");
+				// Variables a plantilla
+				Map<String, Object> variables = new HashMap<>();
+				variables.put("titulo", "Baja eliminada por escolares.");
+				variables.put("cuerpoCorreo",
+						"La solicitud de baja realizada para el alumno(a) " + alumno.getPersona().getNombreCompleto()
+								+ " fue eliminada por escolares debido al siguiente motivo : " + motivo);
+				mail.setVariables(variables);
+				try {
+					emailService.sendEmail(mail);
+				} catch (Exception e) {
+					return "errorMen";
+				}
+				return "ok";
+			}
+			return "noMo";
+		}
+		return "error";
 	}
 
 }
