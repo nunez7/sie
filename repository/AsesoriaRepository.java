@@ -40,5 +40,17 @@ public interface AsesoriaRepository extends CrudRepository<Asesoria, Integer>{
 			+ "GROUP BY al.matricula, p.primer_apellido, p.segundo_apellido, p.nombre,p.sexo, g.nombre "
 			+ "ORDER BY asesorias, p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
 	List<AsesoriaDTO> findByPersonaCarreraAndPeriodo(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
+	
+	@Query(value = "SELECT DISTINCT(a.*) FROM asesorias a "
+			+ "INNER JOIN cargas_horarias ca on ca.id=a.id_carga_horaria "
+			+ "INNER JOIN grupos g ON g.id=ca.id_grupo "
+			+ "WHERE g.id=:idGrupo AND g.id_periodo =:idPeriodo AND a.id_tipo_asesoria=:tipo", nativeQuery = true)
+	List<Asesoria> findByGrupoAndPeriodoAndTipo(@Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo, @Param("tipo") Integer tipo);
+	
+	@Query(value = "SELECT DISTINCT(a.*) FROM asesorias a "
+			+ "INNER JOIN cargas_horarias ca on ca.id=a.id_carga_horaria "
+			+ "INNER JOIN grupos g ON g.id=ca.id_grupo "
+			+ "WHERE g.id=:idGrupo AND g.id_periodo =:idPeriodo AND a.id_carga_horaria=:idCarga AND a.id_tipo_asesoria=:tipo", nativeQuery = true)
+	List<Asesoria> findByGrupoAndPeriodoAndCargaAndTipo(@Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo, @Param("idCarga") Integer idCarga, @Param("tipo") Integer tipo);
 
 }

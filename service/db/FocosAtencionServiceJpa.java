@@ -1,6 +1,7 @@
 package edu.mx.utdelacosta.service.db;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,15 @@ public class FocosAtencionServiceJpa implements IFocosAtencionService{
 	@Override
 	public void eliminar(FocosAtencion focosAtencion) {
 		focosRepo.delete(focosAtencion);
+	}
+	
+	@Override
+	public FocosAtencion buscarPorId(Integer id) {
+		Optional<FocosAtencion> optional = focosRepo.findById(id);
+		if (optional.isPresent()) {
+			return optional.get();
+		}
+		return null;
 	}
 
 }

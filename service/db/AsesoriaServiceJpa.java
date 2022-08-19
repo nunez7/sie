@@ -33,4 +33,14 @@ public class AsesoriaServiceJpa implements IAsesoriaService{
 		return asesoriaRepository.findByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
 	}
 
+	@Override
+	public List<Asesoria> buscarPorGrupoPeriodoYTipo(Integer idGrupo, Integer idPeriodo, Integer tipo) {
+		return asesoriaRepository.findByGrupoAndPeriodoAndTipo(idGrupo, idPeriodo, tipo);
+	}
+
+	@Override
+	public List<Asesoria> buscarPorGrupoPeriodoCargaYTipo(Integer idGrupo, Integer idPeriodo, Integer idCarga, Integer tipo) {
+		return asesoriaRepository.findByGrupoAndPeriodoAndCargaAndTipo(idGrupo, idPeriodo, idCarga, tipo);
+	}
+
 }

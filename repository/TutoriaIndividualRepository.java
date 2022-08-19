@@ -37,6 +37,24 @@ public interface TutoriaIndividualRepository extends CrudRepository<TutoriaIndiv
 			+ "AND fecha_registro >=:fechaInicio AND fecha_registro <=:fechaFin", nativeQuery = true)
 	List<TutoriaIndividual> findByGrupoAndFechaTutoria(@Param("idGrupo") Integer idGrupo, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
 	
+	@Query(value = "SELECT t.* FROM tutoria_individual t "
+			+ "INNER JOIN grupos g ON g.id=t.id_grupo  "
+			+ "INNER JOIN carreras ca ON ca.id=g.id_carrera "
+			+ "WHERE ca.id=:idCarrera AND g.id_periodo=:idPeriodo AND t.fecha_registro >=:fechaInicio AND t.fecha_registro <=:fechaFin", nativeQuery = true)
+	List<TutoriaIndividual> findByCarreraAndFechaTutoria(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
+	
+	@Query(value = "SELECT COUNT(t.*) FROM tutoria_individual t "
+			+ "INNER JOIN grupos g ON g.id=t.id_grupo "
+			+ "INNER JOIN carreras ca ON ca.id=g.id_carrera "
+			+ "WHERE ca.id=:idCarrera AND g.id_periodo=:idPeriodo AND g.id_turno=:idTurno", nativeQuery = true)
+	Integer findTotalByCarreraAndPeriodoAndTurno(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo, @Param("idTurno") Integer idTurno);
+	
+	@Query(value = "SELECT COUNT(DISTINCT t.id_alumno) FROM tutoria_individual t "
+			+ "INNER JOIN grupos g ON g.id=t.id_grupo "
+			+ "INNER JOIN carreras ca ON ca.id=g.id_carrera "
+			+ "WHERE ca.id=:idCarrera AND g.id_periodo=:idPeriodo AND g.id_turno=:idTurno", nativeQuery = true)
+	Integer findTotalDistinctAlumnoByCarreraAndPeriodoAndTurno(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo, @Param("idTurno") Integer idTurno);
+	
 	//importaciones
 	@Query(value = "SELECT * FROM tutorias_ut_nay ORDER BY id", nativeQuery = true)
 	List<TutoriasUtNay> findAllUtNay();

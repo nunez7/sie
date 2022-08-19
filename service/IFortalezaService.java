@@ -9,4 +9,5 @@ public interface IFortalezaService {
 	void guardar(Fortaleza fortaleza);
 	void eliminar(Fortaleza fortaleza);
 	List<Fortaleza> buscarPorGrupo(Grupo grupo);
+	Fortaleza buscarPorId(Integer id);
 }

@@ -10,6 +10,10 @@ public interface IProgramacionTutoriaService {
 
 	void guardar(ProgramacionTutoria tutoria);
 	
-	List<ProgramacionTutoria> buscarPorAlumnoYGrupo(Alumno alumno, Grupo grupo);		
+	List<ProgramacionTutoria> buscarPorAlumnoYGrupo(Alumno alumno, Grupo grupo);	
+	
+	List<ProgramacionTutoria> buscarPorGrupo(Grupo grupo);
+	
+	List<ProgramacionTutoria> buscarPorAlumno(Alumno alumno);
 	
 }

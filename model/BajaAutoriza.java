@@ -20,13 +20,13 @@ public class BajaAutoriza {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_baja")
-	Baja baja;
+	private Baja baja;
 	
 	private Integer tipo;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_persona")
 	private Persona persona;
 	

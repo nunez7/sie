@@ -17,7 +17,7 @@ public class MotivoServiceJpa implements IMotivoService{
 
 	@Override
 	public List<Motivo> buscarTodo() { 
-		return (List<Motivo>) motivoRepo.findAll();
+		return  motivoRepo.findAllByOrderByMotivo();
 	}
 
 

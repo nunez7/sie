@@ -33,6 +33,12 @@ public interface ITutoriaIndividualService {
 	
 	List<TutoriaIndividual> buscarEntreFechasPorGrupo(Integer idGrupo, Date fechaInicio, Date fechaFin);
 	
+	List<TutoriaIndividual> buscarEntreFechasPorCarrera(Integer idCarrera, Integer idPeriodo, Date fechaInicio, Date fechaFin);
+	
+	Integer totalPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
+	Integer totalDistinctAlumnoPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
+	
+	//importaciones
 	List<TutoriasUtNay> buscarTodoTutoriasUtNay();
 	
 	List<CanalizacionesUtNay> buscarCanalizacionesUtNay();

@@ -34,6 +34,15 @@ public class IndicadorMateriaProfesorDTO {
 	private int numeroRegulares;
 	
 	private double porcentajeRegulares;
+	
+	private int numeroTutoriasInd;
+	private int porcentajeTutoriasInd;
+	
+	private int numeroTutoriasGru;
+	private int porcentajeTutoriasGru;
+	
+	private int numeroCanalizaciones;
+	private int porcentajeCanalizaciones;
 
 	public List<IndicadorProfesorDTO> getIndicadoresSD() {
 		return indicadoresSD;
@@ -154,7 +163,54 @@ public class IndicadorMateriaProfesorDTO {
 	public void setPorcentajeRegulares(double porcentajeRegulares) {
 		this.porcentajeRegulares = porcentajeRegulares;
 	}
-	
+
+	public int getNumeroTutoriasInd() {
+		return numeroTutoriasInd;
+	}
+
+	public void setNumeroTutoriasInd(int numeroTutoriasInd) {
+		this.numeroTutoriasInd = numeroTutoriasInd;
+	}
+
+	public int getPorcentajeTutoriasInd() {
+		return porcentajeTutoriasInd;
+	}
+
+	public void setPorcentajeTutoriasInd(int porcentajeTutoriasInd) {
+		this.porcentajeTutoriasInd = porcentajeTutoriasInd;
+	}
+
+	public int getNumeroTutoriasGru() {
+		return numeroTutoriasGru;
+	}
+
+	public void setNumeroTutoriasGru(int numeroTutoriasGru) {
+		this.numeroTutoriasGru = numeroTutoriasGru;
+	}
+
+	public int getPorcentajeTutoriasGru() {
+		return porcentajeTutoriasGru;
+	}
+
+	public void setPorcentajeTutoriasGru(int porcentajeTutoriasGru) {
+		this.porcentajeTutoriasGru = porcentajeTutoriasGru;
+	}
+
+	public int getNumeroCanalizaciones() {
+		return numeroCanalizaciones;
+	}
+
+	public void setNumeroCanalizaciones(int numeroCanalizaciones) {
+		this.numeroCanalizaciones = numeroCanalizaciones;
+	}
+
+	public int getPorcentajeCanalizaciones() {
+		return porcentajeCanalizaciones;
+	}
+
+	public void setPorcentajeCanalizaciones(int porcentajeCanalizaciones) {
+		this.porcentajeCanalizaciones = porcentajeCanalizaciones;
+	}
 	
 	
 }

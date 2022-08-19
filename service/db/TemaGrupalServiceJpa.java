@@ -22,7 +22,12 @@ public class TemaGrupalServiceJpa implements ITemaGrupalService{
 	public void guardar(TemaGrupal temaGrupal) { 
 		temaGrupalRepo.save(temaGrupal);
 	}
-
+	
+	@Override
+	public void eliminar(TemaGrupal temaGrupal) {
+		temaGrupalRepo.delete(temaGrupal);
+	}
+	
 	@Override
 	public List<TemaGrupal> buscarPorGrupo(Grupo grupo) {
 		return temaGrupalRepo.findByGrupo(grupo);
@@ -40,6 +45,16 @@ public class TemaGrupalServiceJpa implements ITemaGrupalService{
 	@Override
 	public List<TemaGrupal> buscarEntreFechasPorGrupo(Integer idGrupo, Date fechaInicio, Date fechaFin) {
 		return temaGrupalRepo.findByGrupoAndFechaProgramada(idGrupo, fechaInicio, fechaFin);
+	}
+
+	@Override
+	public List<TemaGrupal> buscarEntreFechasPorCarrera(Integer idCarrera, Integer idPeriodo, Date fechaInicio, Date fechaFin) {
+		return temaGrupalRepo.findByCarreraAndFechaProgramada(idCarrera, idPeriodo, fechaInicio, fechaFin);
+	}
+
+	@Override
+	public Integer TotalPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
+		return temaGrupalRepo.findTotalByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
 	}
 	
 }

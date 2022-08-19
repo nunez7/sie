@@ -19,12 +19,22 @@ public class ProgramacionTutoriaServiceJpa implements IProgramacionTutoriaServic
 
 	@Override
 	public List<ProgramacionTutoria> buscarPorAlumnoYGrupo(Alumno alumno, Grupo grupo) {
-		return proTutoriaRepo.findByAlumnoAndGrupo(alumno, grupo);
+		return proTutoriaRepo.findByAlumnoAndGrupoOrderByFechaAsc(alumno, grupo);
 	}
 
 	@Override
 	public void guardar(ProgramacionTutoria tutoria) {
 		proTutoriaRepo.save(tutoria);
+	}
+
+	@Override
+	public List<ProgramacionTutoria> buscarPorGrupo(Grupo grupo) {
+		return proTutoriaRepo.findByGrupoOrderByFechaAsc(grupo);
+	}
+
+	@Override
+	public List<ProgramacionTutoria> buscarPorAlumno(Alumno alumno) {
+		return proTutoriaRepo.findByAlumnoOrderByFechaAsc(alumno);
 	}
 
 }

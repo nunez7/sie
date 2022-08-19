@@ -16,6 +16,8 @@ public class Servicio {
 	
 	private String servicio;
 	
+	private String correo;
+	
 	private Boolean activo;
 	
 	public Servicio() {
@@ -40,6 +42,14 @@ public class Servicio {
 
 	public void setServicio(String servicio) {
 		this.servicio = servicio;
+	}
+
+	public String getCorreo() {
+		return correo;
+	}
+
+	public void setCorreo(String correo) {
+		this.correo = correo;
 	}
 
 	public Boolean getActivo() {

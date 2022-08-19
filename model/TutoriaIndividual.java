@@ -25,6 +25,10 @@ public class TutoriaIndividual {
 	private Alumno alumno;
 	
 	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name="id_persona")
+	private Persona tutor;
+	
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name="id_grupo")
 	private Grupo grupo;
 	
@@ -75,6 +79,14 @@ public class TutoriaIndividual {
 		this.alumno = alumno;
 	}
 	
+	public Persona getTutor() {
+		return tutor;
+	}
+
+	public void setTutor(Persona tutor) {
+		this.tutor = tutor;
+	}
+
 	public Grupo getGrupo() {
 		return grupo;
 	}

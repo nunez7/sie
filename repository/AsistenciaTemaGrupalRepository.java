@@ -25,4 +25,7 @@ public interface AsistenciaTemaGrupalRepository extends CrudRepository<Asistenci
 	List<AlumnoAsistenciaDTO> findByTemaGrupalAndGrupo(@Param("idGrupo") Integer idGrupo,@Param("idTemaGrupal") Integer idTemaGrupal);
 	
 	AsistenciaTemaGrupal findByTemaGrupalAndAlumno(TemaGrupal temaGrupal, Alumno alumno);
+	
+	List<AsistenciaTemaGrupal> findByTemaGrupal(TemaGrupal temaGrupal);
+	
 }

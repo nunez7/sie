@@ -10,4 +10,12 @@ public interface ICanalizacionService {
 	List<Canalizacion> buscarPorAlumno(Alumno alumno);
 	List<Canalizacion> buscarPorGrupoPeriodoYAlumno(Integer idGrupo, Integer idPeriodo, Integer idAlumno);
 	List<Canalizacion> buscarPorGrupoPeriodo(Integer idGrupo, Integer idPeriodo);
+	List<Canalizacion> buscarPorCarreraPeriodo(Integer idCarrera, Integer idPeriodo);
+	
+	Integer contarPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
+	Integer contarDistinctAlumnoPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
+	
+	List<Canalizacion> buscarPorGrupoPeriodoAlumnoYServicio(Integer idGrupo, Integer idPeriodo, Integer idAlumno, Integer idServicio);
+	List<Canalizacion> buscarPorGrupoPeriodoYServicio(Integer idGrupo, Integer idPeriodo, Integer idServicio);
+	List<Canalizacion> buscarPorCarreraPeriodoYServicio(Integer idCarrera, Integer idPeriodo, Integer idServicio);
 }
