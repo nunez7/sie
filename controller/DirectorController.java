@@ -726,8 +726,7 @@ public class DirectorController {
 				alumnoService.guardar(alumno);
 				
 				//Se desactiva la relación alumno grupo del último grupo al que el alumno allá pertenecido
-				Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
-				AlumnoGrupo alumnoGrupo = alumnoGrupoService.buscarPorAlumnoYGrupo(alumno, ultimoGrupo);
+				AlumnoGrupo alumnoGrupo = alumnoGrupoService.buscarPorAlumnoYGrupo(alumno, baja.getGrupo());
 				alumnoGrupo.setActivo(false);
 				alumnoGrupoService.guardar(alumnoGrupo);
 				

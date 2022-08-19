@@ -533,7 +533,7 @@ public class TutorController {
 		}		
 		SimpleDateFormat dFDia = new SimpleDateFormat("dd/MM/yyyy");
 		Date fecha = new Date();	
-		
+		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");	
 		String cveAlumno = obj.get("idAlumno");
 		String ultimaFechaAsistio = obj.get("ultimaFechaAsistio");
 		String fechaSolicitud = obj.get("fechaSolicitud");
@@ -546,9 +546,8 @@ public class TutorController {
 			if(causaBaja!=null) {
 				Baja ComprobarBaja = bajaService.buscarPorEstadoAlumnoYFechaAutorizacion(0, new Alumno(Integer.parseInt(cveAlumno)), null);
 				if(ComprobarBaja==null) {
-					Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(Integer.parseInt(cveAlumno));
 					Baja baja = new Baja();
-					baja.setGrupo(ultimoGrupo);
+					baja.setGrupo(new Grupo(cveGrupo));
 					baja.setPersona(new Persona(cvePersona));
 					baja.setAlumno(new Alumno(Integer.parseInt(cveAlumno)));
 					baja.setTipoBaja(Integer.parseInt(tipoBaja));
