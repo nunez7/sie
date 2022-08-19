@@ -765,7 +765,6 @@ public class DirectorController {
 			}else
 				return "alumnoInactivo";
 			}
-		}
 		return "error";
 	}
 	
