@@ -271,8 +271,7 @@ public class CalificacionController {
 
 		if (session.getAttribute("grupoActual") != null) {
 			grupoActual = (Integer) session.getAttribute("grupoActual");
-			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYPeriodo(grupoActual,
-					usuario.getPreferencias().getIdPeriodo());
+			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(grupoActual,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 
 			if (session.getAttribute("cargaActual") != null) {
 				int cargaActual = (Integer) session.getAttribute("cargaActual");
@@ -349,8 +348,7 @@ public class CalificacionController {
 
 		if (session.getAttribute("grupoActual") != null) {
 			grupoActual = (Integer) session.getAttribute("grupoActual");
-			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYPeriodo(grupoActual,
-					usuario.getPreferencias().getIdPeriodo());
+			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(grupoActual,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 
 			if (session.getAttribute("cargaActual") != null && (Integer) session.getAttribute("cargaActual") > 0) {
 				int cargaActual = (Integer) session.getAttribute("cargaActual");

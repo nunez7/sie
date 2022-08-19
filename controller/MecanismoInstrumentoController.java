@@ -29,6 +29,7 @@ import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Dosificacion;
 import edu.mx.utdelacosta.model.Instrumento;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
+import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Usuario;
@@ -292,50 +293,36 @@ public class MecanismoInstrumentoController {
 
 		// *************** SE OBTIENEN LAS VARIABLES ***************
 		CargaHoraria cActual = cargaService.buscarPorIdCarga(Integer.parseInt(obj.get("cActual")));
-		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona"));
-		Usuario usuario = usuarioService.buscarPorPersona(persona);
-		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
-		Integer totalCortesActivos = calendarioService.distinguirPorCorteEvaluativoPorCargaHoraria(cActual.getId());
-		List<CargaHoraria> cargas = cargaService.buscarPorProfesorYPeriodo(usuario.getPersona(), periodo);
+
 		List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(cActual.getId(), true);
 
-		for (CargaHoraria carga : cargas) {// se obtienen las cargas del perfil actla
-
-			String idCarga = String.valueOf(carga.getId());
-			String respuesta = (obj.get(idCarga));
-
-			if (respuesta != null) { // se compara si se obtiene algo del check
-				if (respuesta.equals("on")) { // en caso de que este selecciona se entra aqui
-					Integer totalCortesActivosAuxiliar = calendarioService
-							.distinguirPorCorteEvaluativoPorCargaHoraria(carga.getId());
-					List<MecanismoInstrumento> listaMecanismos = mecanismoService
-							.buscarPorIdCargaHorariaYActivo(carga.getId(), true); // se obtiene el numero de cortes
-					// donde tiene las unidades
-					// asignadas
-					if (listaMecanismos.size() == 0) {
-						if (totalCortesActivos == totalCortesActivosAuxiliar) {
-							for (MecanismoInstrumento mecanismo : mecanismos) { // en caso de que se tenga el mismo
-								// numero de cortes se procede a guardar
-								// los mecanismos
-								MecanismoInstrumento nuevoMecanismo = new MecanismoInstrumento();
-								nuevoMecanismo.setInstrumento(mecanismo.getInstrumento());
-								nuevoMecanismo.setPonderacion(mecanismo.getPonderacion());
-								nuevoMecanismo.setIdCargaHoraria(carga.getId());
-								nuevoMecanismo.setIdCorteEvaluativo(mecanismo.getIdCorteEvaluativo());
-								nuevoMecanismo.setActivo(true);
-								mecanismoService.guardar(nuevoMecanismo);
-							}
-						} else {
-							return "dif";
-						}
-					} else {
-						return "notEmp";
+		ArrayList<String> keyList = new ArrayList<String>(obj.keySet());
+		Integer idKey;
+		for (String string : keyList) {
+			idKey = 0;
+			try {
+				idKey = Integer.parseInt(string);
+			} catch (Exception e) {
+				idKey = 0;
+			}
+			
+			if (idKey != 0) {
+				if (mecanismoService.buscarPorIdCargaHorariaYActivo(idKey, true).size()==0) {
+					for (MecanismoInstrumento mecanismo : mecanismos) {
+						MecanismoInstrumento nuevoMecanismo = new MecanismoInstrumento();
+						nuevoMecanismo.setInstrumento(mecanismo.getInstrumento());
+						nuevoMecanismo.setPonderacion(mecanismo.getPonderacion());
+						nuevoMecanismo.setIdCargaHoraria(idKey);
+						nuevoMecanismo.setIdCorteEvaluativo(corteService.buscarPorCargaHorariaYCalendarioEvaluacion(idKey, mecanismo.getIdCorteEvaluativo()));
+						nuevoMecanismo.setActivo(true);
+						mecanismoService.guardar(nuevoMecanismo);
 					}
-
+				}else{
+					return "notEmp";
 				}
 			}
-
-		}
+		}			
+		
 		return "ok";
 	}
 

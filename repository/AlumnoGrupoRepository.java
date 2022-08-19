@@ -55,10 +55,11 @@ public interface AlumnoGrupoRepository extends CrudRepository<AlumnoGrupo, Integ
 			+ "ORDER BY algr.id DESC ", nativeQuery = true)
 	List<AlumnoGrupo> findByPeriodoAndCuatrimestre(@Param("periodo")Integer idPeriodo, @Param("cuatrimestre") Integer idCuatrimestre);
 	
-	@Query(value = "SELECT count(distinct(algr.id)) " + "FROM alumnos a "
+	@Query(value = "SELECT COUNT(DISTINCT(algr.id)) "
+			+ "FROM alumnos a "
 			+ "INNER JOIN alumnos_grupos algr on algr.id_alumno = a.id "
-			+ "LEFT JOIN grupos gr on gr.id = algr.id_grupo "
-			+ "WHERE gr.id_periodo=:periodo and gr.id_cuatrimestre = :cuatrimestre ", nativeQuery = true)
+			+ "INNER JOIN grupos gr on gr.id = algr.id_grupo "
+			+ "WHERE gr.id_periodo=:periodo-1 and gr.id_cuatrimestre = :cuatrimestre-1", nativeQuery = true)
 	Integer contarPorPeriodoAndCuatrimestre(@Param("periodo") Integer idPeriodo,
 			@Param("cuatrimestre") Integer idCuatrimestre);
 

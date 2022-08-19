@@ -194,6 +194,10 @@ public class DosificacionController {
 		// en caso de que la dosificacion no este vacia
 		}  else {
 
+			if(!profesor.getId().equals(dosificacion.getPersona().getId())) {
+				return "dif";
+			}
+			
 			// si la dosificacion ya esta validada
 			if (dosificacion.getValidaDirector() == true) {
 				dosificacion.setTerminada(true);
@@ -236,20 +240,21 @@ public class DosificacionController {
 		mail.setPara(new String[] { para });
 
 		// Email title
-		mail.setTitulo("Dosificación pendiente por validar");
+		mail.setTitulo("Programación pendiente por validar");
 
 		// Variables a plantilla
 		Map<String, Object> variables = new HashMap<>();
-		variables.put("titulo", "Dosificación pendiente por validar");
+		variables.put("titulo", "Programación de asignatura pendiente por validar");
 		variables.put("cuerpoCorreo",
-				"Tienes una dosificación por validar de la materia " + carga.getMateria().getNombre());
+				"Tienes una programación de asignatura por validar de la materia " + carga.getMateria().getNombre());
 		mail.setVariables(variables);
 		try {
 			emailService.sendEmail(mail);
+			return "ok";
 		} catch (MessagingException | IOException e) {
+			return "mail";
 		}
 
-		return "ok";
 	}
 
 	@GetMapping("/editar/{carga}/{corte}")
@@ -507,26 +512,18 @@ public class DosificacionController {
 
 	@GetMapping("/ver-copiar-instrumentos")
 	public String verCopiarInstrumentos(Model model, HttpSession session) {
+		// obtencion de variables
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
-		List<CargaHoraria> cargas = cargaService.buscarPorProfesorYPeriodo(persona, periodo);
+		
+		//se construye la carga actual
 		CargaHoraria cActual = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cveCarga"));
-		Integer totalCortesActivos = calendarioService.distinguirPorCorteEvaluativoPorCargaHoraria(cActual.getId());
-		List<CargaHoraria> cargaFinal = new ArrayList<>();
-
-		for (CargaHoraria carga : cargas) {// se obtienen las cargas del perfil actla
-			Integer totalCortesActivosAuxiliar = calendarioService
-					.distinguirPorCorteEvaluativoPorCargaHoraria(carga.getId()); // se obtiene el numero de cortes donde
-			// tiene las unidades asignadas
-			if (totalCortesActivos == totalCortesActivosAuxiliar) {
-				cargaFinal.add(carga);
-			}
-		}
-
+		
+		// se buscan las cargas apatas para el copiado de instrumentos
+		List<CargaHoraria> cargaFinal = cargaService.buscarPorProfesorYPeriodoYCalendarioEvaluacion(persona.getId(), periodo.getId(), cActual.getId());
 		model.addAttribute("cActual", cActual);
 		model.addAttribute("cargasFinal", cargaFinal);
-
 		return "fragments/modal-dosificacion:: verCopiarInstrumentos";
 	}
 

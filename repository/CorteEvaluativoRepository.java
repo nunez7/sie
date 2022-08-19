@@ -45,5 +45,14 @@ List<CorteEvaluativo> findByPeriodoAndCarreraOrderByFechaInicioAsc(Periodo perio
 			+ "WHERE fecha_dosificacion >= :fechaDosificacion AND id_periodo = :idPeriodo "
 			+ "AND id_carrera = :idCarrera AND id = :idCorteEvaluativo ", nativeQuery = true)
 	Integer findByFechaDosificacionAndPeriodoAndCarreraAndCorteEvaluativo(@Param("fechaDosificacion") Date fechaDosificacion,@Param("idPeriodo") Integer idPeriodo,@Param("idCarrera") Integer idCarrrera, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
+	
+	//busca el corte evaluativo de una carga horaria que comparta el consecutivo con otro corte, se usa para el copiado de instrumentos desde profesor
+	@Query(value = "SELECT distinct(ce.id) "
+			+ "	FROM cortes_evaluativos ce "
+			+ "	INNER JOIN calendario_evaluacion ce2 ON ce2.id_corte_evaluativo = ce.id "
+			+ "	WHERE ce2.id_carga_horaria = :carga AND ce.consecutivo = (SELECT ce3.consecutivo "
+			+ "		FROM cortes_evaluativos ce3 "
+			+ "		WHERE ce3.id = :corte)", nativeQuery = true)
+	Integer findByCargaHorariaAndCalendarioEvaluacion(@Param("carga") Integer idCargaHoraria, @Param("corte") Integer idCorteEvaluativo);
 
 }

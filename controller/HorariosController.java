@@ -73,6 +73,7 @@ public class HorariosController {
 		String horaInicioDTO = "";
 		String horaFinDTO = "";
 		if(horarioDTO.getIdHorario() > 0) {
+			horario = horarioService.buscarPorId(horarioDTO.getIdHorario());
 			//para desactivar el horario
 			if(!horarioDTO.getActivo()) {
 				horario = horarioService.buscarPorId(horarioDTO.getIdHorario());

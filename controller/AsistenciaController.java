@@ -119,12 +119,11 @@ public class AsistenciaController {
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = new Periodo(usuario.getPreferencias().getIdPeriodo());
-		Carrera carrera = new Carrera(usuario.getPreferencias().getIdCarrera());
 		// --------------- SE HACE UN CONTEO DEL NUEVO NUMERO DE ASISTENCIAS
 		// ---------------
 
 		//se busca que la fecha actual no sobrepase el limite de captura de asistencias 
-		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(fechaHoy, carga.getPeriodo().getId(), carrera.getId());
+		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(fechaHoy, carga.getPeriodo().getId(), carga.getGrupo().getCarrera().getId());
 		if (corte == null) {
 			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYActivoYAceptada(carga, new TipoProrroga(2), true, true);
 			if (prorroga != null) {
@@ -139,15 +138,13 @@ public class AsistenciaController {
 		}
 		
 		corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
-				fecha, periodo.getId(), carrera.getId());
+				fecha, periodo.getId(), carga.getGrupo().getCarrera().getId());
 		if (corte==null) {
 			return "limit";
 		}
 
-		// CorteEvaluativo corte = (CorteEvaluativo)session.getAttribute("corte");
 		Integer noAsistencias = asistenciaService.contarPorFechaInicioYFechaFindYCargaHoraria(corte.getFechaInicio(),
 				corte.getFechaFin(), carga.getId());
-		//CargaHoraria cargas = new CargaHoraria(idCargaHoraria);
 
 		// --------------- PROCESO DE GUARDADO DE ASISTENCIAS ---------------
 		for (Alumno alumno : alumnos) {
@@ -312,7 +309,7 @@ public class AsistenciaController {
 			
 			//se obtienen las cargas (materias) del maestro
 			List<CargaHoraria> cargasHorarias = null;	
-			cargasHorarias = cargaService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(cveGrupo, persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 			List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cveGrupo);
 			
 			if (session.getAttribute("cargaActual")!=null) {

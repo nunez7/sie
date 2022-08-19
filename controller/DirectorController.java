@@ -89,10 +89,10 @@ import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IPersonalService;
 import edu.mx.utdelacosta.service.IPlanEstudioService;
 import edu.mx.utdelacosta.service.IProrrogaService;
-import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.ITemaGrupalService;
 import edu.mx.utdelacosta.service.ITestimonioCorteService;
+import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
@@ -227,18 +227,24 @@ public class DirectorController {
 		//creamos el usuario de acuerdo a la authenticación 
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona")); 
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
-		//buscamos las carreras de acuerdo a las preferencias y permisos del usuario
+		// buscamos las carreras de acuerdo a las preferencias y permisos del usuario
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(usuario.getPersona().getId());
-		List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(carreras.get(0).getId(), usuario.getPreferencias().getIdPeriodo());
-		if(cortes.size() > 0) {
-			model.addAttribute("corte1", cortes.get(0));
-			model.addAttribute("corte2", cortes.get(1));
-		}
-		else {
-			CorteEvaluativo corte1 = new CorteEvaluativo(); 
-			CorteEvaluativo corte2 = new CorteEvaluativo();
-			model.addAttribute("corte1", corte1);
-			model.addAttribute("corte2", corte2); 
+		if (carreras.size() > 0) {
+			model.addAttribute("carreras", carreras.size());
+			List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(carreras.get(0).getId(),
+					usuario.getPreferencias().getIdPeriodo());
+			if (cortes.size() > 0) {
+				model.addAttribute("corte1", cortes.get(0));
+				model.addAttribute("corte2", cortes.get(1));
+			} else {
+				CorteEvaluativo corte1 = new CorteEvaluativo();
+				CorteEvaluativo corte2 = new CorteEvaluativo();
+				model.addAttribute("corte1", corte1);
+				model.addAttribute("corte2", corte2);
+			}
+		} else {
+			// para decirle que no tiene permisos
+			model.addAttribute("carreras", 0);
 		}
 		return "director/fechas";
 	}
@@ -690,7 +696,7 @@ public class DirectorController {
 		return "fragments/tutorias :: cargar-tutorias";
 	}
 	
-	@PostMapping(path="/aprobar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(path = "/aprobar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String aprobarBaja(@RequestBody Map<String, String> obj, HttpSession session) {
 		// extrae el usuario apartir del usuario cargado en cesion.
@@ -701,17 +707,17 @@ public class DirectorController {
 		} catch (Exception e) {
 			cvePersona = usuario.getPersona().getId();
 		}
-		
-		Date fechaHoy = new Date();	
-		String cveBaja = obj.get("id");		
-		if(cveBaja!=null){
-			
+
+		Date fechaHoy = new Date();
+		String cveBaja = obj.get("id");
+		if (cveBaja != null) {
+
 			Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
 			baja.setEstatus(1);
 			baja.setFechaAutorizacion(fechaHoy);
 			bajaService.guardar(baja);
-			
-			BajaAutoriza  bajaAutorizada = new BajaAutoriza();
+
+			BajaAutoriza bajaAutorizada = new BajaAutoriza();
 			bajaAutorizada.setBaja(baja);
 			bajaAutorizada.setFechaRegistro(fechaHoy);
 			bajaAutorizada.setPersona(new Persona(cvePersona));
@@ -756,7 +762,7 @@ public class DirectorController {
 					return "errorMen";
 			  	}
 				return "ok";
-			}else{
+			}else
 				return "alumnoInactivo";
 			}
 		}
