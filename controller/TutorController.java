@@ -96,6 +96,7 @@ import edu.mx.utdelacosta.service.IPreguntaService;
 import edu.mx.utdelacosta.service.IProgramacionTutoriaService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionInicialService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionTutorService;
+import edu.mx.utdelacosta.service.IServicioService;
 import edu.mx.utdelacosta.service.ITemaGrupalService;
 import edu.mx.utdelacosta.service.ITutoriaIndividualService;
 import edu.mx.utdelacosta.service.IUsuariosService;
@@ -206,6 +207,9 @@ public class TutorController {
 	
 	@Autowired
 	private IBajaAutorizaService bajaAutorizaService;
+	
+	@Autowired
+	private IServicioService servicioService;
 
     @GetMapping("/cargar-alumno/{dato}")
    	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato,  Model model, HttpSession session) { 
@@ -361,6 +365,7 @@ public class TutorController {
 		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");	
 		List<Alumno> alumnos = new ArrayList<>();
 		List<CargaHoraria> materias = new ArrayList<>();
+		List<Servicio> servicios = servicioService.buscarTodos();
 		if (cveGrupo != null) {									
 			materias = cargaHorariaService.buscarPorGrupo(new Grupo(cveGrupo));
 			TutoriaIndividual tutoriaIndividual = tutoriaIndiService.buscarPorId(cveTutoria);
@@ -369,6 +374,7 @@ public class TutorController {
 		
 		model.addAttribute("alumnos", alumnos);		
 		model.addAttribute("materias", materias);
+		model.addAttribute("servicios", servicios);
 		model.addAttribute("cveGrupo", cveGrupo);	
 		return "tutorias/canalizacion";
 	}
@@ -408,20 +414,11 @@ public class TutorController {
 					canalizacion.setComentarios(comentario);
 					canalizacion.setStatus(1);
 					
-					
 					Alumno alumno = alumnoService.buscarPorId(Integer.parseInt(cveAlumno));				
 					// Sé crear un correo y se envía al director correspondiente			
 					Mail mail = new Mail();
 					String de = correo;
-					String para = "brayan.bg499@gmail.com";
-					
-					//Se valida el tipo de servicio al que se canalizara para enviar el correo			
-//					if(servicio==1){
-//						
-//					}
-//					else if(servicio==2){
-//						
-//					}
+
 					if(servicio==3){
 						
 						//Recibo los motivos de la tutoría como un string y los convierto a una ArrayList<Integer>
@@ -433,10 +430,13 @@ public class TutorController {
 						for(int i = 0; i < mater.size(); i++) {
 							materias.add(Integer.parseInt(mater.get(i)));   
 						}
+						
+						//se recorreo las materias seleccinadas para generar un correo para cada una de ellas
 						for(Integer cveMateria : materias) {
 							mail = new Mail();
 							CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(cveMateria);
 							//para = cargaHoraria.getProfesor().getEmail();
+							String para = "brayan.bg499@gmail.com";
 							mail.setDe(de);
 							mail.setPara(new String[] {para});		
 							//Email title
@@ -446,7 +446,7 @@ public class TutorController {
 							variables.put("titulo", "Canalización del alumno(a) "+alumno.getPersona().getNombreCompleto());
 							
 							variables.put("cuerpoCorreo", "El tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
-									+", solicita una canalización para el alumno "+alumno.getPersona().getNombreCompleto()+", el para la materia "+cargaHoraria.getMateria().getNombre()+" que imparte"
+									+", solicita una canalización para el alumno "+alumno.getPersona().getNombreCompleto()+", para la materia de "+cargaHoraria.getMateria().getNombre()+" que imparte"
 									+", por esta razón: "+razon
 									+". "+comentario+". Espero su confirmación"+grupo.getProfesor().getEmail()+".");
 							
@@ -459,14 +459,10 @@ public class TutorController {
 						}
 						canalizacionService.guardar(canalizacion);
 						return "ok";
-//					}
-//					else if(servicio==4){
-//					
-//					}
-//					else if(servicio==5){
-//						
+						
 					}else{
-					
+						
+						String para = servicioService.buscarPorId(servicio).getCorreo();
 						mail.setDe(de);
 						mail.setPara(new String[] {para});		
 						//Email title

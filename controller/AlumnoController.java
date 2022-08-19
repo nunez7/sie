@@ -1548,8 +1548,8 @@ public class AlumnoController {
 	public String validarContraseña(@RequestBody Map<String, String> obj) {
 		String contra = obj.get("contra");
 		String matricula = obj.get("matricula");
-		if(matricula!=null && contra!=null) {
-			Usuario usuario = usuarioService.buscarPorUsuario(matricula);							
+		if(matricula!=null && !matricula.isEmpty() && contra!=null) {
+			Usuario usuario = usuarioService.buscarPorUsuario(matricula);
 			Boolean valContra =  passwordEncoder.matches(contra, usuario.getContrasenia());
 			if(valContra == true) {
 				return "ok";
