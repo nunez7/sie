@@ -32,6 +32,7 @@ import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Concepto;
 import edu.mx.utdelacosta.model.DatosAlumno;
 import edu.mx.utdelacosta.model.DatosPersonales;
+import edu.mx.utdelacosta.model.Domicilio;
 import edu.mx.utdelacosta.model.Escuela;
 import edu.mx.utdelacosta.model.EscuelaProcedencia;
 import edu.mx.utdelacosta.model.Estado;
@@ -126,6 +127,7 @@ public class ApiController {
 		ZoneId systemTimeZone = ZoneId.systemDefault();
 		Persona persona = new Persona();
 		PeriodoInscripcion periodo = periodoService.buscarPorId(periodoService.ultimoId());
+		Domicilio domicilio = new Domicilio();
 		DatosPersonales datosP = new DatosPersonales();
 		DatosAlumno datosA = new DatosAlumno();
 		EscuelaProcedencia escProc = new EscuelaProcedencia();
@@ -150,6 +152,14 @@ public class ApiController {
 		persona.setEmail(datos.getEmail());
 		persona.setFechaAlta(fechaAlta);
 	
+		// se construye el domicilio
+		domicilio.setColonia(datos.getColonia());
+		domicilio.setCp(datos.getCp());
+		domicilio.setDomicilio(datos.getDomicilio());
+		domicilio.setLocalidad(new Localidad(datos.getLocalidad()));
+		domicilio.setPersona(persona);
+		persona.setDomicilio(domicilio);
+		
 		//Se construye datosPersona
 		datosP.setCurp(datos.getCurp());
 		datosP.setTelefono(datos.getTelefono());
@@ -263,8 +273,10 @@ public class ApiController {
 		alumno.setPersona(persona);
 		usuario.setPersona(persona);
 		//Se guarda el alumno
+		
 		alumnoService.guardar(alumno);
 		usuarioService.guardar(usuario);
+		
 		//Se construye pagoGeneral
 		pagoG.setActivo(true);
 		pagoG.setCantidad(1);
@@ -294,7 +306,7 @@ public class ApiController {
 		mail.setDe(EMAIL_DEFAULT);
 		mail.setPara(new String[] {datos.getEmail() });
 		//Email title
-		mail.setTitulo("¡Proceso de inscripción!");
+		mail.setTitulo("¡Proceso de reinscripción!");
 		//Variables a plantilla
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("titulo", "Bienvenido a la Universidad Tecnológica de Nayarit");
