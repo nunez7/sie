@@ -575,6 +575,7 @@ public class AsistenteController {
 				if(cveGrupo > 0) {
 					model.addAttribute("cveGrupo", cveGrupo);
 					Grupo grupo = grupoService.buscarPorId(cveGrupo);
+					model.addAttribute("grupo", grupo);
 					model.addAttribute("tutor", grupo.getProfesor().getNombreCompletoConNivelEstudio());
 					Carrera carrera = carrerasServices.buscarPorId(cveCarrera);
 					model.addAttribute("director", carrera.getDirectorCarrera());
