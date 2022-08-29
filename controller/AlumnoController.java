@@ -498,9 +498,9 @@ public class AlumnoController {
 			List<RemedialAlumno> remedialesCor = serviceRemAlum.buscarPorAlumnoCargaYCorte(alumno, cargaHoraria, corte);
 			if(remedialesCor.size() == 0) {
 				if (corte.getConsecutivo() == 1) {
-					nivel1 = "ordinario";
+					nivel1 = "Ordinario";
 				}else{
-					nivel2 = "ordinario";
+					nivel2 = "Ordinario";
 				}				
 			}else{
 				RemedialAlumno remedial = remedialesCor.get(0);
@@ -589,8 +589,7 @@ public class AlumnoController {
 						Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
 						Mail mail = new Mail();
 						String de = correo;
-						//String para = "servicios.escolares@utnay.edu.mx";	
-						String para = "rhekhienth.reality@gmail.com";	
+						String para = "servicios.escolares@utnay.edu.mx";
 
 						mail.setDe(de);
 						mail.setPara(new String[] {para});		
@@ -821,7 +820,7 @@ public class AlumnoController {
 			//Se extraen la lista de grupos 	
 			List<Grupo> grupos = serviceGrupo.buscarTodosDeAlumnosOrdenPorPeriodoDesc(alumno.getId());
 						
-			DecimalFormat df = new DecimalFormat("###.##");
+			DecimalFormat df = new DecimalFormat("###");
 			
 			List<GrupoDTO> gruposDTO = new ArrayList<>();
 			// Se calcula el promedio de cada grupo

@@ -200,6 +200,8 @@ public class AsesoriaController {
 				}
 			}
 		}
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("cargas", cargas);
 		model.addAttribute("cveCarga", cveCarga);
 		model.addAttribute("alumnos", alumnos);
@@ -245,6 +247,8 @@ public class AsesoriaController {
 			}
 			
 		}
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("asesorias", asesorias);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);

@@ -455,8 +455,7 @@ public class TutorController {
 						for(Integer cveMateria : materias) {
 							mail = new Mail();
 							CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(cveMateria);
-							//para = cargaHoraria.getProfesor().getEmail();
-							String para = "brayan.bg499@gmail.com";
+							String para = cargaHoraria.getProfesor().getEmail();
 							mail.setDe(de);
 							mail.setPara(new String[] {para});		
 							//Email title
@@ -483,6 +482,9 @@ public class TutorController {
 					}else{
 						
 						String para = servicioService.buscarPorId(servicio).getCorreo();
+						if(servicio==4){
+							para = grupo.getCarrera().getEmailCarrera();
+						}
 						mail.setDe(de);
 						mail.setPara(new String[] {para});		
 						//Email title
@@ -586,8 +588,7 @@ public class TutorController {
 					//correo
 					Mail mail = new Mail();
 					String de = correo;
-					//String para = alumno.getCarreraInicio().getEmailCarrera();
-					String para = "brayan.bg499@gmail.com";
+					String para = alumno.getCarreraInicio().getEmailCarrera();
 					mail.setDe(de);
 					mail.setPara(new String[] {para});		
 					//Email title
@@ -1172,6 +1173,8 @@ public class TutorController {
 			}															
 		}
 		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("grupos", grupos);		
 		model.addAttribute("temas", temasGrupales);	
@@ -1222,6 +1225,8 @@ public class TutorController {
 				}				
 			}
 			
+			Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+			model.addAttribute("periodo", periodo);
 			model.addAttribute("mujeres", m);
 			model.addAttribute("hombre", h);
 			model.addAttribute("allAlumnos", allAlumnos);				
@@ -1286,6 +1291,8 @@ public class TutorController {
 				alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());				
 			}
 			
+			Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+			model.addAttribute("periodo", periodo);
 			model.addAttribute("alumnos", alumnos);
 			model.addAttribute("grupos", grupos);
 			model.addAttribute("cveGrupo", cveGrupo);
@@ -1360,7 +1367,10 @@ public class TutorController {
 			model.addAttribute("horasDto", horasDto);
 			model.addAttribute("nomGrupo", grupo.getNombre());
 			model.addAttribute("turno", grupo.getTurno()!=null?grupo.getTurno().getNombre():null);
-		}			
+		}	
+
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("cveGrupo", cveGrupo);
 	  return "reportes/reporteHorarioClases"; 
@@ -1388,6 +1398,8 @@ public class TutorController {
 			}
 		}
 		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("rol", 1);
 		model.addAttribute("bajas", bajas);
 		model.addAttribute("grupos", grupos);
@@ -1432,6 +1444,8 @@ public class TutorController {
 			}
 		}
 		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("alumnos", alumnos);
 		model.addAttribute("cveGrupo", cveGrupo);
@@ -1515,6 +1529,9 @@ public class TutorController {
 				model.addAttribute("alumnosCali", alumnosCalificaciones);
 			}
 		}
+		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "reportes/reporteCalificacionesPorGrupo"; 
@@ -1570,6 +1587,9 @@ public class TutorController {
 			model.addAttribute("cvePersonaAl", cvePersonaAl);
 			model.addAttribute("evaluacion", evaluacion);
 		}
+		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("cveGrupo", cveGrupo);		
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
@@ -1696,8 +1716,7 @@ public class TutorController {
 					CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(cveMateria);
 					Mail mail = new Mail();
 					String de = correo;
-					String para = "brayan.bg499@gmail.com";
-					//String para = cargaHoraria.getProfesor().getEmail();
+					String para = cargaHoraria.getProfesor().getEmail();
 					mail.setDe(de);
 					mail.setPara(new String[] {para});		
 					//Email title

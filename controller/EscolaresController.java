@@ -1029,6 +1029,8 @@ public class EscolaresController {
 	//////////////////////////////////////////////////////////////////	
 	@GetMapping("/reporte-bajas") 
 	public String reporteBajas(Model model, HttpSession session) { 
+		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
+		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		List<Carrera> carreras = carreraService.buscarTodas();
 		Integer cveCarrera = (Integer) session.getAttribute("rb-cveCarrera");
 		List<Baja> bajas = new ArrayList<>();
@@ -1056,6 +1058,8 @@ public class EscolaresController {
 			}
 		}
 		
+		Periodo periodo = periodosService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("mujeres", m);
 		model.addAttribute("hombre", h);
 		model.addAttribute("bajas", bajas);

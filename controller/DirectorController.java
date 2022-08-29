@@ -743,10 +743,8 @@ public class DirectorController {
 				//correo
 				Mail mail = new Mail();
 				String de = correo;
-				//String para = "servicios.escolares@utnay.edu.mx";
-				//String para2 = baja.getAlumno().getPersona().getEmail();
-				String para1 = "brayan.bg499@gmail.com";
-				String para2 = "brayan.bg499@gmail.com";
+				String para1 = baja.getPersona().getEmail();
+				String para2 = baja.getAlumno().getPersona().getEmail();
 				mail.setDe(de);
 				mail.setPara(new String[] {para1, para2});		
 				//Email title
@@ -780,10 +778,8 @@ public class DirectorController {
 			//correo
 			Mail mail = new Mail();
 			String de = correo;
-			//String para1 = baja.getPersona().getEmail();
-			//String para2 = baja.getAlumno().getPersona().getEmail();
-			String para1 = "brayan.bg499@gmail.com";
-			String para2 = "brayan.bg499@gmail.com";
+			String para1 = baja.getPersona().getEmail();
+			String para2 = baja.getAlumno().getPersona().getEmail();
 			mail.setDe(de);
 			mail.setPara(new String[] {para1, para2});		
 			//Email title
@@ -825,7 +821,6 @@ public class DirectorController {
 			if((String) session.getAttribute("rdb-fechaFin")!=null) {						
 				Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rdb-fechaFin"));
 				if(cveCarrera==null || cveCarrera==0) {
-					System.out.println("todos");
 					bajas = bajaService.buscarPorTipoStatusPersonaEntreFechas(1, 1, cvePersona, fechaInicio, fechaFin);
 				}else{
 					bajas = bajaService.buscarPorTipoStatusCarreraEntreFechas(1, 1, cveCarrera, fechaInicio, fechaFin);
@@ -842,6 +837,8 @@ public class DirectorController {
 			}
 		}
 		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("mujeres", m);
 		model.addAttribute("hombre", h);
 		model.addAttribute("rol", 2);
@@ -1165,6 +1162,9 @@ public class DirectorController {
 				}
 			}
 		}
+		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("mujeres", m);
 		model.addAttribute("hombre", h);
 		model.addAttribute("carreras", carreras);
@@ -1247,6 +1247,8 @@ public class DirectorController {
 				}
 			}
 			
+			Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+			model.addAttribute("periodo", periodo);
 			model.addAttribute("carreras", carreras);
 			model.addAttribute("cveCarrera", cveCarrera);
 			model.addAttribute("mujeres", m);
@@ -1304,6 +1306,8 @@ public class DirectorController {
 			}
 		}
 		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("cveCarrera", cveCarrera);
 		model.addAttribute("cveGrupo", cveGrupo);
