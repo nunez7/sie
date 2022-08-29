@@ -783,6 +783,7 @@ public class AsistenteController {
 	public String reporteEvaluacionDocente(HttpSession session, Model model) {		
 		Persona persona = new Persona((Integer)session.getAttribute("cvePersona"));
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
+		
 		Integer cveCarrera = (Integer) session.getAttribute("cveCarrera");
 		Integer cvePerido = (Integer) session.getAttribute("red-cvePerido");	
 		Integer cveProfesor = (Integer) session.getAttribute("cveProfesor");
@@ -798,7 +799,8 @@ public class AsistenteController {
 			Carrera carrera = carrerasServices.buscarPorId(cveCarrera);
 			if(cvePerido != null) {	
 				profesores = personaService.buscarProfesoresPorCarreraYPeriodo(cveCarrera, cvePerido);
-				if(cveProfesor!=null) {						
+				if(cveProfesor!=null) {		
+					Persona profesor = personaService.buscarPorId(cveProfesor);
 					//se extraen los cargas horararias (grupos) por profesor y perido  
 					List<CargaHoraria> ChGrupos = cargaHorariaService.buscarPorCarreraProfesorYPeriodo(cveCarrera, cveProfesor, cvePerido);
 					List<ComentarioDTO> comentarios = serviceEvaCom.buscarComentariosPorCarreraProfesorPeridoYEvaluacion(cveCarrera, cveProfesor, cvePerido, 3);
@@ -875,6 +877,7 @@ public class AsistenteController {
 					model.addAttribute("promedioTotal", gruposDTOs.get(ChGrupos.size()).getPromedioPre());
 					model.addAttribute("evaVista", vista);
 					model.addAttribute("comentarios", comentarios);
+					model.addAttribute("profesor", profesor);
 					
 				}	
 			}
@@ -882,7 +885,6 @@ public class AsistenteController {
 			model.addAttribute("drCarrera", carrera.getDirectorCarrera());				
 		}
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
-		model.addAttribute("usuario", usuario);
 		model.addAttribute("periodo", periodo);
 		model.addAttribute("aluEncuestados", aluEncuestados);			
 		model.addAttribute("cveCarrera", cveCarrera);

@@ -589,7 +589,8 @@ public class AlumnoController {
 						Alumno alumno = serviceAlumno.buscarPorPersona(new Persona(cvePersona));
 						Mail mail = new Mail();
 						String de = correo;
-						String para = "servicios.escolares@utnay.edu.mx";						
+						//String para = "servicios.escolares@utnay.edu.mx";	
+						String para = "rhekhienth.reality@gmail.com";	
 
 						mail.setDe(de);
 						mail.setPara(new String[] {para});		
@@ -1508,15 +1509,19 @@ public class AlumnoController {
 			Grupo grupo = serviceGrupo.buscarUltimoDeAlumno(alumno.getId());
 			List<ProgramacionTutoria> ptutorias = programacionTutoriaService.buscarPorAlumnoYGrupo(alumno, grupo);
 			Boolean tp = false;
-			ProgramacionTutoria pTutoria = ptutorias.get(0);
+			ProgramacionTutoria pTutoria = null;
 			List<TutoriaIndividual> tutorias = tutoriaIndService.buscarPorAlumno(alumno);
-			for(TutoriaIndividual tutoria : tutorias) {
-				//Se valida si hay algun registro de tutoria impartida, el dia en el que el profesor le agendo una al alumno
-				if(ptutorias.get(0).getFecha().equals(tutoria.getFechaTutoria())){
-					pTutoria = null;
-				//se valida si la fecha en la que se agendo al tutoria ya paso
-				}else if(ptutorias.get(0).getFecha().after(fechaHoy)){
-					tp=true;
+			
+			if(tutorias.size()>0) {
+				pTutoria = ptutorias.get(0);
+				for(TutoriaIndividual tutoria : tutorias) {
+					//Se valida si hay algun registro de tutoria impartida, el dia en el que el profesor le agendo una al alumno
+					if(ptutorias.get(0).getFecha().equals(tutoria.getFechaTutoria())){
+						pTutoria = null;
+					//se valida si la fecha en la que se agendo al tutoria ya paso
+					}else if(ptutorias.get(0).getFecha().after(fechaHoy)){
+						tp=true;
+					}
 				}
 			}
 	
@@ -1550,7 +1555,7 @@ public class AlumnoController {
 	
 	@PostMapping(path="/validar-contra", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String validarContraseña(@RequestBody Map<String, String> obj) {
+	public String validarContrasena(@RequestBody Map<String, String> obj) {
 		String contra = obj.get("contra");
 		String matricula = obj.get("matricula");
 		if(matricula!=null && !matricula.isEmpty() && contra!=null) {

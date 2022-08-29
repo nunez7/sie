@@ -1533,25 +1533,34 @@ public class TutorController {
 					
 		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		Integer cveGrupo = (Integer) session.getAttribute("rei-cveGrupo");
-		Evaluacion evaluacion = evaluacionService.buscar(5);
+		Evaluacion evaluacion = null;
 		
 		if (cveGrupo != null) {			
 			List<Alumno> alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
 			Integer cvePersonaAl = (Integer) session.getAttribute("rei-cvePersonaAl");
+			//se valida si el cuatrimestre al que pertenece el grupo seleccionado
+			
+			Grupo grupo = grupoService.buscarPorId(cveGrupo);
+			if(grupo.getCuatrimestre().getConsecutivo()==1) {
+				evaluacion = evaluacionService.buscar(6);
+			}else if(grupo.getCuatrimestre().getConsecutivo()==7) {
+				evaluacion = evaluacionService.buscar(7);
+			}else{
+				evaluacion = evaluacionService.buscar(5);
+			}
+			
 			if(cvePersonaAl!=null) {
 				//Se inyectan las respuestas asociadas a cada pregunta de la evaluación seleccionada 
 				//asi como su repuesta si es que la ahi.		
 				for (Pregunta pregunta : evaluacion.getPreguntas()) {
 					
-					//Se buscan las opciones de respuesta serrada
-					List<OpcionRespuestaDTO> OpcionesRepuesta =  new ArrayList<OpcionRespuestaDTO>();				
-					OpcionRespuestaDTO OpRes = resEvaIniService.buscarRespuestaPorPregunta(pregunta.getId(), cvePersonaAl, evaluacion.getId(), cveGrupo);
-					OpcionesRepuesta.add(OpRes);
+
+					List<OpcionRespuestaDTO> OpcionesRepuesta = resEvaIniService.buscarRespuestaPorPregunta(pregunta.getId(), cvePersonaAl, evaluacion.getId(), cveGrupo);
 					pregunta.setOpcionesRespuesta(OpcionesRepuesta);					
 					
 					//Se buscan las opciones de respuesta abierta
 					if(pregunta.getAbierta()==true) {
-						RespuestaEvaluacionInicial respuestaEI = resEvaIniService.buscarRespuestaAbiertaPorPregunta(5, pregunta.getId(), cvePersonaAl, cveGrupo);
+						RespuestaEvaluacionInicial respuestaEI = resEvaIniService.buscarRespuestaAbiertaPorPregunta(evaluacion.getId(), pregunta.getId(), cvePersonaAl, cveGrupo);
 						pregunta.setComentarioRespuesta(respuestaEI != null ? respuestaEI.getRespuestaComentario().getComentario().getComentario() : null);
 					}
 					
@@ -1559,10 +1568,10 @@ public class TutorController {
 			}
 			model.addAttribute("alumnos", alumnos);
 			model.addAttribute("cvePersonaAl", cvePersonaAl);
+			model.addAttribute("evaluacion", evaluacion);
 		}
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("cveGrupo", cveGrupo);		
-		model.addAttribute("evaluacion", evaluacion);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "reportes/reporteEntrevistaInicial"; 
 	}
