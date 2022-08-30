@@ -85,7 +85,7 @@ public class LoginController {
 			String url = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 			variables.put("cuerpoCorreo",
 					"Para completar el proceso de restablecimiento de contraseña, haga clic <a href='" + url
-							+ "/reset-password/" + token.getToken() + "' class='btn' target='_blank'>aquí </a>");
+							+ "/siest/reset-password/" + token.getToken() + "' class='btn' target='_blank'>aquí </a>");
 			mail.setVariables(variables);
 
 			try {
