@@ -52,6 +52,7 @@ import edu.mx.utdelacosta.service.IEvaluacionComentarioService;
 import edu.mx.utdelacosta.service.IEvaluacionTutorService;
 import edu.mx.utdelacosta.service.IEvaluacionesService;
 import edu.mx.utdelacosta.service.IGrupoService;
+import edu.mx.utdelacosta.service.IOpcionesRepuestaService;
 import edu.mx.utdelacosta.service.IPreguntaService;
 import edu.mx.utdelacosta.service.IRespuestaCargaEvaluacionService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionInicialService;
@@ -100,6 +101,9 @@ public class EncuestasController {
 	
 	@Autowired
 	private IPreguntaService preguntaService; 
+	
+	@Autowired
+	private IOpcionesRepuestaService opcionesRepuestaService;
 	
 	@GetMapping("/evaluacionDocente")
 	public String evaluacionDocente(Model model, HttpSession session, Authentication authentication) {	
@@ -973,26 +977,38 @@ public class EncuestasController {
 							
 						}else{
 							
-							for(RespuestaEvaluacionInicial resEvaIni:respuestasEI) {
-								resEvaIniService.eliminar(resEvaIni);
-							}
-							
-							for(Integer respuestaF : respuestas) {
-								Respuesta respuesta = new Respuesta();
-								respuesta.setEvaluacion(evaluacion);
-								respuesta.setPregunta(pregunta);
-								respuesta.setOpcionRespuesta(new OpcionRespuesta(respuestaF));
-								respuesta.setPersona(new Persona(cvePersona));
-								respuesta.setActivo(true);
-								respuesta.setFechaAlta(fechaActual);
-								
-								RespuestaEvaluacionInicial resEvaInicial = new RespuestaEvaluacionInicial();							
-								resEvaInicial.setRespuesta(respuesta);
-								resEvaInicial.setRespuestaComentario(null);
-								resEvaInicial.setEvaluacionTutor(evaluacionTutor);
-								resEvaIniService.guardar(resEvaInicial);
-							}
-							
+							//Consulto las opciones de respuesta asociadas a cada pregunta
+							List<OpcionRespuesta> opcionRespuestas = opcionesRepuestaService.buscarPorPregunta(pregunta.getId());
+							RespuestaEvaluacionInicial VRespuestaEI = null;
+							//se recorren las opciones de respuesta disponibles con las recibidas del formulario
+						    for (OpcionRespuesta opcionR : opcionRespuestas) { 
+						        if (!respuestas.contains(opcionR.getId())) { 
+						        	// eliminar
+						        	VRespuestaEI = resEvaIniService.buscarRespuestaCerradaPorPreguntaYOpcionRespuesta(pregunta.getEvaluacion().getId(), pregunta.getId(), opcionR.getId(), cvePersona, cveGrupo);
+						        	if(VRespuestaEI!=null) {
+						        		resEvaIniService.eliminar(VRespuestaEI);
+						        	}
+						        }else{
+						        	//agregar
+						        	VRespuestaEI = resEvaIniService.buscarRespuestaCerradaPorPreguntaYOpcionRespuesta(pregunta.getEvaluacion().getId(), pregunta.getId(), opcionR.getId(), cvePersona, cveGrupo);
+						        	if(VRespuestaEI==null) {
+						        		Respuesta respuesta = new Respuesta();
+										respuesta.setEvaluacion(evaluacion);
+										respuesta.setPregunta(pregunta);
+										respuesta.setOpcionRespuesta(opcionR);
+										respuesta.setPersona(new Persona(cvePersona));
+										respuesta.setActivo(true);
+										respuesta.setFechaAlta(fechaActual);
+										
+										RespuestaEvaluacionInicial resEvaInicial = new RespuestaEvaluacionInicial();							
+										resEvaInicial.setRespuesta(respuesta);
+										resEvaInicial.setRespuestaComentario(null);
+										resEvaInicial.setEvaluacionTutor(evaluacionTutor);
+										resEvaIniService.guardar(resEvaInicial);
+						        	}
+						        }
+						    } 
+
 						}	
 						
 					}else{
@@ -1157,27 +1173,38 @@ public class EncuestasController {
 								}
 								
 							}else{
-								
-								for(RespuestaEvaluacionInicial resEvaIni:respuestasEI) {
-									resEvaIniService.eliminar(resEvaIni);
-								}
-								
-								for(Integer respuestaF : respuestas) {
-									Respuesta respuesta = new Respuesta();
-									respuesta.setEvaluacion(pregunta.getEvaluacion());
-									respuesta.setPregunta(pregunta);
-									respuesta.setOpcionRespuesta(new OpcionRespuesta(respuestaF));
-									respuesta.setPersona(new Persona(cvePersona));
-									respuesta.setActivo(true);
-									respuesta.setFechaAlta(fechaHoy);
-									
-									RespuestaEvaluacionInicial resEvaInicial = new RespuestaEvaluacionInicial();							
-									resEvaInicial.setRespuesta(respuesta);
-									resEvaInicial.setRespuestaComentario(null);
-									resEvaInicial.setEvaluacionTutor(evaluacionTutor);
-									resEvaIniService.guardar(resEvaInicial);
-								}
-								
+								//Consulto las opciones de respuesta asociadas a cada pregunta
+								List<OpcionRespuesta> opcionRespuestas = opcionesRepuestaService.buscarPorPregunta(pregunta.getId());
+								RespuestaEvaluacionInicial VRespuestaEI = null;
+								//se recorren las opciones de respuesta disponibles con las recibidas del formulario
+							    for (OpcionRespuesta opcionR : opcionRespuestas) { 
+							        if (!respuestas.contains(opcionR.getId())) { 
+							        	// eliminar
+							        	VRespuestaEI = resEvaIniService.buscarRespuestaCerradaPorPreguntaYOpcionRespuesta(pregunta.getEvaluacion().getId(), pregunta.getId(), opcionR.getId(), cvePersona, cveGrupo);
+							        	if(VRespuestaEI!=null) {
+							        		resEvaIniService.eliminar(VRespuestaEI);
+							        	}
+							        }else{
+							        	//agregar
+							        	VRespuestaEI = resEvaIniService.buscarRespuestaCerradaPorPreguntaYOpcionRespuesta(pregunta.getEvaluacion().getId(), pregunta.getId(), opcionR.getId(), cvePersona, cveGrupo);
+							        	if(VRespuestaEI==null) {
+							        		Respuesta respuesta = new Respuesta();
+											respuesta.setEvaluacion(pregunta.getEvaluacion());
+											respuesta.setPregunta(pregunta);
+											respuesta.setOpcionRespuesta(opcionR);
+											respuesta.setPersona(new Persona(cvePersona));
+											respuesta.setActivo(true);
+											respuesta.setFechaAlta(fechaHoy);
+											
+											RespuestaEvaluacionInicial resEvaInicial = new RespuestaEvaluacionInicial();							
+											resEvaInicial.setRespuesta(respuesta);
+											resEvaInicial.setRespuestaComentario(null);
+											resEvaInicial.setEvaluacionTutor(evaluacionTutor);
+											resEvaIniService.guardar(resEvaInicial);
+							        	}
+							        }
+							    } 
+						 							
 							}	
 							
 						}else{

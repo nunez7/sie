@@ -486,7 +486,8 @@ public class TutorController {
 							para = grupo.getCarrera().getEmailCarrera();
 						}
 						mail.setDe(de);
-						mail.setPara(new String[] {para});		
+					    String[] correos = para.split(",");	
+						mail.setPara(correos);		
 						//Email title
 						mail.setTitulo("Canalización de alumnos");		
 						//Variables a plantilla
@@ -496,7 +497,7 @@ public class TutorController {
 						variables.put("cuerpoCorreo", "El tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
 								+", solicita una canalización para el alumno "+alumno.getPersona().getNombreCompleto()+", debido a que "+resumen
 								+", por esta razón: "+razon
-								+". "+comentario+". Espero su confirmación"+grupo.getProfesor().getEmail()+".");
+								+". "+comentario+". Espero su confirmación "+grupo.getProfesor().getEmail()+".");
 					
 						mail.setVariables(variables);			
 						try {
@@ -570,6 +571,7 @@ public class TutorController {
 				if(ComprobarBaja==null) {
 					Baja baja = new Baja();
 					baja.setGrupo(new Grupo(cveGrupo));
+					baja.setPeriodo(new Periodo(usuario.getPreferencias().getIdPeriodo()));//---
 					baja.setPersona(new Persona(cvePersona));
 					baja.setAlumno(new Alumno(Integer.parseInt(cveAlumno)));
 					baja.setTipoBaja(Integer.parseInt(tipoBaja));
