@@ -27,6 +27,7 @@ import edu.mx.utdelacosta.model.Bitacora;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Concepto;
+import edu.mx.utdelacosta.model.ConceptoAbono;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.PagoAlumno;
@@ -44,6 +45,7 @@ import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IBitacoraService;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
+import edu.mx.utdelacosta.service.IConceptoAbonoService;
 import edu.mx.utdelacosta.service.IConceptoService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IGrupoService;
@@ -88,6 +90,9 @@ public class PagoPersonaController {
 	
 	@Autowired
 	private ICalificacionCorteService calificacionCorteService;
+	
+	@Autowired
+	private IConceptoAbonoService conceptoAbonoService;
 	
 	@GetMapping("/buscar-cliente/{like}")
 	public String buscarCliente(@PathVariable("like") String like, Model model) {
@@ -183,11 +188,13 @@ public class PagoPersonaController {
 				pagoExiste.setStatus(1);
 				pagoExiste.setFactura(Boolean.valueOf(factura));
 				//se guarda el pago recibe
+				
 				PagoRecibe pr = new PagoRecibe();
 				pr.setCajero(persona);
 				pr.setFechaCobro(new Date());
 				pr.setPagoGeneral(pagoExiste);
 				pagoExiste.setPagoRecibe(pr);
+				
 				if(pagoExiste.getPagoAsignatura() != null && pagoExiste.getPagoAsignatura().getIdCorteEvaluativo() != null) {
 					RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 							pagoExiste.getPagoAlumno().getAlumno(), pagoExiste.getPagoAsignatura().getCargaHoraria(),
@@ -206,7 +213,7 @@ public class PagoPersonaController {
 						remedialAlumnoService.guardar(remedial);
 					}
 				}
-
+				//para sacar variables del la reinscripcion autoamtica
 				if(pagoExiste.getPagoCuatrimestre() != null && pagoExiste.getPagoCuatrimestre().getAlumnoGrupo() != null) {
 					//se actualiza la variable de alumno grupo 
 					ag = pagoExiste.getPagoCuatrimestre().getAlumnoGrupo().getId();
@@ -242,6 +249,18 @@ public class PagoPersonaController {
 					//se busca el nuevo concepto
 					Concepto concepto = conceptoService.buscarPorId(idConcepto);
 					pago.setConcepto(concepto);
+					//para generar el abano de colegiatura
+			        if(cveAlumno > 0 && idConcepto == 73) { //se comprueba que sea un alumno
+			        	if(generarAbono(cveAlumno, idConcepto, monto, folio).equals("fail-menor")) {
+			        		return "fail-menor";
+			        	}
+			        }
+			      //para generar el abano de titulo
+			        if(cveAlumno > 0 && idConcepto == 74) { //se comprueba que sea un alumno
+			        	if(generarAbono(cveAlumno, idConcepto, monto, folio).equals("fail-menor")) {
+			        		return "fail-menor";
+			        	}
+			        }
 					pago.setCantidad(cantidad);
 					pago.setDescripcion(concepto.getConcepto());
 					pago.setFolio(folio);
@@ -347,4 +366,50 @@ public class PagoPersonaController {
 		return "up";
 	}
 	
+	//funcion para registrar abonos
+	public String generarAbono(Integer idAlumno, Integer idConcepto, double monto, String folio) {
+		double adeudo = 0.0; //adeudo que tendra el pago 
+    	List<PagoGeneral> adeudos = pagoGeneralService.buscarPorAlumno(idAlumno, 0);
+    	//se crea el objeto del abono
+    	ConceptoAbono abono = new ConceptoAbono();
+    	//se iteran los adeudos
+    	for (PagoGeneral a : adeudos) {
+    		//abono de colegiatura
+    		if(idConcepto == 73) {
+    			if(a.getConcepto().getId() == 7 || a.getConcepto().getId() == 8 || a.getConcepto().getId() == 9
+			        || a.getConcepto().getId() == 10) {
+    				//se guardan el pago y concepto
+    				abono.setPago(a);//se añade el pago general
+        			abono.setConcepto(new Concepto(idConcepto)); 
+    			}
+    		}
+    		//abono de titulo
+    		if(idConcepto == 74) {
+    			if(a.getConcepto().getId() == 50 || a.getConcepto().getId() == 51) {
+    				abono.setPago(a);//se añade el pago general
+        			abono.setConcepto(new Concepto(idConcepto));
+    			}
+    		}
+    		//se guardan los demas datos 
+    		adeudo = a.getMonto() - monto;
+			a.setMonto(adeudo);
+			//para saber si ya se completo de pago 
+			if(adeudo == 0) {
+				a.setFolio(folio);
+				a.setStatus(1);
+				a.setComentario("PAGADO EN PARCIALIDADES");
+			}
+			if(adeudo < 0) {
+				return "fail-menor";
+			}
+			//se termina de guardar el objeto de abono concepto
+			abono.setFolio(folio);
+			abono.setCantidad(monto); //monto que viene en la cadena del adeudo
+			conceptoAbonoService.guardar(abono);
+			//se guarda el pagoGeneral actualizado
+			pagoGeneralService.guardar(a);
+		}
+    	
+    	return "ok";
+	}
 }
