@@ -302,13 +302,15 @@ public class EscolaresController {
 				alumno.setMatricula(al.getMatricula());
 				// Construimos las materias
 				materiasDT = new ArrayList<MateriaDTO>();
-				for (MateriaPromedioDTO cm : calificacionMateriaService.buscarPorGrupoAlumno(cveGrupo, al.getId())) {
+				for (Materia materia : materias) {
+					CalificacionMateria calMa = calificacionMateriaService.buscarPorAlumnoYGrupoYMateria(al.getId(), cveGrupo, materia.getId());
 					// Agregamos todos los promedios de las materias del alumno
 					MateriaDTO mNew = new MateriaDTO();
-					mNew.setPromedio(cm.getCalificacion());
-					mNew.setEstatusPromedio(cm.getEstatus());
+					mNew.setPromedio(calMa!=null ? calMa.getCalificacion() : 0);
+					mNew.setEstatusPromedio(calMa!=null ? calMa.getEstatus() : "NA");
 					materiasDT.add(mNew);
 				}
+				
 				// Agregamos las materias al alumno
 				alumno.setMaterias(materiasDT);
 				alumnos.add(alumno);
@@ -544,7 +546,7 @@ public class EscolaresController {
 			// System.out.println("El documento tiene " + workbook.getNumberOfSheets() + "
 			/* Iterando sobre todas las hojas en el libro de trabajo (forEach con lambda) */
 			workbook.forEach(sheet -> {
-				System.out.println("=> " + sheet.getSheetName());
+				//System.out.println("=> " + sheet.getSheetName());
 			});
 			// Obteniendo la Hoja en el índice cero
 			Sheet sheet = workbook.getSheetAt(0);

@@ -65,8 +65,8 @@ public class GruposController {
 			grupo.setCarrera(new Carrera(datos.getIdCarrera()));
 			grupo.setCuatrimestre(new Cuatrimestre(datos.getIdCuatrimestre()));
 			grupo.setPeriodo(new Periodo(datos.getIdPeriodo()));
+			grupo.setTurno(new Turno(datos.getIdTurno()));
 		}
-		grupo.setTurno(new Turno(datos.getIdTurno()));
 		grupo.setActivo(datos.isActivo());
 		grupo.setNombre(datos.getNombreGrupo());
 		grupo.setCapacidadMaxima(datos.getCantidad());

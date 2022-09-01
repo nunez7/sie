@@ -59,4 +59,9 @@ public class CalificacionMateriaServiceJpa implements ICalificacionMateriaServic
 		return calificacionMateriaRepository.findCalificacionByAlumnoAndCargaHoraria(idAlumno, idCargaHoraria);
 	}
 
+	@Override
+	public CalificacionMateria buscarPorAlumnoYGrupoYMateria(Integer alumno, Integer grupo, Integer materia) {
+		return calificacionMateriaRepository.findByAlumnoAndGrupoAndMateria(alumno, grupo, materia);
+	}
+
 }
