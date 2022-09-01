@@ -107,6 +107,38 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "ORDER BY pg.id ", nativeQuery = true)
 	List<PagosGeneralesDTO> findByFechaInicioAndFechaFinAndAllCajeros(@Param("fechaInicio") Date fechaInicio,
 			@Param("fechaFin") Date fechaFin);
+	
+	//busca los pagos para reporte de tipo pago (banco y corresponsalias) con fecha inicio, fin y cajero
+	@Query(value = "SELECT COALESCE(pg.folio, 'S/F') AS folio, a.matricula, "
+			+ "CONCAT(ap.primer_apellido, ' ', ap.segundo_apellido, ' ', ap.nombre) as nombre, "
+			+ "pg.concepto as concepto, pg.monto as monto, pr.fecha_cobro as fecha, pg.referencia, "
+			+ "pg.fecha_importacion as fechaimportacion, pr.fecha_cobro as fechapago "
+			+ "FROM pagos_generales pg "
+			+ "INNER JOIN pago_recibe pr ON pg.id = pr.id_pago "
+			+ "INNER JOIN personas p ON p.id = pr.id_cajero "
+			+ "INNER JOIN pago_alumno pa ON pa.id_pago = pg.id "
+			+ "INNER JOIN alumnos a ON a.id = pa.id_alumno "
+			+ "INNER JOIN personas ap ON ap.id = a.id_persona "
+			+ "WHERE pg.status = 1 AND p.id = :cajero AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin "
+			+ "AND pg.tipo = :tipo ORDER BY pg.id", nativeQuery = true)
+	List<PagosGeneralesDTO> findByTipoPagoAndFechaInicioAndFechaFinAndCajero(@Param("fechaInicio") Date fechaInicio, 
+			@Param("fechaFin") Date fechaFin, @Param("tipo") Integer tipo, @Param("cajero") Integer idCajero);
+	
+	//busca los pagos para reporte de tipo pago (banco y corresponsalias) con fecha inicio, fin y todos los cajeros
+		@Query(value = "SELECT COALESCE(pg.folio, 'S/F') AS folio, a.matricula, "
+				+ "CONCAT(ap.primer_apellido, ' ', ap.segundo_apellido, ' ', ap.nombre) as nombre, "
+				+ "pg.concepto as concepto, pg.monto as monto, pr.fecha_cobro as fecha, pg.referencia, "
+				+ "pg.fecha_importacion as fechaimportacion, pr.fecha_cobro as fechapago "
+				+ "FROM pagos_generales pg "
+				+ "INNER JOIN pago_recibe pr ON pg.id = pr.id_pago "
+				+ "INNER JOIN personas p ON p.id = pr.id_cajero "
+				+ "INNER JOIN pago_alumno pa ON pa.id_pago = pg.id "
+				+ "INNER JOIN alumnos a ON a.id = pa.id_alumno "
+				+ "INNER JOIN personas ap ON ap.id = a.id_persona "
+				+ "WHERE pg.status = 1 AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin "
+				+ "AND pg.tipo = :tipo ORDER BY pg.id", nativeQuery = true)
+		List<PagosGeneralesDTO> findByTipoPagoAndFechaInicioAndFechaFinAndAllCajeros(@Param("fechaInicio") Date fechaInicio, 
+				@Param("fechaFin") Date fechaFin, @Param("tipo") Integer tipo);
 
 	@Query(value = "SELECT MAX(pg.status) FROM pagos_generales pg " + "LEFT JOIN pago_alumno pa ON pa.id_pago=pg.id "
 			+ "LEFT JOIN alumnos al on pa.id_alumno = al.id "

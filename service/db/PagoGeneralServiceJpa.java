@@ -179,4 +179,18 @@ public class PagoGeneralServiceJpa implements IPagoGeneralService{
 	public Double sumarTotalMontoPorFolio(String folio) {
 		return pagoRepo.sumTotalMontoByFolio(folio);
 	}
+
+	@Override
+	public List<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYTipoPagoYCajero(Date fechaInicio, Date fechaFin,
+			Integer tipo, Integer cajero) {
+		// TODO Auto-generated method stub
+		return pagoRepo.findByTipoPagoAndFechaInicioAndFechaFinAndCajero(fechaInicio, fechaFin, tipo, cajero);
+	}
+
+	@Override
+	public List<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYTipoPagoYTodosCajeros(Date fechaInicio, Date fechaFin,
+			Integer tipo) {
+		// TODO Auto-generated method stub
+		return pagoRepo.findByTipoPagoAndFechaInicioAndFechaFinAndAllCajeros(fechaInicio, fechaFin, tipo);
+	}
 }

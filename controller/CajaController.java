@@ -328,4 +328,81 @@ public class CajaController {
 		model.addAttribute("cliente", cliente);
 		return "caja/plantillaFacturaEmpresa";
 	}
+	
+	//reporte pagos de banco
+	@GetMapping("/reporte-banco-detallado")
+	public String reporteBancoDetallado(Model model, HttpSession session) {
+		Date fechaInicio;
+		Date fechaFin;
+		if (session.getAttribute("fechaInicio") == null) {
+			fechaInicio = new Date();
+		} else {
+			fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("fechaInicio"));
+		}
+
+		// cuando selecciona la fecha de fin
+		if (session.getAttribute("fechaFin") == null) {
+			fechaFin = new Date();
+		} else {
+			fechaFin = java.sql.Date.valueOf((String) session.getAttribute("fechaFin"));
+		}
+		
+		if (session.getAttribute("cveCajero") != null) {
+			int cveCajero = (Integer) session.getAttribute("cveCajero");
+			model.addAttribute("cveCajero", cveCajero);
+			// lista que guardará los pagos
+			List<PagosGeneralesDTO> pagos = null;
+			if (cveCajero > 0) {
+				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYTipoPagoYCajero(fechaInicio, fechaFin, 1, cveCajero);
+			} else {
+				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYTipoPagoYTodosCajeros(fechaInicio, fechaFin, 1);
+			}
+			model.addAttribute("pagos", pagos);
+		}
+		List<Persona> cajeros = personaService.buscarCajeros();
+		model.addAttribute("fechaHoy", new Date());
+		model.addAttribute("fechaInicio", fechaInicio);
+		model.addAttribute("fechaFin", fechaFin);
+		model.addAttribute("cajeros", cajeros);
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "caja/reporteBancoDetallado";
+	}
+	
+	@GetMapping("/reporte-corresponsalias-detallado")
+	public String reporteCorresponsaliasDetallado(Model model, HttpSession session) {
+		Date fechaInicio;
+		Date fechaFin;
+		if (session.getAttribute("fechaInicio") == null) {
+			fechaInicio = new Date();
+		} else {
+			fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("fechaInicio"));
+		}
+
+		// cuando selecciona la fecha de fin
+		if (session.getAttribute("fechaFin") == null) {
+			fechaFin = new Date();
+		} else {
+			fechaFin = java.sql.Date.valueOf((String) session.getAttribute("fechaFin"));
+		}
+		
+		if (session.getAttribute("cveCajero") != null) {
+			int cveCajero = (Integer) session.getAttribute("cveCajero");
+			model.addAttribute("cveCajero", cveCajero);
+			// lista que guardará los pagos
+			List<PagosGeneralesDTO> pagos = null;
+			if (cveCajero > 0) {
+				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYTipoPagoYCajero(fechaInicio, fechaFin, 2, cveCajero);
+			} else {
+				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYTipoPagoYTodosCajeros(fechaInicio, fechaFin, 2);
+			}
+			model.addAttribute("pagos", pagos);
+		}
+		List<Persona> cajeros = personaService.buscarCajeros();
+		model.addAttribute("fechaHoy", new Date());
+		model.addAttribute("fechaInicio", fechaInicio);
+		model.addAttribute("fechaFin", fechaFin);
+		model.addAttribute("cajeros", cajeros);
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "caja/reporteCorresponsaliasDetallado";
+	}
 }
