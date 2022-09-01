@@ -22,4 +22,6 @@ public interface PagosGeneralesDTO {
 	Date getFecha();
 	
 	Boolean getFactura();
+	
+	Integer getTipoPago();
 }
