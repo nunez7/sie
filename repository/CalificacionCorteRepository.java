@@ -32,4 +32,9 @@ public interface CalificacionCorteRepository extends CrudRepository<Calificacion
 			+ "AND id_corte_evaluativo= :corte ", nativeQuery = true)
 	Double findByAlumnoAndCargaHorariaAndCorte(@Param("alumno") Integer idAlumno,
 			@Param("cargaHoraria") Integer idCargaHoraria, @Param("corte") Integer idCorte);
+	
+	@Query(value = "SELECT CAST(cc.editable AS INT ) "
+			+ "FROM calificacion_corte cc "
+			+ "WHERE cc.id_alumno = :alumno AND cc.id_corte_evaluativo = :corte AND cc.id_carga_horaria = :carga", nativeQuery = true)
+	Integer findRevalidadaByAlumnoAndCargaHorariaAndCorteEvaluativo(@Param("alumno")Integer alumno, @Param("carga") Integer cargaHoraria, @Param("corte") Integer corteEvaluativo);
 }

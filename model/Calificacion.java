@@ -24,7 +24,7 @@ public class Calificacion {
 	@JoinColumn(name="id_mecanismo_instrumento", referencedColumnName = "id")
 	private MecanismoInstrumento mecanismoInstrumento;
 	
-	private Integer valor;
+	private Float valor;
 	
 	public Calificacion() {
 	}
@@ -57,11 +57,11 @@ public class Calificacion {
 		this.mecanismoInstrumento = mecanismoInstrumento;
 	}
 
-	public Integer getValor() {
+	public Float getValor() {
 		return valor;
 	}
 
-	public void setValor(Integer valor) {
+	public void setValor(Float valor) {
 		this.valor = valor;
 	}
 	

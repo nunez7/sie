@@ -24,4 +24,5 @@ public interface ICalificacionCorteService {
 	Double buscarPorAlumnoCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria,
 			Integer idCorteEvaluativo);
 
+	Integer buscarRevalidadaPorAlumnoYCargaHorariaYCorteEvaluativo(Integer alumno, Integer cargaHoraria, Integer corteEvaluativo);
 }

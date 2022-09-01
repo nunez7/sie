@@ -188,7 +188,7 @@ public class ProrrogaController {
 			
 			try {
 				emailService.sendEmail(mail);
-			} catch (MessagingException | IOException e) {
+			} catch (Exception e) {
 				return "mailErr";
 			}
 			
