@@ -45,6 +45,7 @@ import edu.mx.utdelacosta.service.IBitacoraService;
 import edu.mx.utdelacosta.service.IConceptoService;
 import edu.mx.utdelacosta.service.INotaCreditoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
+import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.util.CodificarTexto;
 import edu.mx.utdelacosta.util.NumberToLetterConverter;
@@ -71,6 +72,9 @@ public class FolioController {
 	
 	@Autowired
 	private IAlumnoGrupoService alGrService;
+	
+	@Autowired
+	private IPeriodosService periodoService;
 	
 	@GetMapping("/ver-edicion/{folio}")
 	public String vistaEdicion(@PathVariable("folio") String noFolio, Model model) {
@@ -177,7 +181,7 @@ public class FolioController {
 			}
 
 		}
-
+		
 		List<Integer> list = new ArrayList<>();
 		//se crea una lista que se iterara para tener ambas partes del recibo
 		if (infoRecibo.getActivo()==0) {
@@ -195,6 +199,7 @@ public class FolioController {
 		model.addAttribute("folioCifrado", folioCifrado);
 		model.addAttribute("folio", infoRecibo);
 		model.addAttribute("vueltas", list);
+		model.addAttribute("periodo", periodoService.buscarUltimo());
 		return "caja/recibo";
 	}
 	
@@ -238,6 +243,7 @@ public class FolioController {
 		
 		model.addAttribute("recibos", recibos);
 		model.addAttribute("vueltas", list);
+		model.addAttribute("periodo", periodoService.buscarUltimo());
 		return "caja/reciboMultiple";
 	}
 
