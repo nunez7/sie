@@ -192,7 +192,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "MAX(COALESCE(c.rfc  ,a.matricula)) as matricula, MAX(COALESCE(c.clave, ca.nombre)) as carrera, "
 			+ "SUM(DISTINCT(pg.cantidad  * pg.monto_unitario) - ((COALESCE(pg.descuento,0) * (pg.cantidad * pg.monto_unitario))/100) ) AS Monto, "
 			+ "MAX(CAST(pg.activo AS INT)) AS Activo, MAX(pg.created) AS Fecha, MAX(pg.tipo)AS TipoPago, "
-			+ "MAX(COALESCE(pa2.area, g.nombre)) as grupo, MAX(COALESCE(c.tipo, concat(cc.fecha_inicio,' - ',cc.fecha_fin))) as ciclos, MAX(COALESCE(c.tamano, CAST(cu.consecutivo AS VARCHAR))) as cuatrimestre,"
+			+ "MAX(COALESCE(pa2.area, g.nombre)) as grupo, MAX(COALESCE(c.tipo, concat(to_char(cc.fecha_inicio,'dd-MM-yyyy'),' - ',to_char(cc.fecha_fin,'dd-MM-yyyy')))) as ciclos, MAX(COALESCE(c.tamano, CAST(cu.consecutivo AS VARCHAR))) as cuatrimestre,"
 			+ "MAX(COALESCE(pr.fecha_cobro, null)) as fechaPago, MAX(COALESCE(CONCAT(p2.primer_apellido, ' ', p2.segundo_apellido,' ',p2.nombre), '')) as pagoRecibe, MAX(COALESCE(a.id, 0)) as idAlumno "
 			+ "FROM pagos_generales pg "
 			+ "LEFT JOIN pago_recibe pr ON pr.id_pago = pg.id "
