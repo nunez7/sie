@@ -249,16 +249,27 @@ public class PagoPersonaController {
 					//se busca el nuevo concepto
 					Concepto concepto = conceptoService.buscarPorId(idConcepto);
 					pago.setConcepto(concepto);
+					
 					//para generar el abano de colegiatura
-			        if(cveAlumno > 0 && idConcepto == 73) { //se comprueba que sea un alumno
-			        	if(generarAbono(cveAlumno, idConcepto, monto, folio).equals("fail-menor")) {
+			        if(cveAlumno > 0 && idConcepto == 7 || idConcepto == 8 || idConcepto == 9 || idConcepto == 10) { //se comprueba que sea un alumno
+			        	String comentarioAbono = generarAbono(cveAlumno, idConcepto, monto, folio);
+			        	if(comentarioAbono.equals("fail-menor")) {
 			        		return "fail-menor";
+			        	}
+			        	else {
+			        		comentario = comentarioAbono;
+			        		
 			        	}
 			        }
 			      //para generar el abano de titulo
-			        if(cveAlumno > 0 && idConcepto == 74) { //se comprueba que sea un alumno
-			        	if(generarAbono(cveAlumno, idConcepto, monto, folio).equals("fail-menor")) {
+			        if(cveAlumno > 0 && idConcepto == 50 || idConcepto == 51) { //se comprueba que sea un alumno
+			        	String comentarioAbono = generarAbono(cveAlumno, idConcepto, monto, folio);
+			        	if(comentarioAbono.equals("fail-menor")) {
 			        		return "fail-menor";
+			        	}
+			        	else {
+			        		comentario = comentarioAbono;
+			        		
 			        	}
 			        }
 					pago.setCantidad(cantidad);
@@ -372,22 +383,26 @@ public class PagoPersonaController {
     	List<PagoGeneral> adeudos = pagoGeneralService.buscarPorAlumno(idAlumno, 0);
     	//se crea el objeto del abono
     	ConceptoAbono abono = new ConceptoAbono();
+    	//comentario para el abono
+    	String comentario = "";
     	//se iteran los adeudos
     	for (PagoGeneral a : adeudos) {
     		//abono de colegiatura
-    		if(idConcepto == 73) {
+    		if(idConcepto == 7 || idConcepto == 8 || idConcepto == 9 || idConcepto == 10) {
     			if(a.getConcepto().getId() == 7 || a.getConcepto().getId() == 8 || a.getConcepto().getId() == 9
 			        || a.getConcepto().getId() == 10) {
     				//se guardan el pago y concepto
     				abono.setPago(a);//se añade el pago general
         			abono.setConcepto(new Concepto(idConcepto)); 
+        			comentario = "ABONO " + a.getDescripcion();
     			}
     		}
     		//abono de titulo
-    		if(idConcepto == 74) {
+    		if(idConcepto == 50 || idConcepto == 51) {
     			if(a.getConcepto().getId() == 50 || a.getConcepto().getId() == 51) {
     				abono.setPago(a);//se añade el pago general
         			abono.setConcepto(new Concepto(idConcepto));
+        			comentario = "ABONO " + a.getDescripcion();
     			}
     		}
     		//se guardan los demas datos 
@@ -410,6 +425,6 @@ public class PagoPersonaController {
 			pagoGeneralService.guardar(a);
 		}
     	
-    	return "ok";
+    	return comentario;
 	}
 }

@@ -11,6 +11,6 @@ public interface ConceptosRepository extends JpaRepository<Concepto, Integer>{
 	
 	List<Concepto> findAllByOrderByIdDesc();
 	
-	@Query(value = "SELECT * FROM conceptos c WHERE c.id not in (7,8,9,10,13,14,15,20,21,22) ORDER BY concepto", nativeQuery = true) 
+	@Query(value = "SELECT * FROM conceptos c WHERE c.id not in (13,14,15,20,21,22) ORDER BY concepto", nativeQuery = true) 
 	List<Concepto> findAllOptionals();
 }
