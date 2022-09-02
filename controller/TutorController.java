@@ -1597,6 +1597,63 @@ public class TutorController {
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "reportes/reporteEntrevistaInicial"; 
 	}
+	 
+	 @GetMapping("/reporte-entrevista-inicial-primera-septima") 
+	 public String reporteEntrevistaInicialPrimeraSeptima(Model model, HttpSession session) { 
+		// extrae el usuario a partir del usuario cargado en sesión.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+					
+		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));
+		Integer cveGrupo = (Integer) session.getAttribute("rei2-cveGrupo");
+		Evaluacion evaluacion = null;
+		
+		if (cveGrupo != null) {			
+			List<Alumno> alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
+			Integer cvePersonaAl = (Integer) session.getAttribute("rei2-cvePersonaAl");	
+			if(cvePersonaAl!=null) {
+				Integer numEvaluacion = (Integer) session.getAttribute("rei2-numEvaluacion");
+				
+
+					if(numEvaluacion!=null && numEvaluacion==2) {
+						evaluacion = evaluacionService.buscar(7);
+					}else{
+						evaluacion = evaluacionService.buscar(6);
+					}		
+					//Se inyectan las respuestas asociadas a cada pregunta de la evaluación seleccionada 
+					//asi como su repuesta si es que la ahi.		
+					for (Pregunta pregunta : evaluacion.getPreguntas()) {
+						
+						List<OpcionRespuestaDTO> OpcionesRepuesta = resEvaIniService.buscarRespuestaPorPregunta(pregunta.getId(), cvePersonaAl, evaluacion.getId(), cveGrupo);
+						pregunta.setOpcionesRespuesta(OpcionesRepuesta);					
+						
+						//Se buscan las opciones de respuesta abierta
+						if(pregunta.getAbierta()==true) {
+							RespuestaEvaluacionInicial respuestaEI = resEvaIniService.buscarRespuestaAbiertaPorPregunta(evaluacion.getId(), pregunta.getId(), cvePersonaAl, cveGrupo);
+							pregunta.setComentarioRespuesta(respuestaEI != null ? respuestaEI.getRespuestaComentario().getComentario().getComentario() : null);
+						}
+						
+					}
+
+				model.addAttribute("numEvaluacion", numEvaluacion);
+			}
+			model.addAttribute("alumnos", alumnos);
+			model.addAttribute("cvePersonaAl", cvePersonaAl);
+			model.addAttribute("evaluacion", evaluacion);
+		}
+		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
+		model.addAttribute("grupos", grupos);
+		model.addAttribute("cveGrupo", cveGrupo);		
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "reportes/reportePrimeraySeptimaEntrevistaInicial"; 
+	}
 	
 	// consulta	
 	@GetMapping("/informacionEstudiante")
