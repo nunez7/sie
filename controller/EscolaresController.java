@@ -87,6 +87,7 @@ import edu.mx.utdelacosta.service.IMateriasService;
 import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
 import edu.mx.utdelacosta.service.IMunicipiosService;
 import edu.mx.utdelacosta.service.INivelEstudioService;
+import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPeriodoInscripcionService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
@@ -96,6 +97,7 @@ import edu.mx.utdelacosta.service.ITestimonioCorteService;
 import edu.mx.utdelacosta.service.ITestimonioService;
 import edu.mx.utdelacosta.service.ITurnoService;
 import edu.mx.utdelacosta.service.IUsuariosService;
+import edu.mx.utdelacosta.util.Reinscribir;
 import edu.mx.utdelacosta.util.SubirArchivo;
 
 @Controller
@@ -183,6 +185,12 @@ public class EscolaresController {
 	
 	@Autowired
 	private ITurnoService turnoService;
+	
+	@Autowired
+	private IPagoGeneralService PGService;
+	
+	@Autowired
+	private Reinscribir reinscripcion;
 
 	@Value("${siestapp.ruta.docs}")
 	private String rutaDocs;
@@ -239,9 +247,11 @@ public class EscolaresController {
 			cveGrupo = 0;
 		}
 
-		Grupo grupoNuevo = new Grupo();
+		Grupo grupoNuevo = grupoService.buscarPorId(cveGrupo);
 		grupoNuevo.setId(cveGrupo);
 
+		List<Integer> conceptos = reinscripcion.obtenerConceptosReinscripcion(grupoNuevo.getCuatrimestre().getConsecutivo());
+		
 		// Recorremos los IDS
 		for (String key : jsonObject.keySet()) {
 			String idAlumno = (String) jsonObject.get(key);
@@ -261,7 +271,16 @@ public class EscolaresController {
 				grupoBuscar.setFechaAlta(new Date());
 				grupoBuscar.setActivo(true);
 				alumnoGrService.guardar(grupoBuscar);
+				
 			}
+			
+			//se procede a buscar el pago del periodo actual 
+			if (PGService.contarAdeudoCutrimestreAlumno(grupoBuscar.getId())== 0) {
+				for (Integer concepto : conceptos) {
+					reinscripcion.crearPagoGenerico(concepto, usuario.getPreferencias().getIdPeriodo(), grupoBuscar);
+				}
+			}
+			
 		}
 		return "ok";
 	}

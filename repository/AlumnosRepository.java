@@ -115,7 +115,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "INNER JOIN carreras c ON c.id=g.id_carrera "
 			+ "INNER JOIN personas p ON p.id=a.id_persona "
 			+ "WHERE a.estatus = 1 AND g.id_carrera=:carrera AND g.id_periodo=:periodo AND cu.consecutivo=:cuatrimestre AND a.documentos_ingresos = 1 "
-			+ "AND ag.pagado = 'True' AND ag.fecha_inscripcion IS NOT NULL "
+		//	+ "AND ag.pagado = 'True' AND ag.fecha_inscripcion IS NOT NULL "
 			+ " AND a.id NOT IN ("
 			+ " SELECT id_alumno FROM pago_alumno pa "
 			+ " INNER JOIN pagos_generales pg  ON pg.id=pa.id_pago "

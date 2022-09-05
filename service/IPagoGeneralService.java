@@ -79,4 +79,5 @@ public interface IPagoGeneralService {
 	
 	List<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYTipoPagoYTodosCajeros(Date fechaInicio, Date fechaFin, Integer tipo);
 
+	Integer contarAdeudoCutrimestreAlumno(Integer alumnoGrupo);
 }

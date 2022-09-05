@@ -268,6 +268,12 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ " FROM pagos_generales pg "
 			+ " WHERE folio = :folio ", nativeQuery = true)
 	Double sumTotalMontoByFolio(@Param("folio") String folio);
+	
+	@Query(value = "SELECT COUNT(DISTINCT(pg.id)) "
+			+ "FROM pagos_generales pg "
+			+ "LEFT JOIN pago_cuatrimestre pc ON pc.id_pago = pg.id "
+			+ "WHERE pc.id_alumno_grupo = :alumnoGrupo AND pg.id_concepto = 10", nativeQuery = true)
+	Integer countAdeudoCutrimestreAlumno(@Param("alumnoGrupo") Integer alumnoGrupo);
 
 
 }

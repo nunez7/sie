@@ -193,4 +193,9 @@ public class PagoGeneralServiceJpa implements IPagoGeneralService{
 		// TODO Auto-generated method stub
 		return pagoRepo.findByTipoPagoAndFechaInicioAndFechaFinAndAllCajeros(fechaInicio, fechaFin, tipo);
 	}
+
+	@Override
+	public Integer contarAdeudoCutrimestreAlumno(Integer alumnoGrupo) {
+		return pagoRepo.countAdeudoCutrimestreAlumno(alumnoGrupo);
+	}
 }
