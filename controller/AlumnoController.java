@@ -1511,7 +1511,7 @@ public class AlumnoController {
 			ProgramacionTutoria pTutoria = null;
 			List<TutoriaIndividual> tutorias = tutoriaIndService.buscarPorAlumno(alumno);
 			
-			if(tutorias.size()>0) {
+			if(ptutorias.size()>0) {
 				pTutoria = ptutorias.get(0);
 				for(TutoriaIndividual tutoria : tutorias) {
 					//Se valida si hay algun registro de tutoria impartida, el dia en el que el profesor le agendo una al alumno
