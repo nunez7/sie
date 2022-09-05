@@ -12,12 +12,6 @@ import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.TutoriaIndividual;
 import edu.mx.utdelacosta.repository.TutoriaIndividualRepository;
 import edu.mx.utdelacosta.service.ITutoriaIndividualService;
-import edu.mx.utdelacosta.util.imports.dto.BajasUtNay;
-import edu.mx.utdelacosta.util.imports.dto.CanalizacionesUtNay;
-import edu.mx.utdelacosta.util.imports.dto.FocosAtencionUtNay;
-import edu.mx.utdelacosta.util.imports.dto.FortalezasGrupoUtNay;
-import edu.mx.utdelacosta.util.imports.dto.TemasGruposUtNay;
-import edu.mx.utdelacosta.util.imports.dto.TutoriasUtNay;
 
 @Service
 public class TutoriaIndividualServiceJpa implements ITutoriaIndividualService{
@@ -72,36 +66,6 @@ public class TutoriaIndividualServiceJpa implements ITutoriaIndividualService{
 	@Override
 	public List<TutoriaIndividual> buscarEntreFechasPorGrupo(Integer idGrupo, Date fechaInicio, Date fechaFin) {
 		return tutoriaIndRepo.findByGrupoAndFechaTutoria(idGrupo, fechaInicio, fechaFin);
-	}
-
-	@Override
-	public List<TutoriasUtNay> buscarTodoTutoriasUtNay() {
-		return tutoriaIndRepo.findAllUtNay();
-	}
-
-	@Override
-	public List<CanalizacionesUtNay> buscarCanalizacionesUtNay() {
-		return tutoriaIndRepo.findCanalizacionesByUtNay();
-	}
-
-	@Override
-	public List<TemasGruposUtNay> buscarTemasGrupalesByUtNay() {
-		return tutoriaIndRepo.findTemasGrupalesByUtNay();
-	}
-
-	@Override
-	public List<FocosAtencionUtNay> buscarFocosAtencionByUtNay() {
-		return tutoriaIndRepo.findFocosAtencionByUtNay();
-	}
-
-	@Override
-	public List<FortalezasGrupoUtNay> buscarFortalezasGrupoByUtNay() {
-		return tutoriaIndRepo.findFortalezasGrupoByUtNay();
-	}
-
-	@Override
-	public List<BajasUtNay> buscarBajasByUtNay() {
-		return tutoriaIndRepo.findBajasByUtNay();
 	}
 
 	@Override

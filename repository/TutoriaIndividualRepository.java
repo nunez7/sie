@@ -10,12 +10,6 @@ import org.springframework.data.repository.query.Param;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.TutoriaIndividual;
-import edu.mx.utdelacosta.util.imports.dto.BajasUtNay;
-import edu.mx.utdelacosta.util.imports.dto.CanalizacionesUtNay;
-import edu.mx.utdelacosta.util.imports.dto.FocosAtencionUtNay;
-import edu.mx.utdelacosta.util.imports.dto.FortalezasGrupoUtNay;
-import edu.mx.utdelacosta.util.imports.dto.TemasGruposUtNay;
-import edu.mx.utdelacosta.util.imports.dto.TutoriasUtNay;
 
 public interface TutoriaIndividualRepository extends CrudRepository<TutoriaIndividual, Integer>{
 	
@@ -56,7 +50,7 @@ public interface TutoriaIndividualRepository extends CrudRepository<TutoriaIndiv
 	Integer findTotalDistinctAlumnoByCarreraAndPeriodoAndTurno(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo, @Param("idTurno") Integer idTurno);
 	
 	//importaciones
-	@Query(value = "SELECT * FROM tutorias_ut_nay ORDER BY id", nativeQuery = true)
+	/*@Query(value = "SELECT * FROM tutorias_ut_nay ORDER BY id", nativeQuery = true)
 	List<TutoriasUtNay> findAllUtNay();
 	
 	@Query(value = "SELECT * FROM canalizaciones_ut_nay ORDER BY id", nativeQuery = true)
@@ -72,6 +66,6 @@ public interface TutoriaIndividualRepository extends CrudRepository<TutoriaIndiv
 	List<FortalezasGrupoUtNay> findFortalezasGrupoByUtNay();
 	
 	@Query(value = "SELECT * FROM bajas_ut_nay ORDER BY id", nativeQuery = true)
-	List<BajasUtNay> findBajasByUtNay();
+	List<BajasUtNay> findBajasByUtNay();*/
 	
 }

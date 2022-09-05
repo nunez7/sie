@@ -6,12 +6,6 @@ import java.util.List;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.TutoriaIndividual;
-import edu.mx.utdelacosta.util.imports.dto.BajasUtNay;
-import edu.mx.utdelacosta.util.imports.dto.CanalizacionesUtNay;
-import edu.mx.utdelacosta.util.imports.dto.FocosAtencionUtNay;
-import edu.mx.utdelacosta.util.imports.dto.FortalezasGrupoUtNay;
-import edu.mx.utdelacosta.util.imports.dto.TemasGruposUtNay;
-import edu.mx.utdelacosta.util.imports.dto.TutoriasUtNay;
 
 public interface ITutoriaIndividualService {
 	
@@ -39,7 +33,7 @@ public interface ITutoriaIndividualService {
 	Integer totalDistinctAlumnoPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
 	
 	//importaciones
-	List<TutoriasUtNay> buscarTodoTutoriasUtNay();
+	/*List<TutoriasUtNay> buscarTodoTutoriasUtNay();
 	
 	List<CanalizacionesUtNay> buscarCanalizacionesUtNay();
 	
@@ -49,6 +43,6 @@ public interface ITutoriaIndividualService {
 	
 	List<FortalezasGrupoUtNay> buscarFortalezasGrupoByUtNay();
 	
-	List<BajasUtNay> buscarBajasByUtNay();
+	List<BajasUtNay> buscarBajasByUtNay();*/
 	
 }
