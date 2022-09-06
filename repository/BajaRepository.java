@@ -33,7 +33,7 @@ public interface BajaRepository extends CrudRepository<Baja, Integer>{
 			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
 			+ "INNER JOIN alumnos a ON a.id=ag.id_alumno "
 			+ "INNER JOIN baja_autoriza bg ON b.id=bg.id_baja "
-			+ "WHERE bg.tipo=:tipo AND b.estatus=:estatus AND ag.id_grupo=:idGrupo AND g.id_periodo =:idPeriodo", nativeQuery = true)
+			+ "WHERE bg.tipo=:tipo AND b.estatus=:estatus AND ag.id_grupo=:idGrupo AND b.id_periodo =:idPeriodo", nativeQuery = true)
 	List<Baja> findByTipoAndStatusAndGrupoAndPeriodo(@Param("tipo") Integer tipo, @Param("estatus") Integer estatus, @Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT b.* FROM bajas b "
@@ -42,7 +42,7 @@ public interface BajaRepository extends CrudRepository<Baja, Integer>{
 			+ "INNER JOIN carreras c ON g.id_carrera = c.id "
 			+ "INNER JOIN alumnos a ON a.id=ag.id_alumno "
 			+ "INNER JOIN baja_autoriza bg ON b.id=bg.id_baja "
-			+ "WHERE bg.tipo=:tipo AND b.estatus=:estatus AND c.id=:idCarrera AND g.id_periodo =:idPeriodo", nativeQuery = true)
+			+ "WHERE bg.tipo=:tipo AND b.estatus=:estatus AND c.id=:idCarrera AND b.id_periodo =:idPeriodo", nativeQuery = true)
 	List<Baja> findByTipoAndStatusAndCarreraAndPeriodo(@Param("tipo") Integer tipo, @Param("estatus") Integer estatus, @Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo);
 	
 	//todas las bajas por carrera

@@ -553,8 +553,7 @@ public class ControlAlumnoController {
 
 				// se reactiva el alumno grupo del ultimo grupo que fue desactivado al aprobar
 				// la baja
-				Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
-				AlumnoGrupo alumnoGrupo = alumnoGrupoService.buscarPorAlumnoYGrupo(alumno, ultimoGrupo);
+				AlumnoGrupo alumnoGrupo = alumnoGrupoService.buscarPorAlumnoYGrupo(alumno, baja.getGrupo());
 				alumnoGrupo.setActivo(true);
 				alumnoGrupoService.guardar(alumnoGrupo);
 
