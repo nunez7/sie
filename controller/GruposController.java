@@ -49,8 +49,10 @@ public class GruposController {
 
 	@PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String guardar(@RequestBody GrupoDTO datos) {
+	public String guardar(@RequestBody GrupoDTO datos, HttpSession session) {
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		Grupo grupo = null;
+		List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), datos.getIdCarrera());
 		if (datos.getIdGrupo() > 0) {
 			grupo = grupoService.buscarPorId(datos.getIdGrupo());
 		} else {
@@ -66,6 +68,7 @@ public class GruposController {
 			grupo.setCuatrimestre(new Cuatrimestre(datos.getIdCuatrimestre()));
 			grupo.setPeriodo(new Periodo(datos.getIdPeriodo()));
 			grupo.setTurno(new Turno(datos.getIdTurno()));
+			grupo.setConsecutivo(grupos.size()+1);
 		}
 		grupo.setActivo(datos.isActivo());
 		grupo.setNombre(datos.getNombreGrupo());
@@ -78,7 +81,7 @@ public class GruposController {
 	@GetMapping("/search/{id}")
 	public ResponseEntity<GrupoDTO> leer(@PathVariable("id") int id) {
 		Grupo grupo = grupoService.buscarPorId(id);
-
+		
 		if (grupo == null) {
 			return ResponseEntity.notFound().build();
 		} else {
