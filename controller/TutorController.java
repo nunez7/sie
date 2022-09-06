@@ -455,8 +455,7 @@ public class TutorController {
 						for(Integer cveMateria : materias) {
 							mail = new Mail();
 							CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(cveMateria);
-							//para = cargaHoraria.getProfesor().getEmail();
-							String para = "brayan.bg499@gmail.com";
+							String para = cargaHoraria.getProfesor().getEmail();
 							mail.setDe(de);
 							mail.setPara(new String[] {para});		
 							//Email title
@@ -483,8 +482,12 @@ public class TutorController {
 					}else{
 						
 						String para = servicioService.buscarPorId(servicio).getCorreo();
+						if(servicio==4){
+							para = grupo.getCarrera().getEmailCarrera();
+						}
 						mail.setDe(de);
-						mail.setPara(new String[] {para});		
+					    String[] correos = para.split(",");	
+						mail.setPara(correos);		
 						//Email title
 						mail.setTitulo("Canalización de alumnos");		
 						//Variables a plantilla
@@ -494,7 +497,7 @@ public class TutorController {
 						variables.put("cuerpoCorreo", "El tutor(a) "+grupo.getProfesor().getNombreCompletoConNivelEstudio()
 								+", solicita una canalización para el alumno "+alumno.getPersona().getNombreCompleto()+", debido a que "+resumen
 								+", por esta razón: "+razon
-								+". "+comentario+". Espero su confirmación"+grupo.getProfesor().getEmail()+".");
+								+". "+comentario+". Espero su confirmación "+grupo.getProfesor().getEmail()+".");
 					
 						mail.setVariables(variables);			
 						try {
@@ -568,6 +571,7 @@ public class TutorController {
 				if(ComprobarBaja==null) {
 					Baja baja = new Baja();
 					baja.setGrupo(new Grupo(cveGrupo));
+					baja.setPeriodo(new Periodo(usuario.getPreferencias().getIdPeriodo()));//---
 					baja.setPersona(new Persona(cvePersona));
 					baja.setAlumno(new Alumno(Integer.parseInt(cveAlumno)));
 					baja.setTipoBaja(Integer.parseInt(tipoBaja));
@@ -586,8 +590,7 @@ public class TutorController {
 					//correo
 					Mail mail = new Mail();
 					String de = correo;
-					//String para = alumno.getCarreraInicio().getEmailCarrera();
-					String para = "brayan.bg499@gmail.com";
+					String para = alumno.getCarreraInicio().getEmailCarrera();
 					mail.setDe(de);
 					mail.setPara(new String[] {para});		
 					//Email title
@@ -1172,6 +1175,8 @@ public class TutorController {
 			}															
 		}
 		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("grupos", grupos);		
 		model.addAttribute("temas", temasGrupales);	
@@ -1222,6 +1227,8 @@ public class TutorController {
 				}				
 			}
 			
+			Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+			model.addAttribute("periodo", periodo);
 			model.addAttribute("mujeres", m);
 			model.addAttribute("hombre", h);
 			model.addAttribute("allAlumnos", allAlumnos);				
@@ -1286,6 +1293,8 @@ public class TutorController {
 				alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());				
 			}
 			
+			Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+			model.addAttribute("periodo", periodo);
 			model.addAttribute("alumnos", alumnos);
 			model.addAttribute("grupos", grupos);
 			model.addAttribute("cveGrupo", cveGrupo);
@@ -1360,7 +1369,10 @@ public class TutorController {
 			model.addAttribute("horasDto", horasDto);
 			model.addAttribute("nomGrupo", grupo.getNombre());
 			model.addAttribute("turno", grupo.getTurno()!=null?grupo.getTurno().getNombre():null);
-		}			
+		}	
+
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("cveGrupo", cveGrupo);
 	  return "reportes/reporteHorarioClases"; 
@@ -1388,6 +1400,8 @@ public class TutorController {
 			}
 		}
 		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("rol", 1);
 		model.addAttribute("bajas", bajas);
 		model.addAttribute("grupos", grupos);
@@ -1432,6 +1446,8 @@ public class TutorController {
 			}
 		}
 		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("alumnos", alumnos);
 		model.addAttribute("cveGrupo", cveGrupo);
@@ -1515,6 +1531,9 @@ public class TutorController {
 				model.addAttribute("alumnosCali", alumnosCalificaciones);
 			}
 		}
+		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "reportes/reporteCalificacionesPorGrupo"; 
@@ -1533,25 +1552,34 @@ public class TutorController {
 					
 		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		Integer cveGrupo = (Integer) session.getAttribute("rei-cveGrupo");
-		Evaluacion evaluacion = evaluacionService.buscar(5);
+		Evaluacion evaluacion = null;
 		
 		if (cveGrupo != null) {			
 			List<Alumno> alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
 			Integer cvePersonaAl = (Integer) session.getAttribute("rei-cvePersonaAl");
+			//se valida si el cuatrimestre al que pertenece el grupo seleccionado
+			
+			Grupo grupo = grupoService.buscarPorId(cveGrupo);
+			if(grupo.getCuatrimestre().getConsecutivo()==1) {
+				evaluacion = evaluacionService.buscar(6);
+			}else if(grupo.getCuatrimestre().getConsecutivo()==7) {
+				evaluacion = evaluacionService.buscar(7);
+			}else{
+				evaluacion = evaluacionService.buscar(5);
+			}
+			
 			if(cvePersonaAl!=null) {
 				//Se inyectan las respuestas asociadas a cada pregunta de la evaluación seleccionada 
 				//asi como su repuesta si es que la ahi.		
 				for (Pregunta pregunta : evaluacion.getPreguntas()) {
 					
-					//Se buscan las opciones de respuesta serrada
-					List<OpcionRespuestaDTO> OpcionesRepuesta =  new ArrayList<OpcionRespuestaDTO>();				
-					OpcionRespuestaDTO OpRes = resEvaIniService.buscarRespuestaPorPregunta(pregunta.getId(), cvePersonaAl, evaluacion.getId(), cveGrupo);
-					OpcionesRepuesta.add(OpRes);
+
+					List<OpcionRespuestaDTO> OpcionesRepuesta = resEvaIniService.buscarRespuestaPorPregunta(pregunta.getId(), cvePersonaAl, evaluacion.getId(), cveGrupo);
 					pregunta.setOpcionesRespuesta(OpcionesRepuesta);					
 					
 					//Se buscan las opciones de respuesta abierta
 					if(pregunta.getAbierta()==true) {
-						RespuestaEvaluacionInicial respuestaEI = resEvaIniService.buscarRespuestaAbiertaPorPregunta(5, pregunta.getId(), cvePersonaAl, cveGrupo);
+						RespuestaEvaluacionInicial respuestaEI = resEvaIniService.buscarRespuestaAbiertaPorPregunta(evaluacion.getId(), pregunta.getId(), cvePersonaAl, cveGrupo);
 						pregunta.setComentarioRespuesta(respuestaEI != null ? respuestaEI.getRespuestaComentario().getComentario().getComentario() : null);
 					}
 					
@@ -1559,12 +1587,72 @@ public class TutorController {
 			}
 			model.addAttribute("alumnos", alumnos);
 			model.addAttribute("cvePersonaAl", cvePersonaAl);
+			model.addAttribute("evaluacion", evaluacion);
 		}
+		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("cveGrupo", cveGrupo);		
-		model.addAttribute("evaluacion", evaluacion);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "reportes/reporteEntrevistaInicial"; 
+	}
+	 
+	 @GetMapping("/reporte-entrevista-inicial-primera-septima") 
+	 public String reporteEntrevistaInicialPrimeraSeptima(Model model, HttpSession session) { 
+		// extrae el usuario a partir del usuario cargado en sesión.
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
+		int cvePersona;
+		try {
+			cvePersona = (Integer) session.getAttribute("cvePersona");
+		} catch (Exception e) {
+			cvePersona = usuario.getPersona().getId();
+		}
+					
+		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona), new Periodo(usuario.getPreferencias().getIdPeriodo()));
+		Integer cveGrupo = (Integer) session.getAttribute("rei2-cveGrupo");
+		Evaluacion evaluacion = null;
+		
+		if (cveGrupo != null) {			
+			List<Alumno> alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
+			Integer cvePersonaAl = (Integer) session.getAttribute("rei2-cvePersonaAl");	
+			if(cvePersonaAl!=null) {
+				Integer numEvaluacion = (Integer) session.getAttribute("rei2-numEvaluacion");
+				
+
+					if(numEvaluacion!=null && numEvaluacion==2) {
+						evaluacion = evaluacionService.buscar(7);
+					}else{
+						evaluacion = evaluacionService.buscar(6);
+					}		
+					//Se inyectan las respuestas asociadas a cada pregunta de la evaluación seleccionada 
+					//asi como su repuesta si es que la ahi.		
+					for (Pregunta pregunta : evaluacion.getPreguntas()) {
+						
+						List<OpcionRespuestaDTO> OpcionesRepuesta = resEvaIniService.buscarRespuestaPorPregunta(pregunta.getId(), cvePersonaAl, evaluacion.getId(), cveGrupo);
+						pregunta.setOpcionesRespuesta(OpcionesRepuesta);					
+						
+						//Se buscan las opciones de respuesta abierta
+						if(pregunta.getAbierta()==true) {
+							RespuestaEvaluacionInicial respuestaEI = resEvaIniService.buscarRespuestaAbiertaPorPregunta(evaluacion.getId(), pregunta.getId(), cvePersonaAl, cveGrupo);
+							pregunta.setComentarioRespuesta(respuestaEI != null ? respuestaEI.getRespuestaComentario().getComentario().getComentario() : null);
+						}
+						
+					}
+
+				model.addAttribute("numEvaluacion", numEvaluacion);
+			}
+			model.addAttribute("alumnos", alumnos);
+			model.addAttribute("cvePersonaAl", cvePersonaAl);
+			model.addAttribute("evaluacion", evaluacion);
+		}
+		
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
+		model.addAttribute("grupos", grupos);
+		model.addAttribute("cveGrupo", cveGrupo);		
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "reportes/reportePrimeraySeptimaEntrevistaInicial"; 
 	}
 	
 	// consulta	
@@ -1687,8 +1775,7 @@ public class TutorController {
 					CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(cveMateria);
 					Mail mail = new Mail();
 					String de = correo;
-					String para = "brayan.bg499@gmail.com";
-					//String para = cargaHoraria.getProfesor().getEmail();
+					String para = cargaHoraria.getProfesor().getEmail();
 					mail.setDe(de);
 					mail.setPara(new String[] {para});		
 					//Email title

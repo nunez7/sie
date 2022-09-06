@@ -91,61 +91,8 @@ public class AdeudoCuatrimestreController {
 		}
 		
 		//se obtinen los conceptos dependiendo del cuatrimestre en el que se esta
-		List<Integer> conceptos = new ArrayList<>();
-		switch (cuatrimestre.getConsecutivo()) {
-		case 1:
-			conceptos.add(15);
-			conceptos.add(10);
-			break;
-			
-		case 2:
-		case 5:
-			conceptos.add(69);
-			conceptos.add(21);
-			conceptos.add(10);
-			break;
-			
-		case 3:
-		case 4:
-			conceptos.add(21);
-			conceptos.add(10);
-			break;
+		List<Integer> conceptos = reinscripcion.obtenerConceptosReinscripcion(cuatrimestre.getConsecutivo());
 		
-		case 6:
-			conceptos.add(51);
-			conceptos.add(32);
-			conceptos.add(28);
-			conceptos.add(21);
-			conceptos.add(10);
-			break;
-		
-		case 7:
-			conceptos.add(14);
-			conceptos.add(8);
-			break;
-		
-		case 8:
-			conceptos.add(69);
-			conceptos.add(20);
-			conceptos.add(8);
-			break;
-			
-		case 9:
-		case 10:
-			conceptos.add(20);
-			conceptos.add(8);
-			break;
-		
-		case 11:	
-			conceptos.add(69);
-			conceptos.add(50);
-			conceptos.add(32);
-			conceptos.add(28);
-			conceptos.add(8);
-			conceptos.add(20);
-			break;
-		
-		}
 		
 		// si el cuatrimestre no es 1 se proceden a inscribir los alumnos en sus respectivos grupos
 		if (cuatrimestre.getId()!=1) {

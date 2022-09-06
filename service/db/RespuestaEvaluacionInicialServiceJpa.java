@@ -23,12 +23,17 @@ public class RespuestaEvaluacionInicialServiceJpa implements IRespuestaEvaluacio
 	}
 	
 	@Override
+	public void eliminar(RespuestaEvaluacionInicial respuesta) {
+		resEvaIniRepo.delete(respuesta);
+	}
+	
+	@Override
 	public List<OpcionRespuestaDTO> buscarOpcionesRespuestaYRespuestaPorPregunta(Integer idPregunta, Integer idPersona,Integer idEvaluacion, Integer idGrupo) {
 		return resEvaIniRepo.findOpcionRespuestaAndRespuestaByPregunta(idPregunta, idPersona, idEvaluacion, idGrupo);
 	}
 	
 	@Override
-	public OpcionRespuestaDTO buscarRespuestaPorPregunta(Integer idPregunta, Integer idPersona, Integer idEvaluacion, Integer idGrupo) {
+	public List<OpcionRespuestaDTO> buscarRespuestaPorPregunta(Integer idPregunta, Integer idPersona, Integer idEvaluacion, Integer idGrupo) {
 		return resEvaIniRepo.findRespuestaByPregunta(idPregunta, idPersona, idEvaluacion, idGrupo);
 	}
 
@@ -50,6 +55,16 @@ public class RespuestaEvaluacionInicialServiceJpa implements IRespuestaEvaluacio
 	@Override
 	public RespuestaEvaluacionInicial buscarRespuestaAbiertaPorPregunta(Integer idEvaluacion, Integer idPregunta, Integer idPersona, Integer idGrupo) {
 		return resEvaIniRepo.findRespuestaAbiertaByPregunta(idEvaluacion, idPregunta, idPersona, idGrupo);
+	}
+
+	@Override
+	public List<RespuestaEvaluacionInicial> buscarRespuestaCerradaMultiplePorPregunta(Integer idEvaluacion,Integer idPregunta, Integer idPersona, Integer idGrupo) {
+		return resEvaIniRepo.findRespuestaCerradaMultipleByPregunta(idEvaluacion, idPregunta, idPersona, idGrupo);
+	}
+
+	@Override
+	public RespuestaEvaluacionInicial buscarRespuestaCerradaPorPreguntaYOpcionRespuesta(Integer idEvaluacion, Integer idPregunta, Integer idOpcionRespuesta, Integer idPersona, Integer idGrupo) {
+		return resEvaIniRepo.findRespuestaCerradaByPreguntaAndOpcionRespuesta(idEvaluacion, idPregunta, idOpcionRespuesta, idPersona, idGrupo);
 	}
 	
 }

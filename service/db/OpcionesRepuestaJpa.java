@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import edu.mx.utdelacosta.model.dto.OpcionRespuestaDTO;
+import edu.mx.utdelacosta.model.OpcionRespuesta;
 import edu.mx.utdelacosta.repository.OpcionesRepuestaRepository;
 import edu.mx.utdelacosta.service.IOpcionesRepuestaService;
 
@@ -16,9 +16,9 @@ public class OpcionesRepuestaJpa implements IOpcionesRepuestaService{
 	private OpcionesRepuestaRepository OpcResRepo;
 
 	@Override
-	public List<OpcionRespuestaDTO> buscarPorEvaluacionPreguntaYPersona(Integer idPregunta) {
+	public List<OpcionRespuesta> buscarPorPregunta(Integer idPregunta) {
 		// TODO Auto-generated method stub
-		return OpcResRepo.findAllByEvaluacionAndPreguntaAndPersona(idPregunta);
+		return OpcResRepo.findAllByPregunta(idPregunta);
 	}
 	
 	

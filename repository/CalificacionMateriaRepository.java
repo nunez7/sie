@@ -44,5 +44,13 @@ public interface CalificacionMateriaRepository extends CrudRepository<Calificaci
 			+ "WHERE ch.id_grupo=:idGrupo AND ch.id_periodo=:idPeriodo", nativeQuery = true)
 	List<CalificacionMateria> findByIdGrupoAndIdPeriodo(@Param("idGrupo") Integer idGrupo,
 			@Param("idPeriodo") Integer idPeriodo);
+	
+	@Query(value = "SELECT "
+			+ "* FROM calificacion_materia cm "
+			+ "INNER JOIN cargas_horarias ch ON cm.id_carga_horaria = ch.id "
+			+ "INNER JOIN grupos g ON ch.id_grupo = g.id "
+			+ "INNER JOIN materias m ON ch.id_materia = m.id "
+			+ "WHERE cm.id_alumno = :alumno AND g.id = :grupo AND m.id = :materia", nativeQuery = true)
+	CalificacionMateria findByAlumnoAndGrupoAndMateria(@Param("alumno") Integer alumno,@Param("grupo") Integer grupo,@Param("materia") Integer materia);
 
 }

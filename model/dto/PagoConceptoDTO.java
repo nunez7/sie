@@ -8,5 +8,7 @@ public interface PagoConceptoDTO {
 	
 	String getConcepto();
 	
-	Double getMontoTotal(); 
+	Double getMontoTotal();
+	
+	String getComentario();
 }

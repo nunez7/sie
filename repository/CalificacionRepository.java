@@ -55,9 +55,9 @@ public interface CalificacionRepository extends CrudRepository<Calificacion, Int
 			+ "WHERE mi.id_carga_horaria=:idCargaHoraria and mi.id_corte_evaluativo=:idCorteEvaluativo and c.id_alumno=:idAlumno ", nativeQuery = true)
 	List<Calificacion> findByIdAlumnoAndIdCargaHorariaAndIdCorteEvaluativo( @Param("idAlumno") Integer idAlumno, @Param("idCargaHoraria") Integer idCargaHoraria, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
 
-    @Query(value = "SELECT CAST(COALESCE(SUM(valor),0) AS INTEGER) as calificacion "
+    @Query(value = "SELECT COALESCE(SUM(valor),0) as calificacion "
     		+ "FROM calificacion "
     		+ "WHERE id_alumno=:idAlumno AND id_mecanismo_instrumento=:idMecanismo ", nativeQuery = true)
-    Integer findCalificacionByAlumnoAndMecanismoInstrumento(@Param("idAlumno") Integer idAlumno, @Param("idMecanismo") Integer idMecanismo);
+    Float findCalificacionByAlumnoAndMecanismoInstrumento(@Param("idAlumno") Integer idAlumno, @Param("idMecanismo") Integer idMecanismo);
   
 }

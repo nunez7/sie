@@ -40,7 +40,7 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 			@Param("idCarrera") Integer idCarrera);
 
 	/* PROMEDIO DE ALUMNOS */
-	@Query(value = "SELECT COALESCE(ROUND(AVG(calificacion),2),0)AS calificacion " + "FROM calificacion_materia cm "
+	@Query(value = "SELECT COALESCE(ROUND(AVG(calificacion),0),0)AS calificacion " + "FROM calificacion_materia cm "
 			+ "INNER JOIN cargas_horarias ch ON ch.id=cm.id_carga_horaria "
 			+ "WHERE id_alumno=:idAlumno AND ch.activo='True' AND ch.id_grupo=:idGrupo ", nativeQuery = true)
 	Double findAvgAlumno(@Param("idAlumno") Integer idAlumno, @Param("idGrupo") Integer idGrupo);

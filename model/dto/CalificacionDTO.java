@@ -4,7 +4,7 @@ public class CalificacionDTO {
 	
 	Integer idMecanismo;
 	
-	Integer valor;
+	Float valor;
 	
 	float caliCorte;
 	
@@ -18,11 +18,11 @@ public class CalificacionDTO {
 		this.idMecanismo = idMecanismo;
 	}
 
-	public Integer getValor() {
+	public Float getValor() {
 		return valor;
 	}
 
-	public void setValor(Integer valor) {
+	public void setValor(Float valor) {
 		this.valor = valor;
 	}
 

@@ -71,33 +71,35 @@ public class CargaHorariaController {
 		for(int i=0; i<materias.size(); i++) {
 			int idMateria = materias.get(i).getId();
 			int idProfesor = Integer.valueOf(obj.get("p-"+idMateria));
-			//se busca el grupo por su id
-			Grupo group = grupoService.buscarPorId(cveGrupo);
-			// se busca la persona por su id
-			Persona profesor = personaService.buscarPorId(idProfesor);
-			//se busca la materia por su id
-			Materia materia = materiasService.buscarPorId(idMateria);
-			//buscamos el periodo por su id (se tomara el periodo de la sesión)
-			Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
-			// se busca la carga horaria de acuerdo a materia y periodo
-			CargaHoraria cargaHoraria = cargaHorariaService.buscarPorMateriaYPeriodoYGrupo(idMateria, usuario.getPreferencias().getIdPeriodo(), cveGrupo);
-			// se va comparar si ya existe sino se creara una nueva
-			if(cargaHoraria != null) {
-				cargaHoraria.setProfesor(profesor);
-				cargaHoraria.setFechaAlta(new Date());
-				cargaHorariaService.guardar(cargaHoraria);
-			}
-			else {
-				//se agrega un nuevo objeto de carga horaria
-				CargaHoraria carga = new CargaHoraria();
-				//seteamos los valores de la nueva carga
-				carga.setGrupo(group);
-				carga.setActivo(true);
-				carga.setProfesor(profesor);
-				carga.setMateria(materia);
-				carga.setPeriodo(periodo);
-				carga.setFechaAlta(new Date());
-				cargaHorariaService.guardar(carga);
+			if(idProfesor > 0) {
+				//se busca el grupo por su id
+				Grupo group = grupoService.buscarPorId(cveGrupo);
+				// se busca la persona por su id
+				Persona profesor = personaService.buscarPorId(idProfesor);
+				//se busca la materia por su id
+				Materia materia = materiasService.buscarPorId(idMateria);
+				//buscamos el periodo por su id (se tomara el periodo de la sesión)
+				Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+				// se busca la carga horaria de acuerdo a materia y periodo
+				CargaHoraria cargaHoraria = cargaHorariaService.buscarPorMateriaYPeriodoYGrupo(idMateria, usuario.getPreferencias().getIdPeriodo(), cveGrupo);
+				// se va comparar si ya existe sino se creara una nueva
+				if(cargaHoraria != null) {
+					cargaHoraria.setProfesor(profesor);
+					cargaHoraria.setFechaAlta(new Date());
+					cargaHorariaService.guardar(cargaHoraria);
+				}
+				else {
+						//se agrega un nuevo objeto de carga horaria
+						CargaHoraria carga = new CargaHoraria();
+						//seteamos los valores de la nueva carga
+						carga.setGrupo(group);
+						carga.setActivo(true);
+						carga.setProfesor(profesor);
+						carga.setMateria(materia);
+						carga.setPeriodo(periodo);
+						carga.setFechaAlta(new Date());
+						cargaHorariaService.guardar(carga);
+				}
 			}
 		}
 		return "ok";

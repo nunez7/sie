@@ -87,6 +87,7 @@ import edu.mx.utdelacosta.service.IMateriasService;
 import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
 import edu.mx.utdelacosta.service.IMunicipiosService;
 import edu.mx.utdelacosta.service.INivelEstudioService;
+import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPeriodoInscripcionService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
@@ -96,6 +97,7 @@ import edu.mx.utdelacosta.service.ITestimonioCorteService;
 import edu.mx.utdelacosta.service.ITestimonioService;
 import edu.mx.utdelacosta.service.ITurnoService;
 import edu.mx.utdelacosta.service.IUsuariosService;
+import edu.mx.utdelacosta.util.Reinscribir;
 import edu.mx.utdelacosta.util.SubirArchivo;
 
 @Controller
@@ -183,6 +185,12 @@ public class EscolaresController {
 	
 	@Autowired
 	private ITurnoService turnoService;
+	
+	@Autowired
+	private IPagoGeneralService PGService;
+	
+	@Autowired
+	private Reinscribir reinscripcion;
 
 	@Value("${siestapp.ruta.docs}")
 	private String rutaDocs;
@@ -239,9 +247,11 @@ public class EscolaresController {
 			cveGrupo = 0;
 		}
 
-		Grupo grupoNuevo = new Grupo();
+		Grupo grupoNuevo = grupoService.buscarPorId(cveGrupo);
 		grupoNuevo.setId(cveGrupo);
 
+		List<Integer> conceptos = reinscripcion.obtenerConceptosReinscripcion(grupoNuevo.getCuatrimestre().getConsecutivo());
+		
 		// Recorremos los IDS
 		for (String key : jsonObject.keySet()) {
 			String idAlumno = (String) jsonObject.get(key);
@@ -261,7 +271,21 @@ public class EscolaresController {
 				grupoBuscar.setFechaAlta(new Date());
 				grupoBuscar.setActivo(true);
 				alumnoGrService.guardar(grupoBuscar);
+				
 			}
+			
+			if (alumno.getEstadoDocumentosIngreso()!=1) {
+				alumno.setEstadoDocumentosIngreso(1);
+				alumnoService.guardar(alumno);
+			}
+			
+			//se procede a buscar el pago del periodo actual 
+			if (PGService.contarAdeudoCutrimestreAlumno(grupoBuscar.getId())== 0) {
+				for (Integer concepto : conceptos) {
+					reinscripcion.crearPagoGenerico(concepto, usuario.getPreferencias().getIdPeriodo(), grupoBuscar);
+				}
+			}
+			
 		}
 		return "ok";
 	}
@@ -302,13 +326,15 @@ public class EscolaresController {
 				alumno.setMatricula(al.getMatricula());
 				// Construimos las materias
 				materiasDT = new ArrayList<MateriaDTO>();
-				for (MateriaPromedioDTO cm : calificacionMateriaService.buscarPorGrupoAlumno(cveGrupo, al.getId())) {
+				for (Materia materia : materias) {
+					CalificacionMateria calMa = calificacionMateriaService.buscarPorAlumnoYGrupoYMateria(al.getId(), cveGrupo, materia.getId());
 					// Agregamos todos los promedios de las materias del alumno
 					MateriaDTO mNew = new MateriaDTO();
-					mNew.setPromedio(cm.getCalificacion());
-					mNew.setEstatusPromedio(cm.getEstatus());
+					mNew.setPromedio(calMa!=null ? calMa.getCalificacion() : 0);
+					mNew.setEstatusPromedio(calMa!=null ? calMa.getEstatus() : "NA");
 					materiasDT.add(mNew);
 				}
+				
 				// Agregamos las materias al alumno
 				alumno.setMaterias(materiasDT);
 				alumnos.add(alumno);
@@ -544,7 +570,7 @@ public class EscolaresController {
 			// System.out.println("El documento tiene " + workbook.getNumberOfSheets() + "
 			/* Iterando sobre todas las hojas en el libro de trabajo (forEach con lambda) */
 			workbook.forEach(sheet -> {
-				System.out.println("=> " + sheet.getSheetName());
+				//System.out.println("=> " + sheet.getSheetName());
 			});
 			// Obteniendo la Hoja en el índice cero
 			Sheet sheet = workbook.getSheetAt(0);
@@ -1029,6 +1055,8 @@ public class EscolaresController {
 	//////////////////////////////////////////////////////////////////	
 	@GetMapping("/reporte-bajas") 
 	public String reporteBajas(Model model, HttpSession session) { 
+		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
+		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		List<Carrera> carreras = carreraService.buscarTodas();
 		Integer cveCarrera = (Integer) session.getAttribute("rb-cveCarrera");
 		List<Baja> bajas = new ArrayList<>();
@@ -1056,6 +1084,8 @@ public class EscolaresController {
 			}
 		}
 		
+		Periodo periodo = periodosService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("periodo", periodo);
 		model.addAttribute("mujeres", m);
 		model.addAttribute("hombre", h);
 		model.addAttribute("bajas", bajas);

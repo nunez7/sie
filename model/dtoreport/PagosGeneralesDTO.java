@@ -22,4 +22,12 @@ public interface PagosGeneralesDTO {
 	Date getFecha();
 	
 	Boolean getFactura();
+	
+	Integer getTipoPago();
+	
+	Date getFechaPago();
+	
+	Date getFechaImportacion();
+	
+	String getReferencia();
 }

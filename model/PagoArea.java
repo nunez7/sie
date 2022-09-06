@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -17,7 +18,7 @@ public class PagoArea {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	
-	@OneToOne(fetch = FetchType.EAGER)
+	@OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinColumn(name="id_pago", referencedColumnName = "id")
 	private PagoGeneral pagoGeneral;
 	
@@ -39,7 +40,7 @@ public class PagoArea {
 		this.pagoGeneral = pagoGeneral;
 	}
 
-	public String getArea() {
+	public String getArea() { 
 		return area;
 	}
 

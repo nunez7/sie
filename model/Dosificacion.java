@@ -35,20 +35,18 @@ public class Dosificacion {
 	@JoinColumn(name = "id_persona", referencedColumnName = "id")
 	private Persona persona;
 
-	@Column(name = "competencia_desarrollar")
-	private String competenciaDesarrollar;
-
-	@Column(name = "actividad_apertura")
-	private String actividadApertura;
-
-	@Column(name = "actividad_desarrollo")
-	private String actividadDesarrollo;
-
-	@Column(name = "actividad_cierre")
-	private String actividadCierre;
-
-	@Column(name = "avance_observaciones")
-	private String avanceObservaciones;
+	/*
+	 * @Column(name = "competencia_desarrollar") private String
+	 * competenciaDesarrollar;
+	 * 
+	 * @Column(name = "actividad_apertura") private String actividadApertura;
+	 * 
+	 * @Column(name = "actividad_desarrollo") private String actividadDesarrollo;
+	 * 
+	 * @Column(name = "actividad_cierre") private String actividadCierre;
+	 * 
+	 * @Column(name = "avance_observaciones") private String avanceObservaciones;
+	 */
 
 	@Column(name = "fecha_alta")
 	private Date fechaAlta;
@@ -92,9 +90,9 @@ public class Dosificacion {
 		this.id = id;
 	}
 	
-	public String getCompetenciaDesarrollar() {
-		return competenciaDesarrollar;
-	}
+	/*
+	 * public String getCompetenciaDesarrollar() { return competenciaDesarrollar; }
+	 */
 
 	public Persona getPersona() {
 		return persona;
@@ -104,41 +102,30 @@ public class Dosificacion {
 		this.persona = persona;
 	}
 
-	public void setCompetenciaDesarrollar(String competenciaDesarrollar) {
-		this.competenciaDesarrollar = competenciaDesarrollar;
-	}
-
-	public String getActividadApertura() {
-		return actividadApertura;
-	}
-
-	public void setActividadApertura(String actividadApertura) {
-		this.actividadApertura = actividadApertura;
-	}
-
-	public String getActividadDesarrollo() {
-		return actividadDesarrollo;
-	}
-
-	public void setActividadDesarrollo(String actividadDesarrollo) {
-		this.actividadDesarrollo = actividadDesarrollo;
-	}
-
-	public String getActividadCierre() {
-		return actividadCierre;
-	}
-
-	public void setActividadCierre(String actividadCierre) {
-		this.actividadCierre = actividadCierre;
-	}
-
-	public String getAvanceObservaciones() {
-		return avanceObservaciones;
-	}
-
-	public void setAvanceObservaciones(String avanceObservaciones) {
-		this.avanceObservaciones = avanceObservaciones;
-	}
+	/*
+	 * public void setCompetenciaDesarrollar(String competenciaDesarrollar) {
+	 * this.competenciaDesarrollar = competenciaDesarrollar; }
+	 * 
+	 * public String getActividadApertura() { return actividadApertura; }
+	 * 
+	 * public void setActividadApertura(String actividadApertura) {
+	 * this.actividadApertura = actividadApertura; }
+	 * 
+	 * public String getActividadDesarrollo() { return actividadDesarrollo; }
+	 * 
+	 * public void setActividadDesarrollo(String actividadDesarrollo) {
+	 * this.actividadDesarrollo = actividadDesarrollo; }
+	 * 
+	 * public String getActividadCierre() { return actividadCierre; }
+	 * 
+	 * public void setActividadCierre(String actividadCierre) { this.actividadCierre
+	 * = actividadCierre; }
+	 * 
+	 * public String getAvanceObservaciones() { return avanceObservaciones; }
+	 * 
+	 * public void setAvanceObservaciones(String avanceObservaciones) {
+	 * this.avanceObservaciones = avanceObservaciones; }
+	 */
 
 	public Date getFechaAlta() {
 		return fechaAlta;

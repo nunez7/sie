@@ -553,8 +553,7 @@ public class ControlAlumnoController {
 
 				// se reactiva el alumno grupo del ultimo grupo que fue desactivado al aprobar
 				// la baja
-				Grupo ultimoGrupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
-				AlumnoGrupo alumnoGrupo = alumnoGrupoService.buscarPorAlumnoYGrupo(alumno, ultimoGrupo);
+				AlumnoGrupo alumnoGrupo = alumnoGrupoService.buscarPorAlumnoYGrupo(alumno, baja.getGrupo());
 				alumnoGrupo.setActivo(true);
 				alumnoGrupoService.guardar(alumnoGrupo);
 
@@ -571,23 +570,26 @@ public class ControlAlumnoController {
 				bajaEliminada.setMotivo(motivo);
 				bajaEliminada.setFechaRegistro(fechaHoy);
 				bajaEliminadaService.guardar(bajaEliminada);
-
-				// se eliminan los registros de la baja en baja y baja autoriza
-				BajaAutoriza bajaAutoriza = bajaAutorizaService.buscarPorBaja(baja);
-				bajaAutorizaService.eliminar(bajaAutoriza);
-				bajaService.eliminar(baja);
-
+				
 				// se envia un correo notificando que deshizo la baja y el motivo
 				Mail mail = new Mail();
 				String de = correo;
-				// String para1 = MailTutor;
-				// String para2 = alumno.getPersona().getEmail();
-				// String para3 = bajaAutoriza.getPersona().getEmail();
-				String para1 = "brayan.bg499@gmail.com";
-				String para2 = "brayan.bg499@gmail.com";
-				String para3 = "brayan.bg499@gmail.com";
+				String para1 = MailTutor;
+				String para2 = alumno.getPersona().getEmail();
+				
+					// se eliminan los registros de baja autoriza si los ahi y se envia un correo al director que aprobo la baja cundo lo alla
+					BajaAutoriza bajaAutoriza = bajaAutorizaService.buscarPorBaja(baja);
+					if(bajaAutoriza!=null) {
+						bajaAutorizaService.eliminar(bajaAutoriza);
+						String para3 = bajaAutoriza.getPersona().getEmail();
+						mail.setPara(new String[] {para1, para2, para3});
+					}else{
+						mail.setPara(new String[] {para1, para2});
+					}
+					//se eliminan el registro de la baja baja 
+					bajaService.eliminar(baja);
+				
 				mail.setDe(de);
-				mail.setPara(new String[] { para1, para2, para3 });
 				// Email title
 				mail.setTitulo("Baja eliminada.");
 				// Variables a plantilla

@@ -22,5 +22,8 @@ public interface IUsuariosService {
 	Usuario buscarPorPersona(Persona persona);
 	Page<Usuario> buscarTodos(Pageable page);
 	List<Usuario> buscarUltimos10();
+	
+	List<Usuario> buscarAlumnosPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo);
+	List<Usuario> buscarPersonal();
 }
 

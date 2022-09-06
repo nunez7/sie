@@ -41,4 +41,23 @@ public interface UsuariosRepository extends JpaRepository<Usuario, Integer> {
 	Usuario findByPersona(Persona p);
 	
 	List <Usuario> findTop10ByOrderByIdDesc();
+	
+	//alumnos
+	@Query(value = "SELECT u.* FROM usuarios u "
+			+ "INNER JOIN personas p ON p.id=u.id_persona "
+			+ "INNER JOIN alumnos a ON a.id_persona = u.id_persona "
+			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno = a.id AND ag.id_grupo=(SELECT g.id FROM alumnos_grupos ag "
+			+ "INNER JOIN grupos g ON g.id=ag.id_grupo WHERE ag.id_alumno=a.id ORDER BY id_periodo DESC LIMIT 1) "
+			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
+			+ "WHERE a.id_carrera=:idCarrera and g.id_periodo=:idPeriodo ORDER BY a.id_carrera, g.id, p.primer_apellido, p.segundo_apellido, p.nombre, u.usuario", nativeQuery = true)
+	List<Usuario> findAllbyPeriodoAndCarreraOrdeByCarreraAndPrimerApellidoAndSegundoApellidoAndNombreAndUsuario(@Param("idCarrera") Integer idCarrera,@Param("idPeriodo") Integer idPeriodo);
+	
+	//Personal
+	@Query(value = "SELECT u.* FROM usuarios u "
+			+ "INNER JOIN personas p ON p.id=u.id_persona "
+			+ "INNER JOIN usuario_rol ur ON ur.id_usuario = u.id "
+			+ "INNER JOIN roles r ON r.id=ur.id_rol "
+			+ "INNER JOIN personal pe ON pe.id_persona = u.id_persona "
+			+ "ORDER BY r.id, p.primer_apellido, p.segundo_apellido, p.nombre, u.usuario", nativeQuery = true)
+	List<Usuario> findAllOrdeByRolAndPrimerApellidoAndSegundoApellidoAndNombreAndUsuario();
 }

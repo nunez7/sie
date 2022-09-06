@@ -21,5 +21,7 @@ public interface ICalificacionMateriaService {
 	List<CalificacionMateria> buscarPorIdGrupoEIdPersona(Integer idGrupo,Integer idPeriodo);
 	
 	Float buscarCalificacionPorAlumnoYCargaHoraria(Integer idAlumno, Integer idCargaHoraria);
+	
+	CalificacionMateria buscarPorAlumnoYGrupoYMateria(Integer alumno, Integer grupo, Integer materia);
 
 }

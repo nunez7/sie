@@ -11,8 +11,6 @@ public class AlumnoCalificacionDTO {
 	
 	private String matricula;
 	
-	/* private String nombreMateria; */
-	
 	List<CalificacionDTO> calificaciones;
 	
 	List<CalificacionesMateriasParcialesDTO> calificacionesMaterias;
@@ -20,6 +18,8 @@ public class AlumnoCalificacionDTO {
 	private float calificacionTotal;
 	
 	private String status;
+	
+	private Integer revalidada;
 
 	public Integer getId() {
 		return id;
@@ -65,13 +65,6 @@ public class AlumnoCalificacionDTO {
 		this.matricula = matricula;
 	}
 
-	/*
-	 * public String getNombreMateria() { return nombreMateria; }
-	 * 
-	 * public void setNombreMateria(String nombreMateria) { this.nombreMateria =
-	 * nombreMateria; }
-	 */
-
 	public String getStatus() {
 		return status;
 	}
@@ -87,5 +80,15 @@ public class AlumnoCalificacionDTO {
 	public void setCalificacionesMaterias(List<CalificacionesMateriasParcialesDTO> calificacionesMaterias) {
 		this.calificacionesMaterias = calificacionesMaterias;
 	}
+
+	public Integer getRevalidada() {
+		return revalidada;
+	}
+
+	public void setRevalidada(Integer revalidada) {
+		this.revalidada = revalidada;
+	}
+	
+	
 	
 }

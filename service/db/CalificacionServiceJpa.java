@@ -78,7 +78,7 @@ public class CalificacionServiceJpa implements ICalificacionService {
 	}
 	
 	@Override
-	public Integer buscarCalificacionPorAlumnoYMecanismoInstrumento(Integer idAlumno, Integer idMecanismo) {
+	public Float buscarCalificacionPorAlumnoYMecanismoInstrumento(Integer idAlumno, Integer idMecanismo) {
 		return calificacionRepository.findCalificacionByAlumnoAndMecanismoInstrumento(idAlumno, idMecanismo);
 	}
 

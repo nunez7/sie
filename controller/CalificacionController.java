@@ -157,13 +157,15 @@ public class CalificacionController {
 				List<CalificacionDTO> calificaciones = new ArrayList<>();
 				for (MecanismoInstrumento mecanismo : mecanismos) {
 					CalificacionDTO c = new CalificacionDTO();
-					Integer valor = calificacionService.buscarCalificacionPorAlumnoYMecanismoInstrumento(alumno.getId(),
+					Float valor = calificacionService.buscarCalificacionPorAlumnoYMecanismoInstrumento(alumno.getId(),
 							mecanismo.getId());
 					c.setIdMecanismo(mecanismo.getId());
 					c.setValor(valor);
 					calificaciones.add(c);
 				}
 
+				Integer editable = calificacionCorteService.buscarRevalidadaPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(), idCarga, idCorte);
+				al.setRevalidada(editable!=null ? editable : 0);
 				al.setCalificaciones(calificaciones);
 				Integer status = testimonioCorteService.validarSDPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(), idCarga, idCorte);
 				al.setStatus(status!=null ? status.toString() : "0");
@@ -231,7 +233,14 @@ public class CalificacionController {
 		}
 
 		// se comprueba que la ponderacion este dentro del limite establecido
-		Integer ponderacion = Integer.parseInt(obj.get("valor"));
+		Float ponderacion;
+		
+		try {
+			 ponderacion = Float.parseFloat(obj.get("valor"));
+		} catch (Exception e) {
+			return "notNum";
+		}
+				
 		if (ponderacion < 0 || ponderacion > 10) {
 			return "plimit";
 		}

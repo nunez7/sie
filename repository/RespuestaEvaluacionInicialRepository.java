@@ -26,7 +26,7 @@ public interface RespuestaEvaluacionInicialRepository extends CrudRepository<Res
 			+ "INNER JOIN opcion_respuestas opr ON opr.id=r.id_opcion_respuesta "
 			+ "WHERE r.activo AND r.id_pregunta=:idPregunta AND r.id_persona=:idPersona AND r.id_evaluacion=:idEvaluacion "
 			+ "AND et.id_grupo=:idGrupo AND et.id_evaluacion=:idEvaluacion", nativeQuery = true)
-	OpcionRespuestaDTO findRespuestaByPregunta(@Param("idPregunta") Integer idPregunta, @Param("idPersona") Integer idPersona,@Param("idEvaluacion") Integer idEvaluacion, @Param("idGrupo") Integer idGrupo);
+	List<OpcionRespuestaDTO> findRespuestaByPregunta(@Param("idPregunta") Integer idPregunta, @Param("idPersona") Integer idPersona,@Param("idEvaluacion") Integer idEvaluacion, @Param("idGrupo") Integer idGrupo);
 	
 	@Query(value = "SELECT rei.* FROM respuestas r "
 			+ "INNER JOIN respuesta_evaluacion_inicial rei ON r.id=rei.id_respuesta "
@@ -44,4 +44,22 @@ public interface RespuestaEvaluacionInicialRepository extends CrudRepository<Res
 			+ "AND c.id_persona=:idPersona AND rc.id_evaluacion=:idEvaluacion "
 			+ "AND et.id_grupo=:idGrupo AND et.id_evaluacion=:idEvaluacion", nativeQuery = true)
 	RespuestaEvaluacionInicial findRespuestaAbiertaByPregunta(@Param("idEvaluacion") Integer idEvaluacion, @Param("idPregunta") Integer idPregunta, @Param("idPersona") Integer idPersona, @Param("idGrupo") Integer idGrupo);
+	
+	@Query(value = "SELECT rei.* FROM respuestas r "
+			+ "INNER JOIN respuesta_evaluacion_inicial rei ON r.id=rei.id_respuesta "
+			+ "INNER JOIN evaluacion_tutor et ON et.id=rei.id_evaluacion_tutor "
+			+ "WHERE r.activo = true AND r.id_pregunta=:idPregunta "
+			+ "AND r.id_persona=:idPersona AND r.id_evaluacion=:idEvaluacion "
+			+ "AND et.id_grupo=:idGrupo AND et.id_evaluacion=:idEvaluacion", nativeQuery = true)
+	List<RespuestaEvaluacionInicial> findRespuestaCerradaMultipleByPregunta(@Param("idEvaluacion") Integer idEvaluacion, @Param("idPregunta") Integer idPregunta, @Param("idPersona") Integer idPersona, @Param("idGrupo") Integer idGrupo);
+	
+	@Query(value = "SELECT rei.* FROM respuestas r "
+			+ "INNER JOIN respuesta_evaluacion_inicial rei ON r.id=rei.id_respuesta "
+			+ "INNER JOIN evaluacion_tutor et ON et.id=rei.id_evaluacion_tutor "
+			+ "WHERE r.activo = true AND r.id_pregunta=:idPregunta AND r.id_opcion_respuesta=:idOpcionRespuesta "
+			+ "AND r.id_persona=:idPersona AND r.id_evaluacion=:idEvaluacion "
+			+ "AND et.id_grupo=:idGrupo AND et.id_evaluacion=:idEvaluacion", nativeQuery = true)
+	RespuestaEvaluacionInicial findRespuestaCerradaByPreguntaAndOpcionRespuesta(@Param("idEvaluacion") Integer idEvaluacion, @Param("idPregunta") Integer idPregunta, @Param("idOpcionRespuesta") Integer idOpcionRespuesta, @Param("idPersona") Integer idPersona, @Param("idGrupo") Integer idGrupo);
+	
+	
 }

@@ -74,5 +74,10 @@ public interface IPagoGeneralService {
 	List<PagoConceptoDTO> buscarConceptoPagoPorFolio(String folio);
 	
 	Double sumarTotalMontoPorFolio(String folio);
+	
+	List<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYTipoPagoYCajero(Date fechaInicio, Date fechaFin, Integer tipo ,Integer cajero);
+	
+	List<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYTipoPagoYTodosCajeros(Date fechaInicio, Date fechaFin, Integer tipo);
 
+	Integer contarAdeudoCutrimestreAlumno(Integer alumnoGrupo);
 }

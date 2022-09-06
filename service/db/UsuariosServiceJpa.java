@@ -111,4 +111,14 @@ public class UsuariosServiceJpa implements IUsuariosService{
 		return usuariosRepo.findTop10ByOrderByIdDesc();
 	}
 
+	@Override
+	public List<Usuario> buscarAlumnosPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo) {
+		return usuariosRepo.findAllbyPeriodoAndCarreraOrdeByCarreraAndPrimerApellidoAndSegundoApellidoAndNombreAndUsuario(idCarrera, idPeriodo);
+	}
+
+	@Override
+	public List<Usuario> buscarPersonal() {
+		return usuariosRepo.findAllOrdeByRolAndPrimerApellidoAndSegundoApellidoAndNombreAndUsuario();
+	}
+
 }

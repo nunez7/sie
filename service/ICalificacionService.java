@@ -27,7 +27,7 @@ public interface ICalificacionService {
 
 	Calificacion buscarPorAlumnoYMecanismoInstrumento(Alumno alumno, MecanismoInstrumento mecanismoInstrumento);
 
-	Integer buscarCalificacionPorAlumnoYMecanismoInstrumento(Integer idAlumno, Integer idMecanismo);
+	Float buscarCalificacionPorAlumnoYMecanismoInstrumento(Integer idAlumno, Integer idMecanismo);
 
 	List<CalificacionInstrumentoDTO> findByCargaHorariaAndCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria,
 			Integer idCorteEvaluativo);

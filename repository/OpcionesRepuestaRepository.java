@@ -7,7 +7,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.OpcionRespuesta;
-import edu.mx.utdelacosta.model.dto.OpcionRespuestaDTO;
 
 public interface OpcionesRepuestaRepository extends CrudRepository<OpcionRespuesta, Integer>{
 	
@@ -16,6 +15,6 @@ public interface OpcionesRepuestaRepository extends CrudRepository<OpcionRespues
 			+ "INNER JOIN pregunta_opcion_respuesta popr "
 			+ "ON opr.id=popr.id_opcion_respuesta "
 			+ "WHERE popr.id_pregunta=:idPregunta", nativeQuery = true)
-	List<OpcionRespuestaDTO> findAllByEvaluacionAndPreguntaAndPersona(@Param("idPregunta") Integer idPregunta);
+	List<OpcionRespuesta> findAllByPregunta(@Param("idPregunta") Integer idPregunta);
 	
 }

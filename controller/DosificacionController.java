@@ -251,7 +251,7 @@ public class DosificacionController {
 		try {
 			emailService.sendEmail(mail);
 			return "ok";
-		} catch (MessagingException | IOException e) {
+		} catch (Exception e) {
 			return "mail";
 		}
 
