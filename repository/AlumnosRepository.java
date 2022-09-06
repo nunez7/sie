@@ -172,7 +172,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 	List<ProspectoEscolaresDTO> findAllByGeneracion(@Param("generacion") String generacion);
 	
 	@Query(value = "SELECT a.id AS idAlumno,  CONCAT(p.primer_apellido, ' ',p.segundo_apellido, ' ',p.nombre)AS nombreCompleto, a.matricula, "
-			+ "g.nombre AS grupo, COALESCE(ROUND(AVG(calificacion),2),0)AS calificacion, c.descripcion AS cuatrimestre, ca.nombre AS carrera, "
+			+ "g.nombre AS grupo, COALESCE(ROUND(AVG(calificacion),1),0)AS calificacion, c.descripcion AS cuatrimestre, ca.nombre AS carrera, "
 			+ "COALESCE(( "
 			+ "	SELECT cmm.estatus FROM calificacion_materia  cmm "
 			+ "	INNER JOIN cargas_horarias chh ON chh.id=cmm.id_carga_horaria "
@@ -194,7 +194,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 	List<AlumnoPromedioEscolaresDTO> findAllPromedioEscolaresByPeriodo(@Param("periodo") Integer periodo);
 	
 	@Query(value = "SELECT a.id AS idAlumno, CONCAT(p.primer_apellido, ' ',p.segundo_apellido, ' ',p.nombre)AS nombreCompleto, a.matricula, "
-			+ "g.nombre AS grupo, COALESCE(ROUND(AVG(calificacion),2),0)AS calificacion, c.descripcion AS cuatrimestre, ca.nombre AS carrera, "
+			+ "g.nombre AS grupo, COALESCE(ROUND(AVG(calificacion),1),0)AS calificacion, c.descripcion AS cuatrimestre, ca.nombre AS carrera, "
 			+ "COALESCE(( "
 			+ "	SELECT cmm.estatus FROM calificacion_materia  cmm "
 			+ "	INNER JOIN cargas_horarias chh ON chh.id=cmm.id_carga_horaria "
