@@ -274,6 +274,11 @@ public class EscolaresController {
 				
 			}
 			
+			if (alumno.getEstadoDocumentosIngreso()!=1) {
+				alumno.setEstadoDocumentosIngreso(1);
+				alumnoService.guardar(alumno);
+			}
+			
 			//se procede a buscar el pago del periodo actual 
 			if (PGService.contarAdeudoCutrimestreAlumno(grupoBuscar.getId())== 0) {
 				for (Integer concepto : conceptos) {
