@@ -270,6 +270,7 @@ public class EscolaresController {
 				grupoBuscar.setGrupo(grupoNuevo);
 				grupoBuscar.setFechaAlta(new Date());
 				grupoBuscar.setActivo(true);
+				grupoBuscar.setPagado(false);				
 				alumnoGrService.guardar(grupoBuscar);
 				
 			}
