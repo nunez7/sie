@@ -121,7 +121,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 		//	+ " SELECT id_alumno FROM pago_alumno pa "
 		//	+ " INNER JOIN pagos_generales pg  ON pg.id=pa.id_pago "
 		//	+ " WHERE pa.id_alumno=a.id AND pg.status=0) "
-			+ "ORDER BY c.nombre, g.nombre DESC, p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
+			+ "ORDER BY c.nombre, p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
 	List<AlumnoRegularDTO> findAllRegular(@Param("carrera") Integer carrera, @Param("periodo") Integer periodo,  @Param("cuatrimestre") Integer cuatrimestre);
 	
 	@Query(value = "SELECT a.id AS idAlumno, a.matricula, p.primer_apellido AS primerApellido, p.segundo_apellido AS segundoApellido,  "
