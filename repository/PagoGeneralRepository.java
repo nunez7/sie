@@ -239,7 +239,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 	
 	@Query(value = "SELECT c.concepto, c.monto as costoUnitario, ( " + "	SELECT (count(distinct(pg.id))) "
 			+ "	FROM pagos_generales pg " + "	INNER JOIN pago_recibe pr ON pr.id_pago = pg.id "
-			+ "	WHERE pg.id_concepto = c.id and pg.status = 1 AND pr.id = :cajero "
+			+ "	WHERE pg.id_concepto = c.id and pg.status = 1 AND pr.id_cajero = :cajero "
 			+ "	AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin " + "	) AS cantidad "
 			+ "	from conceptos c order by concepto ", nativeQuery = true)
 	List<CajaConcentradoDTO> findCajaConcentradoByFechaInicioAndFechaFinAndCajero(
