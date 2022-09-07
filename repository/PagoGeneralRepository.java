@@ -237,7 +237,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "AND status = 0", nativeQuery = true)
 	List<PagoGeneral> findByReferencia(@Param("referencia") String referencia);
 	
-	@Query(value = "SELECT c.concepto, c.monto, ( " + "	SELECT (count(distinct(pg.id))) "
+	@Query(value = "SELECT c.concepto, c.monto as costoUnitario, ( " + "	SELECT (count(distinct(pg.id))) "
 			+ "	FROM pagos_generales pg " + "	INNER JOIN pago_recibe pr ON pr.id_pago = pg.id "
 			+ "	WHERE pg.id_concepto = c.id and pg.status = 1 AND pr.id = :cajero "
 			+ "	AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin " + "	) AS cantidad "
