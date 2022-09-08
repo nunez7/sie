@@ -9,5 +9,7 @@ public interface CajaConcentradoDTO {
 	Integer getCantidad();
 	
 	Double getCostoUnitario();
+	
+	Double getMontoDescuento();
 
 }

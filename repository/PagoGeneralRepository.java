@@ -237,19 +237,34 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "AND status = 0", nativeQuery = true)
 	List<PagoGeneral> findByReferencia(@Param("referencia") String referencia);
 	
-	@Query(value = "SELECT c.concepto, c.monto as costoUnitario, ( " + "	SELECT (count(distinct(pg.id))) "
-			+ "	FROM pagos_generales pg " + "	INNER JOIN pago_recibe pr ON pr.id_pago = pg.id "
+	@Query(value = "SELECT c.concepto, c.monto as costoUnitario, (SELECT (count(distinct(pg.id))) "
+			+ "	FROM pagos_generales pg "
+			+ "	INNER JOIN pago_recibe pr ON pr.id_pago = pg.id "
 			+ "	WHERE pg.id_concepto = c.id and pg.status = 1 AND pr.id_cajero = :cajero "
-			+ "	AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin " + "	) AS cantidad "
+			+ "	AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin ) AS cantidad, "
+			+ "	(SELECT SUM((pg2.cantidad  * c2.monto) - (COALESCE(pg2.descuento,0) * (pg2.cantidad * c2.monto)/100)) "
+			+ "	FROM pagos_generales pg2 "
+			+ "	INNER JOIN pago_recibe pr2 ON pr2.id_pago = pg2.id "
+			+ "	INNER JOIN conceptos c2 ON pg2.id_concepto = c2.id "
+			+ "	WHERE pg2.id_concepto = c.id AND pg2.status = 1 AND pr2.id_cajero = :cajero "
+			+ "	AND pr2.fecha_cobro BETWEEN :fechaInicio AND :fechaFin) AS montoDescuento "
 			+ "	from conceptos c order by concepto ", nativeQuery = true)
 	List<CajaConcentradoDTO> findCajaConcentradoByFechaInicioAndFechaFinAndCajero(
 			@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin, @Param("cajero") Integer cajero);
 
-	@Query(value = "SELECT c.concepto, c.monto as costoUnitario, ( " + "	SELECT (count(distinct(pg.id))) "
-			+ "	FROM pagos_generales pg " + "	INNER JOIN pago_recibe pr ON pr.id_pago = pg.id "
+	@Query(value = "SELECT c.concepto, c.monto as costoUnitario, "
+			+ "	(SELECT (count(distinct(pg.id))) "
+			+ "	FROM pagos_generales pg "
+			+ "	INNER JOIN pago_recibe pr ON pr.id_pago = pg.id "
 			+ "	WHERE pg.id_concepto = c.id AND pg.status = 1 "
-			+ "	AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin " + "	) AS cantidad "
-			+ "	from conceptos c order by concepto ", nativeQuery = true)
+			+ "	AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin ) AS cantidad, "
+			+ "	(SELECT SUM((pg2.cantidad  * c2.monto) - (COALESCE(pg2.descuento,0) * (pg2.cantidad * c2.monto)/100)) "
+			+ "	FROM pagos_generales pg2 "
+			+ "	INNER JOIN pago_recibe pr2 ON pr2.id_pago = pg2.id "
+			+ "	INNER JOIN conceptos c2 ON pg2.id_concepto = c2.id "
+			+ "	WHERE pg2.id_concepto = c.id AND pg2.status = 1 "
+			+ "	AND pr2.fecha_cobro BETWEEN :fechaInicio AND :fechaFin) AS montoDescuento "
+			+ "	FROM conceptos c order by concepto ", nativeQuery = true)
 	List<CajaConcentradoDTO> findCajaConcentradoByFechaInicioAndFechaFin(@Param("fechaInicio") Date fechaInicio,
 			@Param("fechaFin") Date fechaFin);
 	

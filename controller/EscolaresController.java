@@ -216,15 +216,24 @@ public class EscolaresController {
 		}
 
 		Grupo grupo = grupoService.buscarPorId(cveGrupo);
-
+		
 		List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(),
 				usuario.getPreferencias().getIdCarrera());
-
-		List<AlumnoRegularDTO> alumnos = alumnoService.obtenerRegulares(
+		
+		List<AlumnoRegularDTO> alumnos;
+		
+		if (cveGrupo > 0 && grupo.getCuatrimestre().getId()== 7) {
+			alumnos = alumnoService.obtenerRegularesReinscribir(
+					(grupos.size() > 0 ? usuario.getPreferencias().getIdCarrera() : 0),
+					usuario.getPreferencias().getIdPeriodo() - 1,
+					cveGrupo > 0 ? (grupo.getCuatrimestre().getConsecutivo() - 1) : 2);
+		}else {
+			alumnos = alumnoService.obtenerRegulares(			
 				(grupos.size() > 0 ? usuario.getPreferencias().getIdCarrera() : 0),
 				usuario.getPreferencias().getIdPeriodo() - 1,
 				cveGrupo > 0 ? (grupo.getCuatrimestre().getConsecutivo() - 1) : 2);
-
+		}
+		
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("carreras", carreraService.buscarTodasMenosIngles());
 		model.addAttribute("grupos", grupos);

@@ -111,7 +111,7 @@ public class BanamexController {
 						//se compara para que sea la referencia y no la comprobación del pago
 						if(cadena[7].length() > 20) {
 							//fecha, referencia, cajero, importe y tipo de pago
-							generarFolio(cadena[1], cadena[7], cajero, cadena[8].replace(",", ""), 3);
+							generarFolio(cadena[1], cadena[7], cajero, cadena[8].replace(",", ""), 2);
 						}
 					}
 					
@@ -142,7 +142,7 @@ public class BanamexController {
 					try {
 						importe = linea.substring(7, 20) + "." + linea.substring(20, 22);
 						referencia = linea.substring(47, 78);
-						int tipoPago = 2;
+						int tipoPago = 1;
 						generarFolio(fechaPago, referencia, cajero, importe, tipoPago);
 
 					} catch (Exception e) {
