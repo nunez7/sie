@@ -35,7 +35,7 @@ public interface IAlumnoService {
 	
 	List<AlumnoRegularDTO> obtenerRegulares(Integer idCarrera, Integer idPeriodo, Integer cuatrimestre);
 	
-	List<AlumnoRegularDTO> obtenerRegularesReinscribir(Integer idCarrera, Integer idPeriodo, Integer cuatrimestre);
+	List<AlumnoRegularDTO> obtenerRegularesReinscribir(Integer idCarreraAnterior, Integer idPeriodo, Integer cuatrimestre, Integer idCarreraActual);
 	
 	List<AlumnoRegularDTO> obtenerRegularesByCarreraPeriodo(Integer idCarrera, Integer idPeriodo);
 	

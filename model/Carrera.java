@@ -41,7 +41,10 @@ public class Carrera {
 	
 	@Column(name="nombre_titulacion")
 	private String nombreTitulacion;
-
+	
+	@Column(name="carrera_siguiente")
+	private String nombreSiguiente;
+	
 	public Carrera() {
 	}
 	
@@ -128,4 +131,13 @@ public class Carrera {
 	public void setNombreTitulacion(String nombreTitulacion) {
 		this.nombreTitulacion = nombreTitulacion;
 	}
+
+	public String getNombreSiguiente() {
+		return nombreSiguiente;
+	}
+
+	public void setNombreSiguiente(String nombreSiguiente) {
+		this.nombreSiguiente = nombreSiguiente;
+	}
+
 }

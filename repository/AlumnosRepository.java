@@ -129,7 +129,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "(SELECT COALESCE(gg.nombre, '') "
 			+ "FROM alumnos_grupos agg "
 			+ "INNER JOIN grupos gg ON gg.id=agg.id_grupo "
-			+ "WHERE gg.id_periodo=:periodo+1 AND gg.id_carrera=:carrera AND agg.id_alumno=a.id)AS grupoActual "
+			+ "WHERE gg.id_periodo=:periodo+1 AND gg.id_carrera=:carreraActual AND agg.id_alumno=a.id)AS grupoActual "
 			+ "FROM alumnos a "
 			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno=a.id "
 			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
@@ -144,7 +144,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 		//	+ " INNER JOIN pagos_generales pg  ON pg.id=pa.id_pago "
 		//	+ " WHERE pa.id_alumno=a.id AND pg.status=0) "
 			+ "ORDER BY c.nombre, p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
-	List<AlumnoRegularDTO> findAllRegularReinscribir(@Param("carrera") Integer carrera, @Param("periodo") Integer periodo,  @Param("cuatrimestre") Integer cuatrimestre);
+	List<AlumnoRegularDTO> findAllRegularReinscribir(@Param("carrera") Integer carrera, @Param("periodo") Integer periodo,  @Param("cuatrimestre") Integer cuatrimestre, @Param("carreraActual") Integer idCarreraActuar);
 	
 	@Query(value = "SELECT a.id AS idAlumno, a.matricula, p.primer_apellido AS primerApellido, p.segundo_apellido AS segundoApellido,  "
 			+ "p.nombre,  a.id_persona AS idPersona, g.nombre AS grupoAnterior, "

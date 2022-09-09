@@ -30,4 +30,8 @@ public interface CarrerasRepository extends JpaRepository<Carrera, Integer>{
 			+ "	INNER JOIN cargas_horarias ch ON ch.id_grupo = g.id "
 			+ "	WHERE ch.id_profesor = :profesor and ch.id_periodo = :periodo", nativeQuery = true)
 	List<Carrera> findCarrerasByPersonaAndPeriodo(@Param("profesor") Integer idPersona, @Param("periodo") Integer idPeriodo);
+	
+	@Query(value = "SELECT c.id FROM carreras c "
+			+ "WHERE c.carrera_siguiente = :carreraSiguiente", nativeQuery = true)
+	List<Integer> findCarreraAnterior(@Param("carreraSiguiente")Integer idCarrera);
 }

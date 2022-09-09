@@ -220,13 +220,20 @@ public class EscolaresController {
 		List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(),
 				usuario.getPreferencias().getIdCarrera());
 		
-		List<AlumnoRegularDTO> alumnos;
+		List<Integer> carreras = new ArrayList<>();
+		
+		if (grupo != null ) {
+			carreras = carreraService.buscarCarreraAnterior(grupo.getCarrera().getId());
+		}
+		
+		List<AlumnoRegularDTO> alumnos = new ArrayList<>();
 		
 		if (cveGrupo > 0 && grupo.getCuatrimestre().getId()== 7) {
-			alumnos = alumnoService.obtenerRegularesReinscribir(
-					(grupos.size() > 0 ? usuario.getPreferencias().getIdCarrera() : 0),
+			for (Integer carrera  : carreras) {				
+			alumnos.addAll( alumnoService.obtenerRegularesReinscribir(carrera,
 					usuario.getPreferencias().getIdPeriodo() - 1,
-					cveGrupo > 0 ? (grupo.getCuatrimestre().getConsecutivo() - 1) : 2);
+					cveGrupo > 0 ? (grupo.getCuatrimestre().getConsecutivo() - 1) : 2, grupo.getCarrera().getId()));
+			}
 		}else {
 			alumnos = alumnoService.obtenerRegulares(			
 				(grupos.size() > 0 ? usuario.getPreferencias().getIdCarrera() : 0),

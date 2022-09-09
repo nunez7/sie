@@ -50,5 +50,10 @@ public class CarrerasServiceJpa implements ICarrerasServices{
 	public List<Carrera> buscarCarrerasPorPersonaYPeriodo(Integer idPersona, Integer idPeriodo) {
 		return carrerasRepository.findCarrerasByPersonaAndPeriodo(idPersona, idPeriodo) ;
 	}
+	
+	@Override
+	public List<Integer> buscarCarreraAnterior(Integer idCarrera) {
+		return carrerasRepository.findCarreraAnterior(idCarrera);
+	}
 
 }

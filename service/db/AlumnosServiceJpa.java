@@ -87,9 +87,10 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	}
 	
 	@Override
-	public List<AlumnoRegularDTO> obtenerRegularesReinscribir(Integer idCarrera, Integer idPeriodo, Integer cuatrimestre) {
+	public List<AlumnoRegularDTO> obtenerRegularesReinscribir(Integer idCarreraAnterior, Integer idPeriodo, Integer cuatrimestre, 
+			Integer idCarreraActual) {
 		// TODO Auto-generated method stub
-		return alumnosRepo.findAllRegularReinscribir(idCarrera, idPeriodo, cuatrimestre);
+		return alumnosRepo.findAllRegularReinscribir(idCarreraAnterior, idPeriodo, cuatrimestre, idCarreraActual);
 	}
 	
 	@Override
