@@ -11,4 +11,6 @@ public interface PagoConceptoDTO {
 	Double getMontoTotal();
 	
 	String getComentario();
+	
+	Integer getDescuento();
 }

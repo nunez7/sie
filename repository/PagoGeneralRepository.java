@@ -84,7 +84,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "LEFT JOIN clientes c ON c.id = pc.id_cliente " + "LEFT JOIN pago_persona pp ON pp.id_pago = pg.id "
 			+ "LEFT JOIN personas ppp ON ppp.id = pp.id_persona " + "LEFT JOIN personal per ON per.id_persona = ppp.id "
 			+ "WHERE p.id = :cajero " + "AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin "
-			+ "ORDER BY pg.id", nativeQuery = true)
+			+ "ORDER BY pg.folio ASC ", nativeQuery = true)
 	List<PagosGeneralesDTO> findByFechaInicioAndFechaFinAndCajero(@Param("fechaInicio") Date fechaInicio,
 			@Param("fechaFin") Date fechaFin, @Param("cajero") Integer idCajero);
 
@@ -104,7 +104,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "LEFT JOIN clientes c ON c.id = pc.id_cliente " + "LEFT JOIN pago_persona pp ON pp.id_pago = pg.id "
 			+ "LEFT JOIN personas ppp ON ppp.id = pp.id_persona " + "LEFT JOIN personal per ON per.id_persona = ppp.id "
 			+ "WHERE pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin "
-			+ "ORDER BY pg.id ", nativeQuery = true)
+			+ "ORDER BY pg.folio ASC ", nativeQuery = true)
 	List<PagosGeneralesDTO> findByFechaInicioAndFechaFinAndAllCajeros(@Param("fechaInicio") Date fechaInicio,
 			@Param("fechaFin") Date fechaFin);
 	
@@ -120,7 +120,8 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "INNER JOIN alumnos a ON a.id = pa.id_alumno "
 			+ "INNER JOIN personas ap ON ap.id = a.id_persona "
 			+ "WHERE pg.status = 1 AND p.id = :cajero AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin "
-			+ "AND pg.tipo = :tipo ORDER BY pg.id", nativeQuery = true)
+			+ "AND pg.tipo = :tipo "
+			+ "ORDER BY pg.folio ASC ", nativeQuery = true)
 	List<PagosGeneralesDTO> findByTipoPagoAndFechaInicioAndFechaFinAndCajero(@Param("fechaInicio") Date fechaInicio, 
 			@Param("fechaFin") Date fechaFin, @Param("tipo") Integer tipo, @Param("cajero") Integer idCajero);
 	
@@ -136,7 +137,8 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 				+ "INNER JOIN alumnos a ON a.id = pa.id_alumno "
 				+ "INNER JOIN personas ap ON ap.id = a.id_persona "
 				+ "WHERE pg.status = 1 AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin "
-				+ "AND pg.tipo = :tipo ORDER BY pg.id", nativeQuery = true)
+				+ "AND pg.tipo = :tipo "
+				+ "ORDER BY pg.folio ASC ", nativeQuery = true)
 		List<PagosGeneralesDTO> findByTipoPagoAndFechaInicioAndFechaFinAndAllCajeros(@Param("fechaInicio") Date fechaInicio, 
 				@Param("fechaFin") Date fechaFin, @Param("tipo") Integer tipo);
 
@@ -274,7 +276,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 	List<String> findFoliosByFechaInicioAndFechaFinAllCajero(@Param("fechaInicio") Date fechaInicio,
 			@Param("fechaFin") Date fechaFin);
 	
-	@Query(value = "SELECT pg.cantidad AS cantidad, c.monto, pg.concepto, pg.comentario, pg.monto as montoTotal "
+	@Query(value = "SELECT pg.cantidad AS cantidad, c.monto, pg.concepto, pg.comentario, pg.monto as montoTotal, pg.descuento "
 			+ "	FROM pagos_generales pg " + "	INNER JOIN conceptos c ON pg.id_concepto = c.id "
 			+ "	WHERE folio = :folio ", nativeQuery = true)
 	List<PagoConceptoDTO> findConceptoPagoByFolio(@Param("folio") String folio);
