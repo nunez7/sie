@@ -235,11 +235,19 @@ public class ControlAlumnoController {
 			// lista de grupos para inscribir
 			List<Grupo> gruposInscribir;
 			if (grupos.size() > 0) {
-				gruposInscribir = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(),
-						grupoAnterior.getCarrera().getId());
+				/*
+				 * gruposInscribir =
+				 * grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(
+				 * ), grupoAnterior.getCarrera().getId());
+				 */
+				gruposInscribir = grupoService.buscarTodoPorPeriodoOrdenPorId(usuario.getPreferencias().getIdPeriodo());
 			} else {
-				gruposInscribir = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(),
-						alumno.getCarreraInicio().getId());
+				/*
+				 * gruposInscribir =
+				 * grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(
+				 * ), alumno.getCarreraInicio().getId());
+				 */
+				gruposInscribir = grupoService.buscarTodoPorPeriodoOrdenPorId(usuario.getPreferencias().getIdPeriodo());
 			}
 			
 			//lista para historial de bajas

@@ -234,7 +234,11 @@ public class EscolaresController {
 					usuario.getPreferencias().getIdPeriodo() - 1,
 					cveGrupo > 0 ? (grupo.getCuatrimestre().getConsecutivo() - 1) : 2, grupo.getCarrera().getId()));
 			}
-		}else {
+		}else if(cveGrupo > 0 && grupo.getCuatrimestre().getId()== 1) {
+			alumnos = alumnoService.buscarTodosProspectoReinscripcion(grupos.size() > 0 ? usuario.getPreferencias().getIdCarrera() : 0,
+					usuario.getPreferencias().getIdPeriodo());
+		}
+		else {
 			alumnos = alumnoService.obtenerRegulares(			
 				(grupos.size() > 0 ? usuario.getPreferencias().getIdCarrera() : 0),
 				usuario.getPreferencias().getIdPeriodo() - 1,
@@ -289,6 +293,12 @@ public class EscolaresController {
 				grupoBuscar.setPagado(false);				
 				alumnoGrService.guardar(grupoBuscar);
 				
+				//se procede a buscar el pago del periodo actual 
+				if (PGService.contarAdeudoCutrimestreAlumno(grupoBuscar.getId())== 0) {
+					for (Integer concepto : conceptos) {
+						reinscripcion.crearPagoGenerico(concepto, usuario.getPreferencias().getIdPeriodo(), grupoBuscar);
+					}
+				}
 			}
 			
 			if (alumno.getEstadoDocumentosIngreso()!=1) {
@@ -296,12 +306,7 @@ public class EscolaresController {
 				alumnoService.guardar(alumno);
 			}
 			
-			//se procede a buscar el pago del periodo actual 
-			if (PGService.contarAdeudoCutrimestreAlumno(grupoBuscar.getId())== 0) {
-				for (Integer concepto : conceptos) {
-					reinscripcion.crearPagoGenerico(concepto, usuario.getPreferencias().getIdPeriodo(), grupoBuscar);
-				}
-			}
+			
 			
 		}
 		return "ok";

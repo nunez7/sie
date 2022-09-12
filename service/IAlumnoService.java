@@ -113,5 +113,7 @@ public interface IAlumnoService {
 	List<AlumnoInfoDTO> buscarTodosPorNombreOMatriculaYPeriodoYActivos(String Nombre, Integer idPeriodo);
 	
 	List<AlumnoInfoDTO> buscarTodosPorPeriodo(Integer idPeriodo);
+	
+	List<AlumnoRegularDTO> buscarTodosProspectoReinscripcion(Integer carrera, Integer periodo);
 
 }

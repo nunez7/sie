@@ -536,4 +536,18 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre", nativeQuery = true)
 	List<AlumnoInfoDTO> findAllByPeriodo(@Param("idPeriodo") Integer idPeriodo);
 			
+	@Query(value = "SELECT a.id AS idAlumno, a.matricula, p.primer_apellido AS primerApellido, p.segundo_apellido AS segundoApellido, "
+			+ "	p.nombre,  a.id_persona AS idPersona, "
+			+ "	(SELECT COALESCE(gg.nombre, '') "
+			+ "	FROM alumnos_grupos agg "
+			+ "	INNER JOIN grupos gg ON gg.id=agg.id_grupo "
+			+ "	WHERE gg.id_periodo=:periodo AND gg.id_carrera=:carrera AND agg.id_alumno=a.id)AS grupoActual "
+			+ "	FROM alumnos a "
+			+ "	INNER JOIN carreras c ON a.id_carrera = c.id "
+			+ "	INNER JOIN personas p ON p.id=a.id_persona "
+			+ "	LEFT JOIN alumnos_grupos ag ON ag.id_alumno = a.id "
+			+ "	LEFT JOIN grupos g ON ag.id_grupo = g.id "
+			+ "	WHERE a.id_carrera=:carrera AND a.matricula ILIKE '%-3%' "
+			+ "	ORDER BY c.nombre, p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
+	List<AlumnoRegularDTO> findAllRegularProspecto(@Param("carrera") Integer carrera, @Param("periodo") Integer periodo);
 }

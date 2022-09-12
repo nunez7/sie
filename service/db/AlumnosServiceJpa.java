@@ -309,4 +309,9 @@ public class AlumnosServiceJpa implements IAlumnoService{
 		// TODO Auto-generated method stub
 		return alumnosRepo.findAllByPeriodo(idPeriodo);
 	}
+
+	@Override
+	public List<AlumnoRegularDTO> buscarTodosProspectoReinscripcion(Integer carrera, Integer periodo) {
+		return alumnosRepo.findAllRegularProspecto(carrera, periodo);
+	}
 }
