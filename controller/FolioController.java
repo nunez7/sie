@@ -23,6 +23,7 @@ import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.Bitacora;
 import edu.mx.utdelacosta.model.Concepto;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
+import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.NotaCredito;
 import edu.mx.utdelacosta.model.PagoAlumno;
 import edu.mx.utdelacosta.model.PagoArea;
@@ -43,6 +44,7 @@ import edu.mx.utdelacosta.model.dto.ReciboDTO;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IBitacoraService;
 import edu.mx.utdelacosta.service.IConceptoService;
+import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.INotaCreditoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPeriodosService;
@@ -75,6 +77,9 @@ public class FolioController {
 	
 	@Autowired
 	private IPeriodosService periodoService;
+	
+	@Autowired
+	private IGrupoService grupoService;
 	
 	@GetMapping("/ver-edicion/{folio}")
 	public String vistaEdicion(@PathVariable("folio") String noFolio, Model model) {
@@ -146,6 +151,7 @@ public class FolioController {
 		Double totalPago = 0.0;
 		Double totalNota = 0.0;
 		String folioCifrado = "";
+		Grupo ultimoGrupo = new Grupo();
 		List<NotaCredito> notas = new ArrayList<>();
 
 		//se rellena la informacion del recibo
@@ -180,6 +186,10 @@ public class FolioController {
 				e.printStackTrace();
 			}
 
+			if(infoRecibo.getIdAlumno()!=null && infoRecibo.getIdAlumno()!=0) {
+				ultimoGrupo = grupoService.buscarUltimoDeAlumno(infoRecibo.getIdAlumno());
+				model.addAttribute("ultimoGrupo", ultimoGrupo!=null ? ultimoGrupo.getNombre() : "");
+				}
 		}
 		
 		List<Integer> list = new ArrayList<>();
@@ -233,6 +243,11 @@ public class FolioController {
 			recibo.setPagos(pagos);
 			recibo.setNota(nota);
 			recibo.setFolio(datosFolio);
+			
+			if (datosFolio.getIdAlumno()!=null) {
+				Grupo grupo = grupoService.buscarUltimoDeAlumno(datosFolio.getIdAlumno());
+				recibo.setNombreGrupo(grupo!=null ? grupo.getNombre() : "");
+			}
 			
 			recibos.add(recibo);
 		}

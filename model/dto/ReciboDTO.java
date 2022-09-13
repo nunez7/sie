@@ -3,19 +3,21 @@ package edu.mx.utdelacosta.model.dto;
 import java.util.List;
 
 public class ReciboDTO {
-	
+
 	private FolioDTO folio;
-	
+
 	private List<PagoConceptoDTO> pagos;
 
 	private NotaCreditoDTO nota;
-	
+
 	private String folioCifrado;
-	
+
 	private Double montoTotal;
 
 	private String montoLetras;
-	
+
+	private String nombreGrupo;
+
 	public FolioDTO getFolio() {
 		return folio;
 	}
@@ -62,6 +64,14 @@ public class ReciboDTO {
 
 	public void setMontoLetras(String montoLetras) {
 		this.montoLetras = montoLetras;
+	}
+
+	public String getNombreGrupo() {
+		return nombreGrupo;
+	}
+
+	public void setNombreGrupo(String nombreGrupo) {
+		this.nombreGrupo = nombreGrupo;
 	}
 
 }
