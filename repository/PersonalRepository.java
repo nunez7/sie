@@ -24,6 +24,6 @@ public interface PersonalRepository extends JpaRepository<Personal, Integer>{
 		@Query(value = "SELECT * FROM personal p "
 				+ "INNER JOIN puestos pu ON p.id_puesto = pu.id "
 				+ "INNER JOIN personas per on p.id_persona=per.id "
-				+ "WHERE pu.id IN(6, 8) ", nativeQuery = true)
+				+ "WHERE pu.id IN(6, 8) AND p.activo = 'True' ", nativeQuery = true)
 		List<Personal> listaProfesores();
 }
