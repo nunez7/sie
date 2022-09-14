@@ -457,6 +457,7 @@ public class ControlAlumnoController {
 			pGeneral.setPagoCuatrimestre(pc);
 			
 			pagoGeneralService.guardar(pGeneral);
+			
 			//pago de reinscripción
 			PagoGeneral pg = new PagoGeneral();
 			pg.setCantidad(1);
@@ -469,7 +470,11 @@ public class ControlAlumnoController {
 				pg.setMontoUnitario(con.getMonto());
 			}
 			else {
-				con = conceptoService.buscarPorId(20);//reinscripcion ING/LIC
+				if (grupoNuevo.getCuatrimestre().getId()==7) {
+					con = conceptoService.buscarPorId(14);//reinscripcion ING/LIC
+				}else {					
+					con = conceptoService.buscarPorId(20);//reinscripcion ING/LIC
+				}
 				pg.setConcepto(con);
 				pg.setMonto(con.getMonto());
 				pg.setMontoUnitario(con.getMonto());
