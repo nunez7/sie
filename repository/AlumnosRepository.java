@@ -260,13 +260,13 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 	List<AlumnoMatriculaInicialDTO> findAllMatriculaInicial(@Param("periodo") Integer periodo, @Param("carrera") Integer carrera);
 	
 	//GADIEL
-	@Query(value="SELECT LPAD(CAST(SUM(total) AS VARCHAR),4,'0')"
-			+ " FROM (SELECT COUNT(a.matricula)+1 AS total FROM  alumnos a"
-			+ "	WHERE a.matricula ILIKE %:matri%"
-			+ " UNION ALL"
-			+ " SELECT COUNT(rc.clave) AS total FROM reserva_claves rc"
-			+ "	WHERE rc.clave ILIKE %:matri%"
-			+ "	)AS total", nativeQuery = true)
+	@Query(value="SELECT LPAD(CAST(CAST(MAX(total) AS INTEGER)+1 AS VARCHAR),4,'0') "
+			 + " FROM (SELECT RIGHT((a.matricula),4) AS total FROM  alumnos a "
+			 + " WHERE a.matricula ILIKE %:matri% "
+			 + " UNION ALL "
+			 + " SELECT RIGHT((rc.clave),4) AS total FROM reserva_claves rc"
+			 + " WHERE rc.clave ILIKE %:matri% "
+			 + " )AS total", nativeQuery = true)
 	String findNextMatricula(@Param("matri") String matri);
 	
 	@Query(value="SELECT CAST(COUNT(a.curp) AS VARCHAR) from datos_personales a"

@@ -36,10 +36,12 @@ import edu.mx.utdelacosta.model.Escuela;
 import edu.mx.utdelacosta.model.Estado;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Mail;
+import edu.mx.utdelacosta.model.Materia;
 import edu.mx.utdelacosta.model.PagoAlumno;
 import edu.mx.utdelacosta.model.PagoCuatrimestre;
 import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.Periodo;
+import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.PrestamoDocumento;
 import edu.mx.utdelacosta.model.Testimonio;
 import edu.mx.utdelacosta.model.Usuario;
@@ -622,6 +624,30 @@ public class ControlAlumnoController {
 			return "noMo";
 		}
 		return "error";
+	}
+	
+	@PostMapping(path= "/cambiar-matricula", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String cambiarMatricula(@RequestBody Map<String, String> obj) {
+		Integer idAlumno = 0;
+		
+		try {
+			idAlumno = Integer.parseInt(obj.get("idAlumno"));
+		} catch (Exception e) {
+			return "err"+e;
+		}
+		
+		String matricula = obj.get("matricula");
+		
+		if (alumnoService.buscarPorMatricula(matricula)!=null) {
+			return "dupli";
+		}
+		
+		Alumno alumno = alumnoService.buscarPorId(idAlumno);
+		alumno.setMatricula(matricula);
+		alumnoService.guardar(alumno);
+		
+		return "ok";
 	}
 
 }
