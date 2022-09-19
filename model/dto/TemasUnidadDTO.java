@@ -6,6 +6,7 @@ public class TemasUnidadDTO {
 	private Integer idUnidad;
 	private String  nombreTema;
 	private Integer consecutivoTema;
+	private Boolean activo;
 	
 	public Integer getIdTema() {
 		return idTema;
@@ -30,6 +31,12 @@ public class TemasUnidadDTO {
 	}
 	public void setConsecutivoTema(Integer consecutivoTema) {
 		this.consecutivoTema = consecutivoTema;
+	}
+	public Boolean getActivo() {
+		return activo;
+	}
+	public void setActivo(Boolean activo) {
+		this.activo = activo;
 	}
 	
 	

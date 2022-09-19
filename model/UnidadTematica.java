@@ -40,6 +40,8 @@ public class UnidadTematica {
 	@Column(name = "horas_totales")
 	private Integer horasTotales;
 	
+	private Boolean activo;
+	
 	@OneToMany(mappedBy = "unidadTematica" ,fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@OrderBy("consecutivo")
 	List<TemaUnidad> temasUnidad;
@@ -105,6 +107,14 @@ public class UnidadTematica {
 
 	public void setHorasTotales(Integer horasTotales) {
 		this.horasTotales = horasTotales;
+	}
+	
+	public Boolean getActivo() {
+		return activo;
+	}
+
+	public void setActivo(Boolean activo) {
+		this.activo = activo;
 	}
 
 	public List<TemaUnidad> getTemasUnidad() {

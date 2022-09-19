@@ -9,6 +9,7 @@ public class UnidadTematicaDTO {
 	private Integer horasPracticas;
 	private Integer horasTeoricas;
 	private Integer horasTotales;
+	private Boolean activo;
 	
 	public Integer getIdUnidad() {
 		return idUnidad;
@@ -52,5 +53,10 @@ public class UnidadTematicaDTO {
 	public void setHorasTotales(Integer horasTotales) {
 		this.horasTotales = horasTotales;
 	}
-	
+	public Boolean getActivo() {
+		return activo;
+	}
+	public void setActivo(Boolean activo) {
+		this.activo = activo;
+	}
 }

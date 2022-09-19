@@ -44,6 +44,7 @@ public class UnidadesTematicasController {
 		unidad.setHorasTeoricas(unidadRequest.getHorasTeoricas());
 		unidad.setHorasTotales(unidadRequest.getHorasTotales());
 		unidad.setNombre(unidadRequest.getNombre());
+		unidad.setActivo(unidadRequest.getActivo());
 		unidadTematicaService.guardar(unidad);
 		return "ok";
 	}

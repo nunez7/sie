@@ -41,7 +41,7 @@ public class TemasUnidadController {
 			unidadTematica = unidadTematicaService.buscarPorId(temasDTO.getIdUnidad());
 			tema.setUnidadTematica(unidadTematica);
 		}
-		tema.setActivo(true);
+		tema.setActivo(temasDTO.getActivo());
 		tema.setConsecutivo(temasDTO.getConsecutivoTema());
 		tema.setTema(temasDTO.getNombreTema());
 		temasService.guardar(tema);
