@@ -65,13 +65,33 @@ public class HorariosController {
 	public String guardarHorario (@RequestBody SesionDTO horarioDTO, HttpSession session) throws ParseException {
 		//se crea el objeto de horario
 		Horario horario = null;
+		
+		//para validar la carga horaria y dia que no sean nulos
+		CargaHoraria cargaHoraria;
+		Dia dia;
+		try {
+			cargaHoraria = cargaHorariaService.buscarPorIdCarga(horarioDTO.getCargaHoraria());
+		}catch (Exception e) {
+			cargaHoraria = null;
+		}
+		
+		try {
+			dia = diaService.buscarPorId(horarioDTO.getDia());
+		}catch (Exception e) {
+			dia = null;
+		}
+		
+		if(cargaHoraria == null || dia == null) {
+			return "null";
+		}
+		
 		//se crea objeto de carga horaria 
-		CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(horarioDTO.getCargaHoraria());
 		int cvePersona = (Integer) session.getAttribute("cvePersona");
 		Persona persona = personaService.buscarPorId(cvePersona);
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
 		String horaInicioDTO = "";
 		String horaFinDTO = "";
+		
 		if(horarioDTO.getIdHorario() > 0) {
 			horario = horarioService.buscarPorId(horarioDTO.getIdHorario());
 			//para desactivar el horario
@@ -90,9 +110,12 @@ public class HorariosController {
 			if(horarioDTO.getHoraFin().length() == 5) {
 				horaFinDTO = horaFinDTO+":00";
 			}
-			Horario horarioProfesor = horarioService.buscarPorHoraInicioHorafinYPeriodoYProfesorYDia(horaInicioDTO, horaFinDTO, usuario.getPreferencias().getIdPeriodo(), cargaHoraria.getProfesor().getId(), horarioDTO.getDia());
-			if(horarioProfesor != null) {
-				return "hp";
+			//para cuando es profesor de receso
+			if(cargaHoraria.getProfesor().getId() != 12915) {
+				Horario horarioProfesor = horarioService.buscarPorHoraInicioHorafinYPeriodoYProfesorYDia(horaInicioDTO, horaFinDTO, usuario.getPreferencias().getIdPeriodo(), cargaHoraria.getProfesor().getId(), horarioDTO.getDia());
+				if(horarioProfesor != null) {
+					return "hp";
+				}
 			}
 			Horario horarioGrupo = horarioService.buscarPorHoraInicioHoraFinYGrupoYdia(horaInicioDTO, horaFinDTO, cargaHoraria.getGrupo().getId(), horarioDTO.getDia());
 			if(horarioGrupo != null) {
@@ -102,9 +125,11 @@ public class HorariosController {
 		else {
 			horaInicioDTO = horarioDTO.getHoraInicio()+":00";
 			horaFinDTO = horarioDTO.getHoraFin()+":00"; 
-			Horario horarioProfesor = horarioService.buscarPorHoraInicioHorafinYPeriodoYProfesorYDia(horaInicioDTO, horaFinDTO, usuario.getPreferencias().getIdPeriodo(), cargaHoraria.getProfesor().getId(), horarioDTO.getDia());
-			if(horarioProfesor != null) {
-				return "hp";
+			if(cargaHoraria.getProfesor().getId() != 12915) {
+				Horario horarioProfesor = horarioService.buscarPorHoraInicioHorafinYPeriodoYProfesorYDia(horaInicioDTO, horaFinDTO, usuario.getPreferencias().getIdPeriodo(), cargaHoraria.getProfesor().getId(), horarioDTO.getDia());
+				if(horarioProfesor != null) {
+					return "hp";
+				}
 			}
 			Horario horarioGrupo = horarioService.buscarPorHoraInicioHoraFinYGrupoYdia(horaInicioDTO, horaFinDTO, cargaHoraria.getGrupo().getId(), horarioDTO.getDia());
 			if(horarioGrupo != null) {
@@ -116,7 +141,6 @@ public class HorariosController {
 		horario.setCargaHoraria(cargaHoraria);
 		Actividad actividad = new Actividad(horarioDTO.getActividad());
 		horario.setActividad(actividad);
-		Dia dia = new Dia(horarioDTO.getDia());
 		horario.setDia(dia);
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
 		try {

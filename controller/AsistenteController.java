@@ -192,7 +192,12 @@ public class AsistenteController {
 		Cuatrimestre cuatrimestre = new Cuatrimestre();
 		if(session.getAttribute("cveGrupo") != null) {
 			cveGrupo = (Integer) session.getAttribute("cveGrupo");
-			Grupo grupo = grupoService.buscarPorId(cveGrupo);
+			Grupo grupo;
+			try {
+				grupo = grupoService.buscarPorId(cveGrupo);
+			}catch (Exception e) {
+				grupo = null;
+			}
 			if(grupo != null) {
 				cuatrimestre = cuatrimestreService.buscarPorId(grupo.getCuatrimestre().getId());
 				//aqui sacamos un arreglo de las materias del grupo par ala curricula
@@ -505,9 +510,9 @@ public class AsistenteController {
 					}
 				}
 			}		
-			model.addAttribute("tutor", grupo.getProfesor().getId() != null ? grupo.getProfesor().getId():0);
-			model.addAttribute("jefeGrupo", grupo.getJefeGrupo().getId() != null ? grupo.getJefeGrupo().getId():0);
-			model.addAttribute("subJefe", grupo.getSubjefeGrupo().getId() != null ? grupo.getSubjefeGrupo().getId():0);
+			model.addAttribute("tutor", grupo!= null ? grupo.getProfesor().getId():0);
+			model.addAttribute("jefeGrupo", grupo != null ? grupo.getJefeGrupo().getId():0);
+			model.addAttribute("subJefe", grupo != null ? grupo.getSubjefeGrupo().getId():0);
 			model.addAttribute("horasDto", horasDto);
 		}
 		else {
