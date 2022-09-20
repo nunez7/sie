@@ -188,7 +188,7 @@ public class FolioController {
 
 			if(infoRecibo.getIdAlumno()!=null && infoRecibo.getIdAlumno()!=0) {
 				ultimoGrupo = grupoService.buscarUltimoDeAlumno(infoRecibo.getIdAlumno());
-				model.addAttribute("ultimoGrupo", ultimoGrupo!=null ? ultimoGrupo.getNombre() : "");
+				model.addAttribute("ultimoGrupo", ultimoGrupo!=null ? ultimoGrupo : "");
 				}
 		}
 		
@@ -247,6 +247,7 @@ public class FolioController {
 			if (datosFolio.getIdAlumno()!=null) {
 				Grupo grupo = grupoService.buscarUltimoDeAlumno(datosFolio.getIdAlumno());
 				recibo.setNombreGrupo(grupo!=null ? grupo.getNombre() : "");
+				recibo.setCarrera(grupo!=null ? grupo.getCarrera().getNombre() : "");
 			}
 			
 			recibos.add(recibo);

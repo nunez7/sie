@@ -17,6 +17,8 @@ public class ReciboDTO {
 	private String montoLetras;
 
 	private String nombreGrupo;
+	
+	private String carrera;
 
 	public FolioDTO getFolio() {
 		return folio;
@@ -73,5 +75,15 @@ public class ReciboDTO {
 	public void setNombreGrupo(String nombreGrupo) {
 		this.nombreGrupo = nombreGrupo;
 	}
+
+	public String getCarrera() {
+		return carrera;
+	}
+
+	public void setCarrera(String carrera) {
+		this.carrera = carrera;
+	}
+	
+	
 
 }

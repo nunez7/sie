@@ -28,6 +28,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Personal;
 import edu.mx.utdelacosta.model.ProrrogaAdeudo;
+import edu.mx.utdelacosta.model.dto.NotaCreditoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.CajaConcentradoDTO;
 import edu.mx.utdelacosta.model.dtoreport.PagosGeneralesDTO;
@@ -38,6 +39,7 @@ import edu.mx.utdelacosta.service.IConceptoService;
 import edu.mx.utdelacosta.service.ICuatrimestreService;
 import edu.mx.utdelacosta.service.IEstadoService;
 import edu.mx.utdelacosta.service.IGrupoService;
+import edu.mx.utdelacosta.service.INotaCreditoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
@@ -84,6 +86,9 @@ public class CajaController {
 	
 	@Autowired
 	private IProrrogaAdeudoService prorrogaAdeudoService;
+	
+	@Autowired
+	private INotaCreditoService notaCreditoService;
 	
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 	
@@ -160,6 +165,7 @@ public class CajaController {
 		}
 
 		if (session.getAttribute("cveCajero") != null) {
+			NotaCreditoDTO nota;
 			int cveCajero = (Integer) session.getAttribute("cveCajero");
 			model.addAttribute("cveCajero", cveCajero);
 			// lista que guardará los pagos
@@ -167,9 +173,12 @@ public class CajaController {
 			if (cveCajero > 0) {
 				pagos = pagoGeneralService.findCajaConcentradoByFechaInicioAndFechaFinAndCajero(fechaInicio, fechaFin,
 						cveCajero);
+				nota = notaCreditoService.buscarConcentradoPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);
 			} else {
 				pagos = pagoGeneralService.findCajaConcentradoByFechaInicioAndFechaFin(fechaInicio, fechaFin);
+				nota = notaCreditoService.buscarConcentradoPorFechaInicioYFechaFin(fechaInicio, fechaFin);
 			}
+			model.addAttribute("nota", nota);
 			model.addAttribute("pagos", pagos);
 		}
 
@@ -204,12 +213,16 @@ public class CajaController {
 			model.addAttribute("cveCajero", cveCajero);
 			// lista que guardará los pagos
 			List<PagosGeneralesDTO> pagos = null;
+			Double notaCredito = 0d;
 			if (cveCajero > 0) {
 				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);
+				notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);
 			} else {
 				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYTodosCajeros(fechaInicio, fechaFin);
+				notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFin(fechaInicio, fechaFin);
 			}
 			model.addAttribute("pagos", pagos);
+			model.addAttribute("totalNota", notaCredito);
 		}
 		List<Persona> cajeros = personaService.buscarCajeros();
 		model.addAttribute("fechaHoy", new Date());

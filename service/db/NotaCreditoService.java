@@ -1,5 +1,7 @@
 package edu.mx.utdelacosta.service.db;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,26 @@ public class NotaCreditoService implements INotaCreditoService{
 	@Override
 	public NotaCreditoDTO BuscarPorFolio(String folio) {
 		return ncRepository.findByFolio(folio);
+	}
+
+	@Override
+	public Double buscarTotalPorFechaInicioYFechaFin(Date fechaInicio, Date fechaFin) {
+		return ncRepository.findTotalByFechaInicioAndFechaFin(fechaInicio, fechaFin);
+	}
+
+	@Override
+	public Double buscarTotalPorFechaInicioYFechaFinYCajero(Date fechaInicio, Date fechaFin, Integer cajero) {
+		return ncRepository.findTotalByFechaInicioAndFechaFinAndCajero(fechaInicio, fechaFin, cajero);
+	}
+
+	@Override
+	public NotaCreditoDTO buscarConcentradoPorFechaInicioYFechaFin(Date fechaInicio, Date fechaFin) {
+		return ncRepository.findConcentradoByFechaInicioAndFechaFin(fechaInicio, fechaFin);
+	}
+
+	@Override
+	public NotaCreditoDTO buscarConcentradoPorFechaInicioYFechaFinYCajero(Date fechaInicio, Date fechaFin, Integer cajero) {
+		return ncRepository.findConcentradoByFechaInicioAndFechaFinAndCajero(fechaInicio, fechaFin, cajero);
 	}
 
 }
