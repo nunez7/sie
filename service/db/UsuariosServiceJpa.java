@@ -121,4 +121,10 @@ public class UsuariosServiceJpa implements IUsuariosService{
 		return usuariosRepo.findAllOrdeByRolAndPrimerApellidoAndSegundoApellidoAndNombreAndUsuario();
 	}
 
+	@Override
+	public List<Usuario> buscarPorRol(Integer idRol) {
+		// TODO Auto-generated method stub
+		return usuariosRepo.buscarUsuariosPorRol(idRol);
+	}
+
 }

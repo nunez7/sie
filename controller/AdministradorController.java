@@ -51,7 +51,7 @@ public class AdministradorController {
 	
 	@GetMapping("/passwords-alumno")
 	public String actulizarPasswordAlumno(Model model) {		
-		List<Carrera> carreras = carrerasServices.buscarTodas();
+		List<Carrera> carreras = carrerasServices.buscarTodasMenosIngles();
 		List<Periodo> periodos = periodosService.buscarTodos();
 		List<UpdatePasswordsAlumnoDTO> usuarios = new ArrayList<>();
 		model.addAttribute("carreras", carreras);
@@ -99,12 +99,13 @@ public class AdministradorController {
 	@GetMapping("/actualizar-passwords-personal")
 	public String actualizarPasswordPersonal(Model model) {
 		List<UpdatePasswordsPersonalDTO> UpdateUsuarios = new ArrayList<>();
-		List<Usuario> usuarios = usuariosService.buscarPersonal();	
+		//Solo los profesores
+		List<Usuario> usuarios = usuariosService.buscarPorRol(2);	
 		
 		for(Usuario usuario : usuarios) {
 			UpdatePasswordsPersonalDTO user = new UpdatePasswordsPersonalDTO();
 			user.setRol(usuario.getRoles().get(0).getDescripcion());
-			user.setNombre(usuario.getPersona().getNombre());
+			user.setNombre(usuario.getPersona().getNombre() +" "+usuario.getPersona().getPrimerApellido()+" "+usuario.getPersona().getSegundoApellido());
 			user.setUsuario(usuario.getUsuario());
 			String contra = Utileria.generateRandomPassword(8);
 			user.setContrasenia(contra);

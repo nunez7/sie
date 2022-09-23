@@ -25,5 +25,6 @@ public interface IUsuariosService {
 	
 	List<Usuario> buscarAlumnosPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo);
 	List<Usuario> buscarPersonal();
+	List<Usuario> buscarPorRol(Integer idRol);
 }
 

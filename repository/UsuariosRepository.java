@@ -60,4 +60,14 @@ public interface UsuariosRepository extends JpaRepository<Usuario, Integer> {
 			+ "INNER JOIN personal pe ON pe.id_persona = u.id_persona "
 			+ "ORDER BY r.id, p.primer_apellido, p.segundo_apellido, p.nombre, u.usuario", nativeQuery = true)
 	List<Usuario> findAllOrdeByRolAndPrimerApellidoAndSegundoApellidoAndNombreAndUsuario();
+	
+	//Profesores
+	@Query(value = "SELECT u.* FROM usuarios u "
+			+ "INNER JOIN personas p ON p.id=u.id_persona "
+			+ "INNER JOIN usuario_rol ur ON ur.id_usuario = u.id "
+			+ "INNER JOIN roles r ON r.id=ur.id_rol "
+			+ "INNER JOIN personal pe ON pe.id_persona = u.id_persona "
+			+ "WHERE r.id IN (:idRol) AND u.activo='True' "
+			+ "ORDER BY r.id, p.primer_apellido, p.segundo_apellido, p.nombre, u.usuario", nativeQuery = true)
+	List<Usuario> buscarUsuariosPorRol(@Param("idRol") Integer idRol);
 }
