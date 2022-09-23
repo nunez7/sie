@@ -244,7 +244,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "	INNER JOIN pago_recibe pr ON pr.id_pago = pg.id "
 			+ "	WHERE pg.id_concepto = c.id and pg.status = 1 AND pr.id_cajero = :cajero "
 			+ "	AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin ) AS cantidad, "
-			+ "	(SELECT SUM((pg2.cantidad  * c2.monto) - (COALESCE(pg2.descuento,0) * (pg2.cantidad * c2.monto)/100)) "
+			+ "	(SELECT COALESCE (SUM(pg2.monto), SUM((pg2.cantidad  * c2.monto) - (COALESCE(pg2.descuento,0) * (pg2.cantidad * c2.monto)/100))) "
 			+ "	FROM pagos_generales pg2 "
 			+ "	INNER JOIN pago_recibe pr2 ON pr2.id_pago = pg2.id "
 			+ "	INNER JOIN conceptos c2 ON pg2.id_concepto = c2.id "
