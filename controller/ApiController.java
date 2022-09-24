@@ -19,12 +19,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoFamiliar;
@@ -42,6 +42,7 @@ import edu.mx.utdelacosta.model.PagoAlumno;
 import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.PeriodoInscripcion;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.PersonaReferencia;
 import edu.mx.utdelacosta.model.Rol;
 import edu.mx.utdelacosta.model.Turno;
 import edu.mx.utdelacosta.model.Usuario;
@@ -53,7 +54,9 @@ import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.IConceptoService;
 import edu.mx.utdelacosta.service.IPagoAlumnoService;
+import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPeriodoInscripcionService;
+import edu.mx.utdelacosta.service.IPersonaReferenciaService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 import edu.mx.utdelacosta.util.NumberToLetterConverter;
@@ -63,7 +66,7 @@ import edu.mx.utdelacosta.util.ReferenciaSEP;
 import edu.mx.utdelacosta.util.Utileria;
 
 
-@Controller
+@RestController
 @RequestMapping("/api")
 public class ApiController {
 	
@@ -106,6 +109,12 @@ public class ApiController {
 	
 	@Autowired
 	private IUsuariosService usuarioService;
+	
+	@Autowired
+	private IPagoGeneralService pagoGeneralService;
+	
+	@Autowired
+	private IPersonaReferenciaService personaReferenciaService;
 		
 	
 	@PostMapping("/genera-matricula")
@@ -299,6 +308,53 @@ public class ApiController {
 		pagoA.setAlumno(alumno);
 		pagoA.setPagoGeneral(pagoG);
 		pagoAlumnoService.guardar(pagoA);
+		
+		// se genera el registro de persona-referencia para importación de referencia por archivo de banco
+		List<PagoGeneral> adeudos = pagoGeneralService.buscarPorAlumno(alumno.getId(), 0);
+		PagoGeneral adeudo = adeudos.get(0);
+		PersonaReferencia peRef = personaReferenciaService.buscarPorReferencia(adeudo.getReferencia());
+		if(peRef == null) {
+			peRef = new PersonaReferencia();
+		}
+		// Calcula el adeudo total
+		Double suma = 0.0;
+		for (PagoGeneral pagoGeneral : adeudos) {
+			suma = suma + pagoGeneral.getMonto();
+		}
+		String conceptos = ""; // cadena de concepto de todos los pagos(como en pago persona)
+		for (PagoGeneral ad : adeudos) {
+			String cadenaAduedos = "";
+			cadenaAduedos += ad.getConcepto().getId().toString() + "._."; //concepto
+			cadenaAduedos += ad.getCantidad().toString() + "._."; //cantidad
+			cadenaAduedos += ad.getMonto().toString() + "._."; //monto o importe
+			cadenaAduedos += ad.getDescuento().toString() + "._."; //descuento
+			if (ad.getPagoAsignatura() != null) {
+				cadenaAduedos += ad.getPagoAsignatura().getCargaHoraria().getId() + "._."; //si es nive (cargaHoraria.id)
+				cadenaAduedos += ad.getPagoAsignatura().getIdCorteEvaluativo() + "._."; //corte_evaluativo (id)
+			} else {
+				cadenaAduedos += "0" + "._."; // carga_horaria
+				cadenaAduedos += "0"; // corte
+			}
+			// para separar las cadenas
+			cadenaAduedos += "A";
+			// se aÃ±ade la cadena a los conceptos para guardarlos todos
+			conceptos += cadenaAduedos;
+		}
+		//se guarda la referencia y fecha limite en el objeto de personaReferencia
+		peRef.setReferencia(adeudo.getReferencia());
+		peRef.setReferenciaFondos(adeudo.getReferenciaFondos());
+		peRef.setFechaVencimiento(adeudo.getFechaLimite());
+		// se guarda el registro de la persona referencia
+		peRef.setTotal(0.0);
+		peRef.setImporte(suma);
+		peRef.setConceptos(conceptos);
+		peRef.setFechaAlta(new Date());
+		peRef.setFechaPago(null);
+		peRef.setPagado(false);
+		peRef.setFolioPago("");
+		peRef.setPersona(alumno.getPersona());
+		//se guarda el objeto de persona referencia
+		personaReferenciaService.guardar(peRef);
 		
 		// Create the email
 		String url = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();

@@ -336,7 +336,7 @@ public class AlumnoController {
 				//----------------
 				
 				// Se extraen la carga horaria a partir del grupo seleccinado	
-				List<CargaHoraria> cargasHor = serviceCargaHor.buscarPorGrupo(grupo);				
+				List<CargaHoraria> cargasHor = serviceCargaHor.buscarPorGrupoYPeriodoYCalificacionSi(cveGrupo, grupo.getPeriodo().getId());				
 
 				List<Asistencia> asistencias = serviceAsistencia.buscarPorGrupoYalumno(cveGrupo, alumno.getId());
 				
@@ -544,9 +544,10 @@ public class AlumnoController {
 			Integer cveGrupo = (Integer) session.getAttribute("cveGrupo");			
 			// Envía el id del grupo a la vista para validar si ya se a seleccionado un grupo
 			model.addAttribute("cveGrupo", cveGrupo);		
-			if (cveGrupo != null) {					
+			if (cveGrupo != null) {		
+				Grupo grupo = serviceGrupo.buscarPorId(cveGrupo);
 				// Se extraen la carga horaria a partir del grupo seleccionado				
-				List<CargaHoraria> cargasHor = serviceCargaHor.buscarPorGrupo(new Grupo(cveGrupo));
+				List<CargaHoraria> cargasHor = serviceCargaHor.buscarPorGrupoYPeriodoYCalificacionSi(cveGrupo, grupo.getPeriodo().getId());
 				model.addAttribute("cargasHor", cargasHor);			
 			}
 		}
@@ -1036,7 +1037,7 @@ public class AlumnoController {
 			Date dt = new Date();		        		        
 	        Calendar c = Calendar.getInstance();
 	        c.setTime(dt);
-	        c.add(Calendar.DATE, 3);		        
+	        c.add(Calendar.DATE, 30);		        
 	        String fechaLimite = format.format(c.getTime());
 	        Date fechaLimiteP = c.getTime();
 	        		        		      		   
@@ -1059,7 +1060,7 @@ public class AlumnoController {
 				Date dt = new Date();		        		        
 		        Calendar c = Calendar.getInstance();
 		        c.setTime(dt);
-		        c.add(Calendar.DATE, 3);		        
+		        c.add(Calendar.DATE, 30);		        
 		        String fechaLimite = format.format(c.getTime());
 		        Date fechaL = c.getTime();
 		        		        		      		   
@@ -1127,12 +1128,18 @@ public class AlumnoController {
 						if (new HashSet<String>(referenciasFondos).size() <= 1) {
 
 							PagoGeneral adeudo = adeudos.get(0);
+							
+							//suma de adeudos para referencia 
+							double suma = 0.0;
+							for (PagoGeneral pagoGeneral : adeudos) {
+								suma = suma + pagoGeneral.getMonto();
+							}
 
 							if (adeudo.getReferenciaFondos() == null || adeudo.getReferenciaFondos().isEmpty()) {
 								ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();
 								refereciaDTO.setCarrera(ultimoGrupo.getCarrera());
 								refereciaDTO.setMatricula(alumno.getMatricula());
-								refereciaDTO.setPago(adeudo.getMonto());
+								refereciaDTO.setPago(suma);
 								String cadena = generarReferenciaFondos.referenciaFondos(refereciaDTO);
 								for (PagoGeneral pagoGeneral : adeudos) {
 									pagoGeneral.setReferenciaFondos(cadena);
@@ -1140,13 +1147,17 @@ public class AlumnoController {
 								}
 							}
 						} else {
-							//si se cambia la referencia o tiene un nuevo concepto
-							PagoGeneral adeudo = adeudos.get(0);
+							
+							//suma de adeudos para referencia 
+							double suma = 0.0;
+							for (PagoGeneral pagoGeneral : adeudos) {
+								suma = suma + pagoGeneral.getMonto();
+							}
 							
 							ReferenciaBanamexDTO refereciaDTO = new ReferenciaBanamexDTO();
 							refereciaDTO.setCarrera(ultimoGrupo.getCarrera());
 							refereciaDTO.setMatricula(alumno.getMatricula());
-							refereciaDTO.setPago(adeudo.getMonto());
+							refereciaDTO.setPago(suma);
 							String cadena = generarReferenciaFondos.referenciaFondos(refereciaDTO);
 							for (PagoGeneral pagoGeneral : adeudos) {
 								pagoGeneral.setReferenciaFondos(cadena);
@@ -1174,12 +1185,12 @@ public class AlumnoController {
 									suma = suma + pagoGeneral.getMonto();
 								}
 
-								// extrae la fecha actual y le suma 7 dias
+								// extrae la fecha actual y le suma 30 dias
 								SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 								Date dt = new Date();
 								Calendar c = Calendar.getInstance();
 								c.setTime(dt);
-								c.add(Calendar.DATE, 3);
+								c.add(Calendar.DATE, 30);
 								String fechaLimite = format.format(c.getTime());
 								Date fechaLimiteP = c.getTime();
 
@@ -1209,7 +1220,7 @@ public class AlumnoController {
 							Date dt = new Date();
 							Calendar c = Calendar.getInstance();
 							c.setTime(dt);
-							c.add(Calendar.DATE, 7);
+							c.add(Calendar.DATE, 30);
 							String fechaLimite = format.format(c.getTime());
 							Date fechaLimiteP = c.getTime();
 
