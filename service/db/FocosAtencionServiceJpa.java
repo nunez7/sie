@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.FocosAtencion;
 import edu.mx.utdelacosta.model.Grupo;
@@ -23,16 +24,19 @@ public class FocosAtencionServiceJpa implements IFocosAtencionService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<FocosAtencion> buscarPorGrupo(Grupo grupo) {
 		return focosRepo.findByGrupo(grupo);
 	}
 
 	@Override
+	@Transactional
 	public void eliminar(FocosAtencion focosAtencion) {
 		focosRepo.delete(focosAtencion);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public FocosAtencion buscarPorId(Integer id) {
 		Optional<FocosAtencion> optional = focosRepo.findById(id);
 		if (optional.isPresent()) {

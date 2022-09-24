@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Canalizacion;
@@ -22,46 +23,55 @@ public class CanalizacionServiceJpa implements ICanalizacionService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Canalizacion> buscarPorAlumno(Alumno alumno) {
 		return canlizacionRepo.findByAlumno(alumno);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<Canalizacion> buscarPorGrupoPeriodoYAlumno(Integer idGrupo, Integer idPeriodo, Integer idAlumno) {
 		return canlizacionRepo.findByGrupoAndPeriodoAndAlumno(idGrupo, idPeriodo, idAlumno);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Canalizacion> buscarPorGrupoPeriodo(Integer idGrupo, Integer idPeriodo) {
 		return canlizacionRepo.findByGrupoAndPeriodo(idGrupo, idPeriodo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Canalizacion> buscarPorCarreraPeriodo(Integer idCarrera, Integer idPeriodo) {
 		return canlizacionRepo.findByCarreraAndPeriodo(idCarrera, idPeriodo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
 		return canlizacionRepo.findTotalByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarDistinctAlumnoPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
 		return canlizacionRepo.findTotalDistinctAlumnoByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Canalizacion> buscarPorGrupoPeriodoAlumnoYServicio(Integer idGrupo, Integer idPeriodo, Integer idAlumno,Integer idServicio) {
 		return canlizacionRepo.findByGrupoAndPeriodoAndAlumnoAndServicio(idGrupo, idPeriodo, idAlumno, idServicio);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Canalizacion> buscarPorGrupoPeriodoYServicio(Integer idGrupo, Integer idPeriodo, Integer idServicio) {
 		return canlizacionRepo.findByGrupoAndPeriodoAndServicio(idGrupo, idPeriodo, idServicio);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Canalizacion> buscarPorCarreraPeriodoYServicio(Integer idCarrera, Integer idPeriodo, Integer idServicio) {
 		return canlizacionRepo.findByCarreraAndPeriodoAndServicio(idCarrera, idPeriodo, idServicio);
 	}

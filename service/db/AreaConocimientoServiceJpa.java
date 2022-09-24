@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.AreaConocimiento;
 import edu.mx.utdelacosta.repository.AreaConocimientoRepository;
@@ -17,12 +18,14 @@ public class AreaConocimientoServiceJpa implements IAreaConocimientoService{
 	private AreaConocimientoRepository areaConocimientoRepository;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<AreaConocimiento> buscarAreasActivas() {
 		// TODO Auto-generated method stub
 		return areaConocimientoRepository.findByActivo(true);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public AreaConocimiento buscarPorId(Integer id) {
 		Optional<AreaConocimiento> area = areaConocimientoRepository.findById(id);
 		if(area.isPresent()) {

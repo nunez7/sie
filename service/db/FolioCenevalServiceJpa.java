@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.FolioCeneval;
@@ -23,6 +24,7 @@ public class FolioCenevalServiceJpa implements IFolioCenevalService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public FolioCeneval buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<FolioCeneval> optional = cenevalRepository.findById(id);
@@ -33,12 +35,14 @@ public class FolioCenevalServiceJpa implements IFolioCenevalService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public FolioCeneval buscarPorAlumno(Alumno alumno) {
 		// TODO Auto-generated method stub
 		return cenevalRepository.findByAlumno(alumno);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public FolioCeneval buscarPorMatriculaAlumno(String matricula) {
 		// TODO Auto-generated method stub
 		return cenevalRepository.findByMatricula(matricula);

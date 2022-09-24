@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.DosificacionComentario;
 import edu.mx.utdelacosta.repository.DosificacionesComentariosRepository;
@@ -16,11 +17,13 @@ public class DosificacionComentarioServiceJpa implements IDosificacionComentario
 	private DosificacionesComentariosRepository dosiComenRepo;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<DosificacionComentario> buscarPorIdPersona(Integer idPersona) {
 		return dosiComenRepo.findByIdPersona(idPersona);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<DosificacionComentario> buscarPorIdCargaHoraria(Integer idCargaHoraria) {
 		return dosiComenRepo.findByIdCargaHoraria(idCargaHoraria);
 	}
@@ -31,6 +34,7 @@ public class DosificacionComentarioServiceJpa implements IDosificacionComentario
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarPorProfesorYPeriodo(Integer idProfesor, Integer idPeriodo) {
 		return dosiComenRepo.countByProfesorAndPeriodo(idPeriodo, idProfesor);
 	}

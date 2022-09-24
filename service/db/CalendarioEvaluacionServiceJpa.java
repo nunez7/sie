@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.CalendarioEvaluacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
@@ -25,6 +26,7 @@ public class CalendarioEvaluacionServiceJpa implements ICalendarioEvaluacionServ
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public CalendarioEvaluacion buscarPorId(Integer id) {
 		Optional<CalendarioEvaluacion> optional = calendarioRepository.findById(id);
 		if (optional.isPresent()) {
@@ -34,27 +36,32 @@ public class CalendarioEvaluacionServiceJpa implements ICalendarioEvaluacionServ
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public CalendarioEvaluacion buscarPorCargaHorariaYUnidadTematica(CargaHoraria carga,
 			UnidadTematica unidad) {
 		return calendarioRepository.findByCargaHorariaAndUnidadTematica(carga, unidad);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<CalendarioEvaluacion> buscarPorCargaHorariaYCorteEvaluativo(CargaHoraria carga, CorteEvaluativo corte) {
 		return calendarioRepository.findByCargaHorariaAndCorteEvaluativo(carga, corte);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<CalendarioEvaluacion> buscarPorCargaHoraria(CargaHoraria carga) {
 		return calendarioRepository.findByCargaHoraria(carga);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer distinguirPorCorteEvaluativoPorCargaHoraria(Integer idCargaHoraria) {
 		return calendarioRepository.distinctByCorteEvaluativoByCargaHoraria(idCargaHoraria);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarPorCargaHorariaYCorteEvaluativo(Integer idCarga, Integer idCorte) {
 		return calendarioRepository.countByCargaHorariaAndCorteEvaluativo(idCarga, idCorte);
 	}

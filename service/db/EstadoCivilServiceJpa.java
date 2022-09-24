@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.EstadoCivil;
 import edu.mx.utdelacosta.repository.EstadoCivilRepository;
@@ -17,6 +18,7 @@ public class EstadoCivilServiceJpa implements IEstadoCivilService{
 	private EstadoCivilRepository estadoRepository;
 
 	@Override
+	@Transactional(readOnly = true)
 	public EstadoCivil buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<EstadoCivil> optional = estadoRepository.findById(id);
@@ -27,6 +29,7 @@ public class EstadoCivilServiceJpa implements IEstadoCivilService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public EstadoCivil buscarPorDescripcion(String descripcion) {
 		// TODO Auto-generated method stub
 		Optional<EstadoCivil> optional = estadoRepository.findByDescripcion(descripcion);
@@ -37,6 +40,7 @@ public class EstadoCivilServiceJpa implements IEstadoCivilService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<EstadoCivil> buscarTodos() {
 		// TODO Auto-generated method stub
 		return (List<EstadoCivil>) estadoRepository.findAll();

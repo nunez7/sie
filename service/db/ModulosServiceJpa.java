@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Modulo;
 import edu.mx.utdelacosta.repository.ModulosRepository;
@@ -17,17 +18,20 @@ public class ModulosServiceJpa implements IModuloService{
 	private ModulosRepository modulosRepo;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Modulo> buscarTodos() {
 		// TODO Auto-generated method stub
 		return (List<Modulo>) modulosRepo.findAll();
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Modulo> buscarPorEstatus(boolean estatus){
 		return modulosRepo.findByActivoOrderByNombreAsc(estatus);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Modulo buscarPorId(Integer idModulo) {
 		// TODO Auto-generated method stub
 		Optional<Modulo> optional = modulosRepo.findById(idModulo);
@@ -38,6 +42,7 @@ public class ModulosServiceJpa implements IModuloService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Modulo> buscarModulosPorRol(Integer idRol) {
 		// si es Admin
 		if(idRol!=6) {
@@ -47,6 +52,7 @@ public class ModulosServiceJpa implements IModuloService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public boolean hasAccess(Integer idUsuario, Integer idModulo) {
 		// TODO Auto-generated method stub
 		Optional<Modulo> optional =Optional.ofNullable(modulosRepo.hasAccess(idUsuario, idModulo));

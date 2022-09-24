@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Instrumento;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
@@ -18,6 +19,7 @@ public class MecanismoInstrumentoServiceJpa implements IMecanismoInstrumentoServ
 	private MecanismoInstrumentoRepository mecanismoRepository;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<MecanismoInstrumento> buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(Integer idCargaHoraria,
 			Integer idCorteEvaluativo, Boolean activo) {
 		return mecanismoRepository.findByIdCargaHorariaAndIdCorteEvaluativoAndActivo(idCargaHoraria, idCorteEvaluativo, activo);
@@ -29,6 +31,7 @@ public class MecanismoInstrumentoServiceJpa implements IMecanismoInstrumentoServ
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public MecanismoInstrumento buscarPorIdYActivo(Integer idMecanismo, Boolean activo) {
 		Optional<MecanismoInstrumento> optional = mecanismoRepository.findByIdAndActivo(idMecanismo, activo);
 		if (optional.isPresent()) {
@@ -38,22 +41,26 @@ public class MecanismoInstrumentoServiceJpa implements IMecanismoInstrumentoServ
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<MecanismoInstrumento> buscarPorIdCargaHorariaYActivo(Integer idCargaHoraria, Boolean activo) {
 		return mecanismoRepository.findByIdCargaHorariaAndActivoOrderByIdCorteEvaluativo(idCargaHoraria, activo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public MecanismoInstrumento buscarPorIdCargaHorariaEIdCorteEvaluativoEInstrumentoYActivo(Integer idCargaHoraria,
 			Integer idCorteEvaluativo,Instrumento instrumento, Boolean activo) {
 		return mecanismoRepository.findByIdCargaHorariaAndIdCorteEvaluativoAndInstrumentoAndActivo(idCargaHoraria, idCorteEvaluativo, instrumento, activo);
 	}
 
 	@Override
+	@Transactional
 	public void eliminar(MecanismoInstrumento mecanismo) {
 		mecanismoRepository.delete(mecanismo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public MecanismoInstrumento buscarPorId(Integer id) {
 		Optional<MecanismoInstrumento> optional = mecanismoRepository.findById(id);
 		if (optional.isPresent()) {
@@ -63,6 +70,7 @@ public class MecanismoInstrumentoServiceJpa implements IMecanismoInstrumentoServ
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer sumaPonderacionPorIdCargaHorariaEIdCorteEvaluativo(Integer idCargaHoraria,
 			Integer idCorteEvaluativo) {
 		return mecanismoRepository.sumPonderacionByIdCargaHorariaAndIdCorteEvaluativo(idCargaHoraria, idCorteEvaluativo);

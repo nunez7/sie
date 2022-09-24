@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Asistencia;
@@ -20,29 +21,34 @@ public class AsistenciaServiceJpa implements IAsistenciaService{
 	private AsistenciaRepository asistenciaRepo;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Date> mesesEntreFechaInicioYFechaFinAsc(Date fechaInicio, Date fechaFin) {
 		// TODO Auto-generated method stub
 		return asistenciaRepo.findAllByFechaInicioFechafinOrderByFechaAsc(fechaInicio, fechaFin);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Date> diasEntreFechaInicioYFechaFin(String fechaInicio, String fechaFin) {
 		// TODO Auto-generated method stub
 		return asistenciaRepo.findAllByFechaInicioFechafin(fechaInicio, fechaFin);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Asistencia> buscarPorGrupoYalumno(Integer idGrupo, Integer idAlumno) {
 		// TODO Auto-generated method stub
 		return asistenciaRepo.findAllByGrupoAndAlumno(idGrupo, idAlumno);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	 public List<Asistencia> buscarPorFechaInicioYFechaFinEIdCargaHorariaEIdGrupo(Date fechaInicio, Date fechaFin, Integer idCargaHoraria, Integer idGrupo) {
 	  return asistenciaRepo.findByFechaInicioAndFechaFinAndIdCargaHorariaAndIdGrupo(fechaInicio, fechaFin, idCargaHoraria, idGrupo);
 	 }
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<Asistencia> buscarTodasPorHorario(Horario horario) {
 			return asistenciaRepo.findAllByHorario(horario);
 	}
@@ -53,22 +59,26 @@ public class AsistenciaServiceJpa implements IAsistenciaService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarPorFechaInicioYFechaFindYCargaHoraria(Date fechaInicio, Date fechaFin,
 			Integer idCargaHoraria) {
 		return asistenciaRepo.countByFechaInicioAndFechaFindAndCargaHoraria(fechaInicio, fechaFin, idCargaHoraria);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Asistencia> buscarPorFechaYHorario(Date fecha, Horario horario) {
 		return asistenciaRepo.findByFechaAndHorario(fecha, horario);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Asistencia buscarPorFechaYAlumnoYHorario(Date fecha, Alumno alumno, Horario horario) {
 		return asistenciaRepo.findByFechaAndAlumnoAndHorario(fecha, alumno, horario);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Asistencia buscarPorId(Integer id) {
 		Optional <Asistencia> optional = asistenciaRepo.findById(id);
 		if (optional.isPresent()) {
@@ -78,21 +88,25 @@ public class AsistenciaServiceJpa implements IAsistenciaService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Asistencia> buscarFaltasPorIdAlumnoYIdCargaHoraria(Integer idAlumno, Integer idCargaHoraria, Date fechaInicio, Date fechaFin) {
 		return asistenciaRepo.findFaltasByAlumnoAndCargaHoraria(idAlumno, idCargaHoraria, fechaInicio, fechaFin);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Asistencia> buscarRetardosPorIdAlumnoYIdCargaHoraria(Integer idAlumno, Integer idCargaHoraria) {
 		return asistenciaRepo.findRetardosByAlumnoAndCargaHoraria(idAlumno, idCargaHoraria);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarAsistenciasPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria,  Date fechaInicio, Date fechaFin) {
 		return asistenciaRepo.countAsistenciasByAlumnoAndCargaHorariaAndCorteEvalutivo(idAlumno, idCargaHoraria, fechaInicio, fechaFin);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarFaltasPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria,
 			Date fechaInicio, Date fechaFin) {
 		return asistenciaRepo.countFaltasByAlumnoAndCargaHorariaAndCorteEvalutivo(idAlumno, idCargaHoraria, fechaInicio, fechaFin);

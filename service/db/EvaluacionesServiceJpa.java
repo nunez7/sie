@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Evaluacion;
 import edu.mx.utdelacosta.repository.EvaluacionesRepository;
@@ -16,6 +17,7 @@ public class EvaluacionesServiceJpa implements IEvaluacionesService{
 	private EvaluacionesRepository evalaucionRepo;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public Evaluacion buscar(Integer id) {		
 		Optional<Evaluacion> optional = evalaucionRepo.findById(id);
 		if (optional.isPresent()) {

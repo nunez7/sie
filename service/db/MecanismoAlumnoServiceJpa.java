@@ -2,6 +2,7 @@ package edu.mx.utdelacosta.service.db;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.CargaHoraria;
@@ -16,6 +17,7 @@ public class MecanismoAlumnoServiceJpa implements IMecanismoAlumnoService{
 	private MecanismoAlumnoRepository mecaAluRepo;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public MecanismoAlumno buscarPorAlumnoYCargaHoraria(Alumno alumno, CargaHoraria cargaHoraria) {
 		return mecaAluRepo.findByAlumnoAndCargaHoraria(alumno, cargaHoraria);
 	}

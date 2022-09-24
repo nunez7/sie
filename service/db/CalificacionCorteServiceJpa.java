@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.CalificacionCorte;
@@ -19,6 +20,7 @@ public class CalificacionCorteServiceJpa implements ICalificacionCorteService {
 	private CalificacionCorteRepository calificacionCorteRepository;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<CalificacionCorte> buscarPorCargaYAlumno(CargaHoraria cargaHoraria, Alumno alumno) {
 		// TODO Auto-generated method stub
 		return calificacionCorteRepository.findByCargaHorariaAndAlumnoOrderByCorteEvaluativo(cargaHoraria, alumno);
@@ -29,13 +31,16 @@ public class CalificacionCorteServiceJpa implements ICalificacionCorteService {
 		calificacionCorteRepository.save(calificacionCorte);
 
 	}
-
+	
+	@Override
+	@Transactional(readOnly = true)
 	public Double buscarPorCargaHorariaIdCorteEvaluativoIdGrupo(Integer idCargaHoraria, Integer idCorteEvaluativo) {
 		// TODO Auto-generated method stub
 		return calificacionCorteRepository.findByIdCorteEvaluativoAndIdCargaHoraria(idCargaHoraria, idCorteEvaluativo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Double buscarPorAlumnoCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria,
 			Integer idCorteEvaluativo) {
 		// TODO Auto-generated method stub
@@ -44,6 +49,7 @@ public class CalificacionCorteServiceJpa implements ICalificacionCorteService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public CalificacionCorte buscarPorAlumnoYCargaHorariaYCorteEvaluativo(Alumno alumno, CargaHoraria cargaHoraria,
 			CorteEvaluativo corteEvaluativo) {
 		return calificacionCorteRepository.findByAlumnoAndCargaHorariaAndCorteEvaluativo(alumno, cargaHoraria,
@@ -51,12 +57,14 @@ public class CalificacionCorteServiceJpa implements ICalificacionCorteService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<CalificacionCorte> buscarPorCargaHorariaYCorteEvaluativo(CargaHoraria cargaHoraria,
 			CorteEvaluativo corteEvaluativo) {
 		return calificacionCorteRepository.findByCargaHorariaAndCorteEvaluativo(cargaHoraria, corteEvaluativo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer buscarRevalidadaPorAlumnoYCargaHorariaYCorteEvaluativo(Integer alumno, Integer cargaHoraria,
 			Integer corteEvaluativo) {
 		return calificacionCorteRepository.findRevalidadaByAlumnoAndCargaHorariaAndCorteEvaluativo(alumno, cargaHoraria, corteEvaluativo);

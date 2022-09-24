@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Dosificacion;
@@ -23,16 +24,19 @@ public class DosificacionCargaServiceJpa implements IDosificacionCargaService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public DosificacionCarga buscarPorDosificacionYCargaHoraria(Dosificacion dosificacion, CargaHoraria cargaHoraria) {
 		return dosiCargaRepository.findByDosificacionAndCargaHoraria(dosificacion, cargaHoraria);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<DosificacionCarga> buscarPorCargaHoraria(CargaHoraria cargaHoraria) {
 		return dosiCargaRepository.findByCargaHoraria(cargaHoraria);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarNoEntregadas(Integer idProfesor, Integer idPeriodo) {
 		return dosiCargaRepository.countNoEntregadas(idProfesor, idPeriodo);
 	}

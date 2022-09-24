@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
@@ -20,6 +21,7 @@ public class CorteEvaluativoServiceJpa implements ICorteEvaluativoService{
 	private CorteEvaluativoRepository corteEvaluativoRepository;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<CorteEvaluativo> buscarPorPeridoYCarreraFechaInicioAsc(Periodo periodo, Carrera carrera) {
 		// TODO Auto-generated method stub
 		return corteEvaluativoRepository.findByPeriodoAndCarreraOrderByFechaInicioAsc(periodo, carrera);
@@ -32,18 +34,21 @@ public class CorteEvaluativoServiceJpa implements ICorteEvaluativoService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<CorteEvaluativo> buscarPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo) {
 		// TODO Auto-generated method stub
 		return corteEvaluativoRepository.findByIdCarreraAndIdPeriodo(idCarrera, idPeriodo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<CorteEvaluativo> buscarPorCarreraYPeriodo(Carrera carrera, Periodo periodo) {
 		// TODO Auto-generated method stub
 		return corteEvaluativoRepository.findByCarreraAndPeriodoOrderByConsecutivo(carrera, periodo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public CorteEvaluativo buscarPorId(Integer id) {
 		Optional<CorteEvaluativo> optional = corteEvaluativoRepository.findById(id);
 		if(optional.isPresent()) {
@@ -53,45 +58,53 @@ public class CorteEvaluativoServiceJpa implements ICorteEvaluativoService{
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<CorteEvaluativo> buscarPorPeriodo(Periodo periodo) {
 		return corteEvaluativoRepository.findByPeriodoOrderByIdAsc(periodo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public CorteEvaluativo buscarPorFechaAsistenciaMayorQueYPeriodo(Date fechaAsistencia, Periodo periodo) {
 		return corteEvaluativoRepository.findByFechaAsistenciaGreaterThanEqualAndPeriodo(fechaAsistencia, periodo);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public CorteEvaluativo buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(Date fecha, Integer periodo, Integer carrera) {
 		return corteEvaluativoRepository.findByFechaInicioLessThanEqualAndFechaAsistenciaGreaterThanEqualAndPeriodoAndCarrera(fecha, periodo, carrera);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public CorteEvaluativo buscarPorFechaInicioMenorQueYFinEvaluacionesMayorQueYPeriodoYCarrera(Date fechaInicio, Date fechaFin,
 			Periodo periodo, Carrera carrera) {
 		return corteEvaluativoRepository.findByFechaInicioLessThanEqualAndFinEvaluacionesGreaterThanEqualAndPeriodoAndCarrera(fechaInicio, fechaFin, periodo, carrera);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public CorteEvaluativo buscarPorInicioRemedialMenorQueYFinRemedialMayorQueYPeriodoYCarrera(Date fechaInicio, Date fechaFin,
 			Periodo periodo, Carrera carrera) {
 		return corteEvaluativoRepository.findByInicioRemedialLessThanEqualAndFinRemedialGreaterThanEqualAndPeriodoAndCarrera(fechaInicio, fechaFin, periodo, carrera);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public CorteEvaluativo buscarPorInicioExtraordinarioMenorQueYFinExtraordinarioMayorQueYPeriodoYCarrera(Date fechaInicio,
 			Date fechaFin, Periodo periodo, Carrera carrera) {
 		return corteEvaluativoRepository.findByInicioExtraordinarioLessThanEqualAndFinExtraordinarioGreaterThanEqualAndPeriodoAndCarrera(fechaInicio, fechaFin, periodo, carrera);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarPorFechaDosificacionYPeriodoYCarreraYCorteEvaluativo(Date fechaInicio, Integer idPeriodo,
 			Integer idCarrera, Integer idCorteEvaluativo) {
 		return corteEvaluativoRepository.findByFechaDosificacionAndPeriodoAndCarreraAndCorteEvaluativo(fechaInicio, idPeriodo, idCarrera, idCorteEvaluativo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer buscarPorCargaHorariaYCalendarioEvaluacion(Integer idCargaHoraria, Integer idCorteEvaluativo) {
 		return corteEvaluativoRepository.findByCargaHorariaAndCalendarioEvaluacion(idCargaHoraria, idCorteEvaluativo);
 	}

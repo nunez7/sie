@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.NivelEstudio;
 import edu.mx.utdelacosta.repository.NivelEstudioRepository;
@@ -17,6 +18,7 @@ public class NivelEstudioServiceJpa implements INivelEstudioService{
 	private NivelEstudioRepository nivelERepository;
 
 	@Override
+	@Transactional(readOnly = true)
 	public NivelEstudio buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<NivelEstudio> optional = nivelERepository.findById(id);
@@ -27,6 +29,7 @@ public class NivelEstudioServiceJpa implements INivelEstudioService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<NivelEstudio> buscarTodos() {
 		// TODO Auto-generated method stub
 		return (List<NivelEstudio>) nivelERepository.findAll();

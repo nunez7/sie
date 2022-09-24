@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Area;
 import edu.mx.utdelacosta.repository.AreaRepository;
@@ -25,12 +26,14 @@ public class AreaServiceJpa implements IAreaService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Area> buscarTodas() {
 		// TODO Auto-generated method stub
 		return areaRepository.findAll(Sort.by(Order.asc("area")));
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Area buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<Area> optional = areaRepository.findById(id);

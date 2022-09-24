@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Ciclo;
 import edu.mx.utdelacosta.repository.CicloRepository;
@@ -19,12 +20,14 @@ public class CicloServiceJpa implements ICicloService{
 	private CicloRepository cicloRepository;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Ciclo> buscarTodos() {
 		// TODO Auto-generated method stub
 		return cicloRepository.findAll(Sort.by(Order.desc("id")));
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Ciclo buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<Ciclo> optional = cicloRepository.findById(id);

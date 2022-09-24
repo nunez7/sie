@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Cliente;
 import edu.mx.utdelacosta.repository.ClienteRepository;
@@ -17,12 +18,14 @@ public class ClienteServiceJpa implements IClienteService{
 	private ClienteRepository clienteRepository;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<Cliente> buscarTodos() {
 		// TODO Auto-generated method stub
 		return clienteRepository.findAllByOrderByIdDesc();
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Cliente buscarPorId(Integer id) {
 		Optional<Cliente> optional = clienteRepository.findById(id);
 		if (optional.isPresent()) {
@@ -37,12 +40,14 @@ public class ClienteServiceJpa implements IClienteService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public String ultimaClave() {
 		// TODO Auto-generated method stub
 		return clienteRepository.findLastClave();
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Cliente> buscarPorNombreORfc(String like) {
 		// TODO Auto-generated method stub
 		return clienteRepository.findByNombreOrRfc(like);

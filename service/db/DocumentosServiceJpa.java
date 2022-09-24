@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Documento;
 import edu.mx.utdelacosta.repository.DocumentosRepository;
@@ -16,6 +17,7 @@ public class DocumentosServiceJpa implements IDocumentosService{
 	private DocumentosRepository documentoRepoitory;
 
 	@Override
+	@Transactional(readOnly = true)
 	public Documento buscarPorId(Integer id) {
 		Optional<Documento> optional = documentoRepoitory.findById(id);
 		if (optional.isPresent()) {
@@ -25,6 +27,7 @@ public class DocumentosServiceJpa implements IDocumentosService{
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public Documento buscarPorNombre(String nombre) {
 		return documentoRepoitory.findByNombre(nombre);
 	}

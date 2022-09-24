@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.ComentarioEvaluacionTutor;
 import edu.mx.utdelacosta.model.dto.ComentarioDTO;
@@ -22,12 +23,14 @@ public class ComentarioEvaluacionTutorServiceJpa implements IComentarioEvaluacio
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public ComentarioEvaluacionTutor buscarComentarioPorPersona(Integer idPersona, Integer idGrupo,
 			Integer idEvaluacion) {
 		return comEvaTurtorRepo.findEvaluacionComentarioByPersona(idPersona, idGrupo, idEvaluacion);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<ComentarioDTO> buscarComentariosPorGrupo(Integer idEvaluacion, Integer idGrupo) {
 		return comEvaTurtorRepo.findComentarioByGrupo(idEvaluacion, idGrupo);
 	}

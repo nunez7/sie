@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Concepto;
 import edu.mx.utdelacosta.repository.ConceptosRepository;
@@ -17,6 +18,7 @@ public class ConceptosServiceJpa implements IConceptoService{
 	private ConceptosRepository conceptosRepo;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public Concepto buscarPorId(Integer id) {
 		Optional<Concepto> optional = conceptosRepo.findById(id);
 		if (optional.isPresent()) {
@@ -26,6 +28,7 @@ public class ConceptosServiceJpa implements IConceptoService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Concepto> buscarTodos() {
 		// TODO Auto-generated method stub
 		return conceptosRepo.findAllByOrderByIdDesc();
@@ -37,6 +40,7 @@ public class ConceptosServiceJpa implements IConceptoService{
 	}
 	
 	@Override 
+	@Transactional(readOnly = true)
 	public List<Concepto> buscarOpcionales() { 
 		return conceptosRepo.findAllOptionals(); 
 	}

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Motivo;
 import edu.mx.utdelacosta.repository.MotivoRepository;
@@ -16,6 +17,7 @@ public class MotivoServiceJpa implements IMotivoService{
 	private MotivoRepository motivoRepo;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Motivo> buscarTodo() { 
 		return  motivoRepo.findAllByOrderByMotivo();
 	}

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Estado;
 import edu.mx.utdelacosta.model.Municipio;
@@ -18,11 +19,13 @@ public class MunicipiosServiceJpa implements IMunicipiosService{
 	private MunicipiosRepository municipiosRepo;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<Municipio> buscarPorEstado(Estado estado) {
 		return municipiosRepo.findByEstado(estado);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Municipio buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<Municipio> optional = municipiosRepo.findById(id);

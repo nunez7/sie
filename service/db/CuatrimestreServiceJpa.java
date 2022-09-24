@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Cuatrimestre;
 import edu.mx.utdelacosta.model.dto.PagoCuatrimestreDTO;
@@ -20,6 +21,7 @@ public class CuatrimestreServiceJpa implements ICuatrimestreService{
 	private CuatrimestreRepository cuatriRepo;
 
 	@Override
+	@Transactional(readOnly = true)
 	public Cuatrimestre buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<Cuatrimestre> optional = cuatriRepo.findById(id);
@@ -30,12 +32,14 @@ public class CuatrimestreServiceJpa implements ICuatrimestreService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Cuatrimestre> buscarTodos() {
 		// TODO Auto-generated method stub
 		return cuatriRepo.findAll(Sort.by(Order.asc("id")));
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<PagoCuatrimestreDTO> buscarConPagosGenerados(Integer idPeriodo) {
 		return cuatriRepo.findPagosGenerados(idPeriodo);
 	}

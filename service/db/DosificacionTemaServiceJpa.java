@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Dosificacion;
 import edu.mx.utdelacosta.model.DosificacionTema;
@@ -18,6 +19,7 @@ public class DosificacionTemaServiceJpa implements IDosificacionTemaService{
 	private DosificacionesTemaRepository dosiTemaRepository;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public DosificacionTema buscarPorTemaYDosificacion(TemaUnidad tema, Dosificacion dosificacion) {
 		return dosiTemaRepository.findByTemaAndDosificacion(tema, dosificacion);
 	}
@@ -29,11 +31,13 @@ public class DosificacionTemaServiceJpa implements IDosificacionTemaService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<DosificacionTema> buscarPorDosificacion(Dosificacion dosificacion) {
 		return dosiTemaRepository.findByDosificacion(dosificacion);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<DosificacionTema> buscarPorUnidadTematicaYDosificacion(Integer unidadTematica, Integer dosificacion) {
 		return dosiTemaRepository.findByUnidadTematicaAndDosificacion(unidadTematica, dosificacion);
 	}

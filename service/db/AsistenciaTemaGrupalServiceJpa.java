@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AsistenciaTemaGrupal;
@@ -19,6 +20,7 @@ public class AsistenciaTemaGrupalServiceJpa implements IAsistenciaTemaGrupalServ
 	private AsistenciaTemaGrupalRepository asiTemaGruRepo;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<AlumnoAsistenciaDTO> buscarPorTemaGrupalYGrupo(Integer idGrupo, Integer idTemaGrupal) {
 		return asiTemaGruRepo.findByTemaGrupalAndGrupo(idGrupo, idTemaGrupal);
 	}
@@ -29,16 +31,19 @@ public class AsistenciaTemaGrupalServiceJpa implements IAsistenciaTemaGrupalServ
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public AsistenciaTemaGrupal buscarPorTemaGrupalYAlumno(TemaGrupal temaGrupal, Alumno alumno) {
 		return asiTemaGruRepo.findByTemaGrupalAndAlumno(temaGrupal, alumno);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<AsistenciaTemaGrupal> buscarPorTemaGrupal(TemaGrupal temaGrupal) {
 		return asiTemaGruRepo.findByTemaGrupal(temaGrupal);
 	}
 
 	@Override
+	@Transactional
 	public void eliminar(AsistenciaTemaGrupal asistencia) {
 		asiTemaGruRepo.delete(asistencia);
 	}

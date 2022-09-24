@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Calificacion;
@@ -20,6 +21,7 @@ public class CalificacionServiceJpa implements ICalificacionService {
 	private CalificacionRepository calificacionRepository;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Calificacion> buscarPorAlumnoYCargaH(Integer idAlumno, Integer idCarga) {
 		return calificacionRepository.findAllByAlumnoAndCargaHoraria(idAlumno, idCarga);
 	}
@@ -30,11 +32,13 @@ public class CalificacionServiceJpa implements ICalificacionService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Calificacion> buscarPorMecanismoInstrumento(MecanismoInstrumento mecanismoInstrumento) {
 		return calificacionRepository.findByMecanismoInstrumento(mecanismoInstrumento);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Calificacion buscarPorId(Integer id) {
 		Optional<Calificacion> optional = calificacionRepository.findById(id);
 		if (optional.isPresent()) {
@@ -51,38 +55,45 @@ public class CalificacionServiceJpa implements ICalificacionService {
 	}
 
 	@Override
+	@Transactional
 	public void eliminar(Calificacion calificacion) {
 		calificacionRepository.delete(calificacion);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Calificacion> buscarPorAlumno(Alumno alumno) {
 		return calificacionRepository.findByAlumno(alumno);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Calificacion buscarPorAlumnoYMecanismoInstrumento(Alumno alumno, MecanismoInstrumento mecanismoInstrumento) {
 		return calificacionRepository.findByAlumnoAndMecanismoInstrumento(alumno, mecanismoInstrumento);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public CalificacionInstrumentoDTO buscarPorCargaHorariaYCorteEvaluativoEInstrumento(Integer idAlumno,
 			Integer idCargaHoraria, Integer idCorteEvaluativo, Integer idInstrumento) {
 		return calificacionRepository.findByCargaHorariaAndCorteEvaluativoAndInstrumento(idCargaHoraria, idCorteEvaluativo, idAlumno, idInstrumento);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<CalificacionInstrumentoDTO> findByCargaHorariaAndCorteEvaluativo(Integer idAlumno,
 			Integer idCargaHoraria, Integer idCorteEvaluativo) {
 		return calificacionRepository.findByCargaHorariaAndCorteEvaluativo(idCargaHoraria, idCorteEvaluativo, idAlumno);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public Float buscarCalificacionPorAlumnoYMecanismoInstrumento(Integer idAlumno, Integer idMecanismo) {
 		return calificacionRepository.findCalificacionByAlumnoAndMecanismoInstrumento(idAlumno, idMecanismo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarPorIdMecanismoInstrumento(Integer idMecanismo) {
 		return calificacionRepository.countByIdMecanismoInstrumento(idMecanismo);
 	}
