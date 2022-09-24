@@ -40,6 +40,7 @@ public class HorarioServiceJpa implements IHorarioService{
 	}
 
 	@Override
+	@Transactional
 	public void guardar(Horario horario) {
 		horariosRepository.save(horario);
 	}

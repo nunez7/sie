@@ -20,7 +20,7 @@ public class AlumnoGrupoServiceJpa implements IAlumnoGrupoService{
 	private AlumnoGrupoRepository agRepositorio;
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public AlumnoGrupo buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<AlumnoGrupo> optional =agRepositorio.findById(id);
