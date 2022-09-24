@@ -109,7 +109,7 @@ public class PagoPersonaController {
 		Alumno alumno = alumnoService.buscarPorId(cveAlumno);
 		Grupo grupoActual = grupoService.buscarPorId(grupo);
 		//lista de cargas horarias
-		List<CargaHoraria> cargasHorarias = cargaHorariaService.buscarPorGrupoYPeriodo(grupoActual.getId(), grupoActual.getPeriodo().getId());
+		List<CargaHoraria> cargasHorarias = cargaHorariaService.buscarPorGrupoYPeriodoYCalificacionSi(grupoActual.getId(), grupoActual.getPeriodo().getId());
 		//lista de cortes evaluativos de la carrera del alumno
 		List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(new Carrera(grupoActual.getCarrera().getId()), grupoActual.getPeriodo());
 		//lista que guardará las calificaciones de las materias

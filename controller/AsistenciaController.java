@@ -432,7 +432,8 @@ public class AsistenciaController {
 				cveGrupo = (Integer) session.getAttribute("cveGrupo");
 				model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
 				model.addAttribute("cveGrupo", cveGrupo);
-				cargasHorarias = cargaService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+				Grupo grupo = grupoService.buscarPorId(cveGrupo);
+				cargasHorarias = cargaService.buscarPorGrupoYPeriodoYCalificacionSi(cveGrupo, grupo.getPeriodo().getId());
 				model.addAttribute("cargasHorarias", cargasHorarias);
 				List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
 				model.addAttribute("alumnos", alumnos);

@@ -647,6 +647,10 @@ public class ControlAlumnoController {
 		alumno.setMatricula(matricula);
 		alumnoService.guardar(alumno);
 		
+		Usuario usuario = usuariosService.buscarPorPersona(alumno.getPersona());
+		usuario.setUsuario(matricula);
+		usuariosService.guardar(usuario);
+		
 		return "ok";
 	}
 

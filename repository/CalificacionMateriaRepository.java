@@ -18,7 +18,7 @@ public interface CalificacionMateriaRepository extends CrudRepository<Calificaci
 			+ "COALESCE(cm.estatus, 'NA')AS estatus, m.integradora " + "FROM materias m "
 			+ "INNER JOIN cargas_horarias ch ON ch.id_materia=m.id "
 			+ "LEFT JOIN calificacion_materia cm ON cm.id_carga_horaria=ch.id "
-			+ "WHERE ch.id_grupo=:idGrupo AND id_alumno=:idAlumno AND ch.activo='True'  "
+			+ "WHERE ch.id_grupo=:idGrupo AND id_alumno=:idAlumno AND ch.activo='True' AND m.calificacion = 'True' "
 			+ "ORDER BY m.nombre", nativeQuery = true)
 	List<MateriaPromedioDTO> findByGrupoAlumno(@Param("idGrupo") Integer idGrupo, @Param("idAlumno") Integer idAlumno);
 

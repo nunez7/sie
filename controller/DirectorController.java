@@ -211,7 +211,7 @@ public class DirectorController {
 		if(session.getAttribute("cveGrupo") != null) {
 			cveGrupo = (Integer) session.getAttribute("cveGrupo");
 			model.addAttribute("cveGrupo", cveGrupo); //se retorna el id del grupo seleccionado
-			List<CargaHoraria> cargasHorarias = cargaHorariaService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			List<CargaHoraria> cargasHorarias = cargaHorariaService.buscarPorGrupoYPeriodoYCalificacionSi(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 			model.addAttribute("cargasHorarias", cargasHorarias);
 		}
 		else {
@@ -420,7 +420,7 @@ public class DirectorController {
 		if(session.getAttribute("cveGrupo") != null) {
 			cveGrupo = (Integer) session.getAttribute("cveGrupo");
 			model.addAttribute("cveGrupo", cveGrupo);
-			cargasHorarias = cargaHorariaService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			cargasHorarias = cargaHorariaService.buscarPorGrupoYPeriodoYCalificacionSi(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 			model.addAttribute("cargasHorarias", cargasHorarias);
 			List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
 			model.addAttribute("alumnos", alumnos);
@@ -1038,7 +1038,7 @@ public class DirectorController {
 					List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(grupo.getCarrera(), grupo.getPeriodo());
 					//se crea la lista de materiaAsistencias
 					List<MateriaAsistenciaDTO> materias = new ArrayList<MateriaAsistenciaDTO>();
-					List<CargaHoraria> cargarHorarias = cargaHorariaService.buscarPorGrupo(new Grupo(cveGrupo));
+					List<CargaHoraria> cargarHorarias = cargaHorariaService.buscarPorGrupoYPeriodoYCalificacionSi(cveGrupo, grupo.getPeriodo().getId());
 					for (CargaHoraria ch : cargarHorarias) {
 						MateriaAsistenciaDTO materiaAsistencia = new MateriaAsistenciaDTO();
 						materiaAsistencia.setIdMateria(ch.getMateria().getId());

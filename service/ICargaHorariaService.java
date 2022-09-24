@@ -32,4 +32,7 @@ public interface ICargaHorariaService {
 	
 	// busca cargas aptas para copiar instrumentos
 	List<CargaHoraria> buscarPorProfesorYPeriodoYCalendarioEvaluacion(Integer idProfesor, Integer idPeriodo, Integer idCarga);
+	
+	//materias que tengan la propiedad de calificacion true
+	List<CargaHoraria> buscarPorGrupoYPeriodoYCalificacionSi(Integer idGrupo, Integer idPeriodo);
 }

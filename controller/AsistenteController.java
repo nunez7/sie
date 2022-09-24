@@ -368,7 +368,7 @@ public class AsistenteController {
 		List<CargaHoraria> cargasHorarias = null;
 		if(session.getAttribute("cveGrupo") != null) {
 			cveGrupo = (Integer) session.getAttribute("cveGrupo");
-			cargasHorarias = cargaHorariaService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			cargasHorarias = cargaHorariaService.buscarPorGrupoYPeriodoYCalificacionSi(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 			List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
 			model.addAttribute("cargasHorarias", cargasHorarias);
 			model.addAttribute("cveGrupo", cveGrupo);
@@ -663,7 +663,7 @@ public class AsistenteController {
 				model.addAttribute("cveGrupo", cveGrupo);
 				model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
 				//proceso para sacar las materias
-				List<CargaHoraria> cargaHorarias = cargaHorariaService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+				List<CargaHoraria> cargaHorarias = cargaHorariaService.buscarPorGrupoYPeriodoYCalificacionSi(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 				model.addAttribute("cargasHorarias", cargaHorarias);
 				List<CorteEvaluativo> corte = corteEvaluativoService.buscarPorCarreraYPeriodo(usuario.getPreferencias().getIdCarrera(), usuario.getPreferencias().getIdPeriodo());
 				List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);

@@ -36,11 +36,13 @@ public interface MateriasRepository extends JpaRepository<Materia, Integer> {
 			+ "ORDER BY m.nombre", nativeQuery = true)
 	List<Materia> findByGrupoAndCarrera(@Param("grupo") Integer grupo, @Param("carrera") Integer carrera);
 	
+	//busca las materias por carga_horaria, grupo y materia.calificacion = 'true'
 	@Query(value = "SELECT m.* "
 			+ "FROM materias m "
 			+ "INNER JOIN cargas_horarias ch ON ch.id_materia=m.id "
 			+ "INNER JOIN grupos g ON g.id=ch.id_grupo "
-			+ "WHERE ch.id_grupo=:grupo AND ch.activo=true AND g.id_carrera=:carrera ORDER BY m.nombre", nativeQuery = true)
+			+ "WHERE ch.id_grupo=:grupo AND ch.activo=true AND g.id_carrera=:carrera "
+			+ "AND m.calificacion = 'True' ORDER BY m.nombre", nativeQuery = true)
 	List<Materia> findByCargaActivaGrupo(@Param("grupo") Integer grupo, @Param("carrera") Integer carrera);
 	
 	@Query(value = "SELECT DISTINCT m.* FROM materias m "
