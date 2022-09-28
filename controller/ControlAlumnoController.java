@@ -30,18 +30,13 @@ import edu.mx.utdelacosta.model.BajaAutoriza;
 import edu.mx.utdelacosta.model.BajaEliminada;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
-import edu.mx.utdelacosta.model.Concepto;
 import edu.mx.utdelacosta.model.Documento;
 import edu.mx.utdelacosta.model.Escuela;
 import edu.mx.utdelacosta.model.Estado;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Mail;
-import edu.mx.utdelacosta.model.Materia;
-import edu.mx.utdelacosta.model.PagoAlumno;
-import edu.mx.utdelacosta.model.PagoCuatrimestre;
 import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.Periodo;
-import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.PrestamoDocumento;
 import edu.mx.utdelacosta.model.Testimonio;
 import edu.mx.utdelacosta.model.Usuario;
@@ -60,17 +55,16 @@ import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.ICarrerasServices;
-import edu.mx.utdelacosta.service.IConceptoService;
 import edu.mx.utdelacosta.service.IEscuelaService;
 import edu.mx.utdelacosta.service.IEstadoService;
 import edu.mx.utdelacosta.service.IGrupoService;
-import edu.mx.utdelacosta.service.IPagoAlumnoService;
 import edu.mx.utdelacosta.service.IPagoGeneralService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaDocumentoService;
 import edu.mx.utdelacosta.service.IPrestamoDocumentoService;
 import edu.mx.utdelacosta.service.ITestimonioService;
 import edu.mx.utdelacosta.service.IUsuariosService;
+import edu.mx.utdelacosta.util.Reinscribir;
 
 @Controller
 @PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Rector', 'Servicios Escolares')")
@@ -117,9 +111,6 @@ public class ControlAlumnoController {
 	private IPagoGeneralService pagoGeneralService;
 
 	@Autowired
-	private IConceptoService conceptoService;
-	
-	@Autowired
 	private IAlumnoReingresoService alumnoReingresoService;
 	
 	@Autowired
@@ -147,9 +138,9 @@ public class ControlAlumnoController {
 	private String rutaDocs;
 
 	private Alumno alumno;
-
+	
 	@Autowired
-	private IPagoAlumnoService pagoAlumnoService;
+	private Reinscribir reinscripcion;
 
 	@GetMapping("/editarAlumno")
 	public String editarAlumno(Model model, HttpSession session) {
@@ -413,87 +404,15 @@ public class ControlAlumnoController {
 				alumnoService.guardar(alumno);
 			}
 			
-			// Insertamos el adeudo
-			PagoGeneral pGeneral = new PagoGeneral();
-			pGeneral.setCantidad(1);
-			pGeneral.setDescuento(0.0);
-			Concepto concepto = new Concepto();
-			// comparamos que carrera y tipo es el grupo (tsu/lic)
-			// gastronomia tsu
-			if (grupoNuevo.getCarrera().getNivelEstudio().getId() == 1 && grupoNuevo.getCarrera().getId() == 9) {
-				concepto = conceptoService.buscarPorId(7);
-			}// carreras tsu excepto gastronomia
-			else if (grupoNuevo.getCarrera().getNivelEstudio().getId() == 1 && grupoNuevo.getCarrera().getId() != 9) {
-				concepto = conceptoService.buscarPorId(10);
-			}
-			// gastronomia lic
-			else if (grupoNuevo.getCarrera().getNivelEstudio().getId() == 2 && grupoNuevo.getCarrera().getId() == 22) {
-				concepto = conceptoService.buscarPorId(9);
-			}else{
-				concepto = conceptoService.buscarPorId(8);
-			} 
-
-			pGeneral.setConcepto(concepto);
-			pGeneral.setMonto(concepto.getMonto());
-			pGeneral.setMontoUnitario(concepto.getMonto());
-			Periodo periodo = periodosService.buscarPorId(grupoNuevo.getPeriodo().getId());
-			pGeneral.setDescripcion(concepto.getConcepto() + " " + periodo.getNombre());
-			pGeneral.setFechaAlta(new Date());
-			pGeneral.setCliente(0);
-			pGeneral.setFolio("");
-			pGeneral.setStatus(0);
-			pGeneral.setTipo(0);
-			pGeneral.setReferencia("");
-			pGeneral.setActivo(true);
-
-			PagoAlumno pa = new PagoAlumno();
-			pa.setAlumno(alumno);
-			pa.setPagoGeneral(pGeneral);
-			pagoAlumnoService.guardar(pa);
-			pGeneral.setPagoAlumno(pa);
+			//sacamos los conceptos (pagos) del cuatrimestrea ingresar
+			List<Integer> conceptos = reinscripcion.obtenerConceptosReinscripcion(grupoNuevo.getCuatrimestre().getConsecutivo());
 			
-			//se crea el pago cuatrimestre
-			PagoCuatrimestre pc = new PagoCuatrimestre();
-			pc.setAlumnoGrupo(grupoBuscar);
-			pc.setPagoGeneral(pGeneral);
-			pGeneral.setPagoCuatrimestre(pc);
-			
-			pagoGeneralService.guardar(pGeneral);
-			
-			//pago de reinscripción
-			PagoGeneral pg = new PagoGeneral();
-			pg.setCantidad(1);
-			pg.setDescuento(0.0); 
-			Concepto con = new Concepto();
-			if(grupoNuevo.getCarrera().getNivelEstudio().getId() == 1) {
-				con = conceptoService.buscarPorId(21);//reinscripcion TSU
-				pg.setConcepto(con);
-				pg.setMonto(con.getMonto());
-				pg.setMontoUnitario(con.getMonto());
-			}
-			else {
-				if (grupoNuevo.getCuatrimestre().getId()==7) {
-					con = conceptoService.buscarPorId(14);//reinscripcion ING/LIC
-				}else {					
-					con = conceptoService.buscarPorId(20);//reinscripcion ING/LIC
+			//se procede a buscar el pago del periodo actual 
+			if (pagoGeneralService.contarAdeudoCutrimestreAlumno(grupoBuscar.getId())== 0) {
+				for (Integer concepto : conceptos) {
+					reinscripcion.crearPagoGenerico(concepto, usuario.getPreferencias().getIdPeriodo(), grupoBuscar);
 				}
-				pg.setConcepto(con);
-				pg.setMonto(con.getMonto());
-				pg.setMontoUnitario(con.getMonto());
 			}
-			pg.setDescripcion(con.getConcepto()+" "+periodo.getNombre());
-			pg.setFechaAlta(new Date()); 
-			pg.setCliente(0);
-			pg.setFolio("");
-			pg.setStatus(0); 
-			pg.setTipo(0); 
-			pg.setReferencia("");
-			pg.setActivo(true);
-
-			PagoAlumno pAl = new PagoAlumno();
-			pAl.setAlumno(alumno);
-			pAl.setPagoGeneral(pg);
-			pagoAlumnoService.guardar(pAl);
 		}
 		return "ok";
 	}
