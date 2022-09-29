@@ -188,7 +188,7 @@ public class FolioController {
 
 			if(infoRecibo.getIdAlumno()!=null && infoRecibo.getIdAlumno()!=0) {
 				ultimoGrupo = grupoService.buscarUltimoDeAlumno(infoRecibo.getIdAlumno());
-				model.addAttribute("ultimoGrupo", ultimoGrupo!=null ? ultimoGrupo : "");
+				model.addAttribute("ultimoGrupo", ultimoGrupo!=null ? ultimoGrupo : null);
 				}
 		}
 		
