@@ -21,14 +21,14 @@ public class PersonalServiceJpa implements IPersonalService{
 	private PersonalRepository personalRepo;
 	
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public Personal buscarPorPersona(Persona persona) {
 		// TODO Auto-generated method stub
 		return personalRepo.findByPersona(persona);
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public List<Personal> buscarTodos() {
 		// TODO Auto-generated method stub
 		return (List<Personal>) personalRepo.findAll(Sort.by(Order.desc("id")));
@@ -56,7 +56,7 @@ public class PersonalServiceJpa implements IPersonalService{
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public Personal buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<Personal> optional = personalRepo.findById(id);

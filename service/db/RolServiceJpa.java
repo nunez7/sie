@@ -20,7 +20,7 @@ public class RolServiceJpa implements IRolService{
 	private RolRepository repositoryRol;
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public Rol buscarorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<Rol> optional = repositoryRol.findById(id);
@@ -31,7 +31,7 @@ public class RolServiceJpa implements IRolService{
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public List<Rol> buscarTodos() {
 		// TODO Auto-generated method stub
 		return repositoryRol.findAll(Sort.by(Order.asc("descripcion")));

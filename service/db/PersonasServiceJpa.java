@@ -25,7 +25,7 @@ public class PersonasServiceJpa implements IPersonaService{
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public List<Persona> buscarTodas() {
 		// TODO Auto-generated method stub
 		return (List<Persona>) personasRepo.findAll();

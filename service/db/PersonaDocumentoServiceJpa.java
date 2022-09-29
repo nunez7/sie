@@ -21,7 +21,7 @@ public class PersonaDocumentoServiceJpa implements IPersonaDocumentoService{
 	private PersonaDocumentoRepository perDocRepo;
 	
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public PersonaDocumento buscarPorPersonaYdocumento(Persona persona, Documento documento) {
 		// TODO Auto-generated method stub
 		return perDocRepo.findByPersonaAndDocumento(persona, documento);
@@ -42,7 +42,7 @@ public class PersonaDocumentoServiceJpa implements IPersonaDocumentoService{
 	}
 	
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public List<PersonaDocumento> buscarPorPersona(Persona persona) {
 		// TODO Auto-generated method stub
 		return perDocRepo.findByPersona(persona);
@@ -56,7 +56,7 @@ public class PersonaDocumentoServiceJpa implements IPersonaDocumentoService{
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public PersonaDocumento buscarPorId(Integer idPerDoc) {
 		// TODO Auto-generated method stub
 		Optional<PersonaDocumento> optional = perDocRepo.findById(idPerDoc);

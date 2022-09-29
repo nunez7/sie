@@ -24,25 +24,28 @@ public class UsuariosServiceJpa implements IUsuariosService{
 	private UsuariosRepository usuariosRepo;
 
 	@Override
+	@Transactional
 	public void guardar(Usuario usuario) {
 		// TODO Auto-generated method stub
 		usuariosRepo.save(usuario);
 	}
 
-	@Transactional
 	@Override
+	@Transactional
 	public void eliminar(Integer idUsuario) {
 		// TODO Auto-generated method stub
 		usuariosRepo.deleteById(idUsuario);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Usuario> buscarTodos() {
 		// TODO Auto-generated method stub
 		return usuariosRepo.findAll(Sort.by(Order.desc("id")));
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Usuario buscarPorId(Integer idUsuario) {
 		// TODO Auto-generated method stub
 		Optional<Usuario> optional = usuariosRepo.findById(idUsuario);
@@ -53,6 +56,7 @@ public class UsuariosServiceJpa implements IUsuariosService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Usuario buscarPorUsuario(String username) {
 		// TODO Auto-generated method stub
 		return usuariosRepo.findByUsuario(username);
@@ -66,8 +70,8 @@ public class UsuariosServiceJpa implements IUsuariosService{
 		return rows;
 	}
 
-	@Transactional
 	@Override
+	@Transactional
 	public int activar(int idUsuario) {
 		// TODO Auto-generated method stub
 		int rows = usuariosRepo.unlock(idUsuario);
@@ -75,59 +79,61 @@ public class UsuariosServiceJpa implements IUsuariosService{
 	}
 
 	@Override
-	@Transactional(readOnly = false)
+	@Transactional
 	public void actualizarContrasenia(Integer id, String contrasenia) {
 		// TODO Auto-generated method stub
 		usuariosRepo.updatePassword(id, contrasenia);
 	}
 
-	@Transactional(readOnly = true)
 	@Override
+	@Transactional(readOnly = true)
 	public List<Usuario> buscarPorPersonaOUsuario(String nombre) {
 		// TODO Auto-generated method stub
 		return usuariosRepo.findByPersonOrUsername(nombre);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Usuario> buscarByExample(Example<Usuario> example) {
 		// TODO Auto-generated method stub
 		return usuariosRepo.findAll(example);
 	}
 
-	@Transactional
 	@Override
+	@Transactional(readOnly = true)
 	public Usuario buscarPorPersona(Persona persona) {
 		// TODO Auto-generated method stub
 		return usuariosRepo.findByPersona(persona);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Page<Usuario> buscarTodos(Pageable page) {
 		// TODO Auto-generated method stub
 		return usuariosRepo.findAll(page);
 	}
 
-	@Transactional(readOnly = true)
 	@Override
+	@Transactional(readOnly = true)
 	public List<Usuario> buscarUltimos10() {
 		// TODO Auto-generated method stub
 		return usuariosRepo.findTop10ByOrderByIdDesc();
 	}
 
-	@Transactional(readOnly = true)
 	@Override
+	@Transactional(readOnly = true)
 	public List<Usuario> buscarAlumnosPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo) {
 		return usuariosRepo.findAllbyPeriodoAndCarreraOrdeByCarreraAndPrimerApellidoAndSegundoApellidoAndNombreAndUsuario(idCarrera, idPeriodo);
 	}
 
-	@Transactional(readOnly = true)
 	@Override
+	@Transactional(readOnly = true)
 	public List<Usuario> buscarPersonal() {
 		return usuariosRepo.findAllOrdeByRolAndPrimerApellidoAndSegundoApellidoAndNombreAndUsuario();
 	}
 
-	@Transactional(readOnly = true)
 	@Override
+	@Transactional(readOnly = true)
 	public List<Usuario> buscarPorRol(Integer idRol) {
 		// TODO Auto-generated method stub
 		return usuariosRepo.buscarUsuariosPorRol(idRol);
