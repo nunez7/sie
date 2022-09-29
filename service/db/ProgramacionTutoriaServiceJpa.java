@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Grupo;
@@ -18,6 +19,7 @@ public class ProgramacionTutoriaServiceJpa implements IProgramacionTutoriaServic
 	private ProgramacionTutoriaRepository proTutoriaRepo;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<ProgramacionTutoria> buscarPorAlumnoYGrupo(Alumno alumno, Grupo grupo) {
 		return proTutoriaRepo.findByAlumnoAndGrupoOrderByFechaAsc(alumno, grupo);
 	}
@@ -28,11 +30,13 @@ public class ProgramacionTutoriaServiceJpa implements IProgramacionTutoriaServic
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<ProgramacionTutoria> buscarPorGrupo(Grupo grupo) {
 		return proTutoriaRepo.findByGrupoOrderByFechaAsc(grupo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<ProgramacionTutoria> buscarPorAlumno(Alumno alumno) {
 		return proTutoriaRepo.findByAlumnoOrderByFechaAsc(alumno);
 	}

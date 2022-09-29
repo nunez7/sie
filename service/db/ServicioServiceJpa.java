@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Servicio;
 import edu.mx.utdelacosta.repository.ServicioRepository;
@@ -17,6 +18,7 @@ public class ServicioServiceJpa implements IServicioService{
 	private ServicioRepository servicioRepository;
 
 	@Override
+	@Transactional(readOnly = true)
 	public Servicio buscarPorId(Integer id) {
 		Optional<Servicio> optional = servicioRepository.findById(id);
 		if (optional.isPresent()) {
@@ -26,6 +28,7 @@ public class ServicioServiceJpa implements IServicioService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Servicio> buscarTodos() {
 		return servicioRepository.findAll();
 	}

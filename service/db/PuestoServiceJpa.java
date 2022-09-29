@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Puesto;
 import edu.mx.utdelacosta.repository.PuestoRepository;
@@ -18,6 +19,7 @@ public class PuestoServiceJpa implements IPuestoService {
 	private PuestoRepository puestoRep;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Puesto> buscarTodos() {
 		// TODO Auto-generated method stub
 		return puestoRep.findAll(Sort.by(Order.asc("nombre")));

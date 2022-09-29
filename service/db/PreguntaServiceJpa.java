@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Pregunta;
 import edu.mx.utdelacosta.model.dto.PromedioPreguntaDTO;
@@ -17,16 +18,19 @@ public class PreguntaServiceJpa implements IPreguntaService{
 	private PreguntaRepository preguntaRepo;
 
 	@Override
+	@Transactional(readOnly = true)
 	public PromedioPreguntaDTO ObtenerPromedioPorPregunta(Integer idEvaluacion, Integer idPregunta, Integer idCarga,Integer idGrupo) {
 		return preguntaRepo.findPromedioByPregunta(idEvaluacion, idPregunta, idCarga, idGrupo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public PromedioPreguntaDTO ObtenerPromedioEvaTuPorPregunta(Integer idEvaluacion, Integer idPregunta,Integer idGrupo) {
 		return preguntaRepo.findPromedioEvaTuByPregunta(idEvaluacion, idPregunta, idGrupo);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public Pregunta buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<Pregunta> optional = preguntaRepo.findById(id);

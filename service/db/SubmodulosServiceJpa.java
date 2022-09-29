@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Submodulo;
 import edu.mx.utdelacosta.repository.SubmodulosRepository;
@@ -17,18 +18,21 @@ public class SubmodulosServiceJpa implements ISubmoduloService {
 	private SubmodulosRepository submodulosRepo;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Submodulo> buscarTodos() {
 		// TODO Auto-generated method stub
 		return (List<Submodulo>) submodulosRepo.findAll();
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Submodulo> buscarPorModuloYEstatus(int modulo, boolean estatus) {
 		// TODO Auto-generated method stub
 		return submodulosRepo.findByModuloPadreAndActivoOrderByConsecutivoAsc(modulo, estatus);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Submodulo buscarPorId(Integer idSubmodulo) {
 		// TODO Auto-generated method stub
 		Optional<Submodulo> optional = submodulosRepo.findById(idSubmodulo);
@@ -39,6 +43,7 @@ public class SubmodulosServiceJpa implements ISubmoduloService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Submodulo getPorDefecto(Integer idModulo) {
 		// TODO Auto-generated method stub
 		List<Submodulo> lista = buscarPorModuloYEstatus(idModulo, true);
@@ -51,6 +56,7 @@ public class SubmodulosServiceJpa implements ISubmoduloService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public boolean existeRelacion(Integer modulo, Integer submodulo) {
 		// TODO Auto-generated method stub
 		Optional<Submodulo> optional = Optional.ofNullable(submodulosRepo.findByModuloPadreAndCveSubmodulo(modulo, submodulo));

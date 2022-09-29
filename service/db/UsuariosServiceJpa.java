@@ -81,6 +81,7 @@ public class UsuariosServiceJpa implements IUsuariosService{
 		usuariosRepo.updatePassword(id, contrasenia);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<Usuario> buscarPorPersonaOUsuario(String nombre) {
 		// TODO Auto-generated method stub
@@ -93,6 +94,7 @@ public class UsuariosServiceJpa implements IUsuariosService{
 		return usuariosRepo.findAll(example);
 	}
 
+	@Transactional
 	@Override
 	public Usuario buscarPorPersona(Persona persona) {
 		// TODO Auto-generated method stub
@@ -105,22 +107,26 @@ public class UsuariosServiceJpa implements IUsuariosService{
 		return usuariosRepo.findAll(page);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<Usuario> buscarUltimos10() {
 		// TODO Auto-generated method stub
 		return usuariosRepo.findTop10ByOrderByIdDesc();
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<Usuario> buscarAlumnosPorCarreraYPeriodo(Integer idCarrera, Integer idPeriodo) {
 		return usuariosRepo.findAllbyPeriodoAndCarreraOrdeByCarreraAndPrimerApellidoAndSegundoApellidoAndNombreAndUsuario(idCarrera, idPeriodo);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<Usuario> buscarPersonal() {
 		return usuariosRepo.findAllOrdeByRolAndPrimerApellidoAndSegundoApellidoAndNombreAndUsuario();
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<Usuario> buscarPorRol(Integer idRol) {
 		// TODO Auto-generated method stub

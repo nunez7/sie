@@ -2,6 +2,7 @@ package edu.mx.utdelacosta.service.db;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.TestimonioCorte;
 import edu.mx.utdelacosta.repository.TestimonioCorteRepository;
@@ -14,6 +15,7 @@ public class TestimonioCorteServiceJpa implements ITestimonioCorteService{
 	private TestimonioCorteRepository testimonioRepository;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public TestimonioCorte buscarPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria,
 			Integer idCorteEvaluativo) {
 		return testimonioRepository.findByAlumnoAndCargaHorariaAndCorteEvaluativo(idAlumno, idCargaHoraria, idCorteEvaluativo);
@@ -25,23 +27,27 @@ public class TestimonioCorteServiceJpa implements ITestimonioCorteService{
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarAlumnoSD(Integer idCargaHoraria, Integer idCorteEvaluativo) {
 		return testimonioRepository.countAlumnosSD(idCargaHoraria, idCorteEvaluativo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer countAlumnosSDByCarrera(Integer idCarrera, Integer idCorteEvaluativo) {
 		// TODO Auto-generated method stub
 		return testimonioRepository.countAlumnosSDByCarrera(idCarrera, idCorteEvaluativo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer validarSDPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria,
 			Integer idCorteEvaluativo) {
 		return testimonioRepository.checkSDByAlumnoAndCargaHorariaAndCorteEvaluativo(idAlumno, idCargaHoraria, idCorteEvaluativo);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public Integer countAlumnosSDByCarreraYTurno(Integer idCarrera, Integer idCorteEvaluativo, Integer idTurno) {
 		return testimonioRepository.countAlumnosSDByCarreraAndTurno(idCarrera, idCorteEvaluativo, idTurno);
 	}

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.CargaHoraria;
@@ -21,12 +22,14 @@ public class RemedialAlumnoServiceJpa implements IRemedialAlumnoService{
 	private RemedialAlumnoRepository remedialAlumnoRepository;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<RemedialAlumno> buscarPorGrupoYAlumno(Integer idGrupo, Integer idAlumno) {
 		// TODO Auto-generated method stub
 		return remedialAlumnoRepository.findAllByGrupoAndAlumnoOrderByCorteEvaluativoAsc(idGrupo, idAlumno);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public RemedialAlumno buscarPorId(Integer id) {
 		Optional<RemedialAlumno> optional = remedialAlumnoRepository.findById(id);
 		if (optional.isPresent()) {
@@ -41,11 +44,13 @@ public class RemedialAlumnoServiceJpa implements IRemedialAlumnoService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<RemedialAlumno> buscarPorAlumnoYPeriodo(Integer idAlumno, Integer idPeriodo) {
 		return remedialAlumnoRepository.findByAlumnoAndPeriodo(idAlumno, idPeriodo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<RemedialAlumno> buscarPorAlumnoCargaYCorte(Alumno alumno, CargaHoraria cargaHoraria,
 			CorteEvaluativo cortesEvaluativo) {
 		// TODO Auto-generated method stub
@@ -53,57 +58,67 @@ public class RemedialAlumnoServiceJpa implements IRemedialAlumnoService{
 	}		
 	
 	@Override
+	@Transactional
 	public void eliminar(RemedialAlumno remedialAlumno) {
 		remedialAlumnoRepository.delete(remedialAlumno);
 		
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarRemedialesAlumno(Integer idCargaHoraria, Integer idTipoRemedial) {
 		return remedialAlumnoRepository.countRemedialAlumno(idCargaHoraria, idTipoRemedial);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public RemedialAlumno buscarPorAlumnoYCargaHorariaYRemedial(Alumno alumno, CargaHoraria cargaHoraria,
 			Remedial remedial) {
 		return remedialAlumnoRepository.findByAlumnoAndCargaHorariaAndRemedial(alumno, cargaHoraria, remedial);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public RemedialAlumno buscarPorAlumnoYCargaHorariaYRemedialYPagado(Alumno alumno, CargaHoraria cargaHoraria,
 			Remedial remedial) {
 		return remedialAlumnoRepository.findByAlumnoAndCargaHorariaAndRemedialAndPagado(alumno, cargaHoraria, remedial, true);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public RemedialAlumno buscarPorAlumnoYCargaHorariaYRemedialYCorte(Alumno alumno, CargaHoraria cargaHoraria,
 			Remedial remedial, CorteEvaluativo corteEvaluativo) {
 		return remedialAlumnoRepository.findByAlumnoAndCargaHorariaAndRemedialAndCorteEvaluativo(alumno, cargaHoraria, remedial, corteEvaluativo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public RemedialAlumno buscarPorAlumnoYCargaHorariaYRemedialYCorteYPagado(Alumno alumno, CargaHoraria cargaHoraria,
 			Remedial remedial, CorteEvaluativo corteEvaluativo) {
 		return remedialAlumnoRepository.findByAlumnoAndCargaHorariaAndRemedialAndCorteEvaluativoAndPagado(alumno, cargaHoraria, remedial, corteEvaluativo, true);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarRemedialesAlumnoPorCargaHorariaYRemedialYCorteEvaluativo(Integer idCargaHoraria, Integer idTipoRemedial, Integer idCorteEvaluativo) {
 		return remedialAlumnoRepository.countRemedialAlumnoByCargaHorariaAndRemedialAndCorteEvalautivo(idCargaHoraria, idTipoRemedial, idCorteEvaluativo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public RemedialAlumno buscarUltimoPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCarga,
 			Integer idCorte) {
 		return remedialAlumnoRepository.findByLastAlumnoAndCargaHorariaAndCorteEvaluativo(idAlumno, idCarga, idCorte);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<RemedialAlumno> buscarPorAlumnoYPeriodo(Integer idAlumno, Integer idPeriodo, Integer tipo) {
 		return remedialAlumnoRepository.findByAlumnoAndPeriodo(idAlumno, idPeriodo, tipo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer countByCarreraAndCorteEvaluativo(Integer idCarrera, Integer tipoRemedial,
 			Integer idCorteEvaluativo) {
 		// TODO Auto-generated method stub
@@ -111,6 +126,7 @@ public class RemedialAlumnoServiceJpa implements IRemedialAlumnoService{
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public Integer buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(Integer idAlumno,
 			Integer idCargaHoraria, Integer idCorte, Integer tipo) {
 		// TODO Auto-generated method stub
@@ -118,6 +134,7 @@ public class RemedialAlumnoServiceJpa implements IRemedialAlumnoService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarPorCarreraYCorteEvaluativoYTurno(Integer idCarrera, Integer tipoRemedial,
 			Integer idCorteEvaluativo, Integer turno) {
 		return remedialAlumnoRepository.countByCarreraAndCorteEvaluativoAndTurno(idCarrera, tipoRemedial, idCorteEvaluativo, turno);

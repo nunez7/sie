@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Sesion;
 import edu.mx.utdelacosta.model.Usuario;
@@ -27,12 +28,14 @@ public class SesionesServiceJppa implements ISesionesService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Sesion> buscarTodas() {
 		// TODO Auto-generated method stub
 		return (List<Sesion>) sesionesRepo.findAll();
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Sesion buscarPorId(Integer idSesion) {
 		// TODO Auto-generated method stub
 		Optional<Sesion> optional = sesionesRepo.findById(idSesion);
@@ -43,12 +46,14 @@ public class SesionesServiceJppa implements ISesionesService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Sesion buscarPorSesion(String idSesion) {
 		// TODO Auto-generated method stub
 		return sesionesRepo.findBySesionId(idSesion);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Sesion> buscarPorUsuario(Usuario usuario) {
 		// TODO Auto-generated method stub
 		return sesionesRepo.findByUsuario(usuario);

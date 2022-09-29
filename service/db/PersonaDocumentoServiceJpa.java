@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Documento;
 import edu.mx.utdelacosta.model.Persona;
@@ -20,36 +21,42 @@ public class PersonaDocumentoServiceJpa implements IPersonaDocumentoService{
 	private PersonaDocumentoRepository perDocRepo;
 	
 	@Override
+	@Transactional
 	public PersonaDocumento buscarPorPersonaYdocumento(Persona persona, Documento documento) {
 		// TODO Auto-generated method stub
 		return perDocRepo.findByPersonaAndDocumento(persona, documento);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<PersonaDocumento> buscarActaCurpCerbachiPorPersona(Integer idPersona) {
 		// TODO Auto-generated method stub
 		return perDocRepo.findActaCurpCerbachiByPersona(idPersona);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<DocumentoDTO> buscarActaCurpCerbachiPorPersonaParaDto(Integer idPersona) {
 		// TODO Auto-generated method stub
 		return perDocRepo.findActaCurpCerbachiByPersonaDto(idPersona);
 	}
 	
 	@Override
+	@Transactional
 	public List<PersonaDocumento> buscarPorPersona(Persona persona) {
 		// TODO Auto-generated method stub
 		return perDocRepo.findByPersona(persona);
 	}
 	
 	@Override
+	@Transactional
 	public void guardar(PersonaDocumento personaDocumento) {
 		// TODO Auto-generated method stub
 		perDocRepo.save(personaDocumento);
 	}
 
 	@Override
+	@Transactional
 	public PersonaDocumento buscarPorId(Integer idPerDoc) {
 		// TODO Auto-generated method stub
 		Optional<PersonaDocumento> optional = perDocRepo.findById(idPerDoc);
@@ -60,18 +67,21 @@ public class PersonaDocumentoServiceJpa implements IPersonaDocumentoService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public PersonaDocumento buscarPorPersonaYIdDoc(Integer idPeronsa, int idDoc) {
 		// TODO Auto-generated method stub
 		return perDocRepo.findPersonaDocByPersonaAndIdDoc(idPeronsa, idDoc);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer documentosValidosPorPersona(Integer idPersona) {
 		// TODO Auto-generated method stub
 		return perDocRepo.findPersonaDocValidadoByPersona(idPersona);
 	}
-	
+
 	@Override
+	@Transactional(readOnly = true)
 	public List<DocumentoDTO> buscarPrestadosPorPersona(Integer idPersona) {
 		// TODO Auto-generated method stub
 		return perDocRepo.findDocumentosPrestadoByPersona(idPersona);

@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.UsuarioPreferencia;
 import edu.mx.utdelacosta.repository.UsuarioPreferenciaRepository;
@@ -22,6 +23,7 @@ public class UsuarioPreferenciaServiceJpa implements IUsuarioPreferenciaService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public UsuarioPreferencia buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<UsuarioPreferencia> optional = preferenciaRepo.findById(id);

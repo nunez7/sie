@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Personal;
@@ -20,36 +21,42 @@ public class PersonalServiceJpa implements IPersonalService{
 	private PersonalRepository personalRepo;
 	
 	@Override
+	@Transactional
 	public Personal buscarPorPersona(Persona persona) {
 		// TODO Auto-generated method stub
 		return personalRepo.findByPersona(persona);
 	}
 
 	@Override
+	@Transactional
 	public List<Personal> buscarTodos() {
 		// TODO Auto-generated method stub
 		return (List<Personal>) personalRepo.findAll(Sort.by(Order.desc("id")));
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Personal> buscarTodosPorNombre() {
 		// TODO Auto-generated method stub
 		return personalRepo.findAllByPersonaOrderByPuesto();
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Personal> buscarJefes() {
 		// TODO Auto-generated method stub
 		return personalRepo.findAllBoss();
 	}
 
 	@Override
+	@Transactional
 	public void guardar(Personal personal) {
 		// TODO Auto-generated method stub
 		personalRepo.save(personal);
 	}
 
 	@Override
+	@Transactional
 	public Personal buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<Personal> optional = personalRepo.findById(id);
@@ -60,6 +67,7 @@ public class PersonalServiceJpa implements IPersonalService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Personal> buscarProfesores() {
 		// TODO Auto-generated method stub
 		return personalRepo.listaProfesores();

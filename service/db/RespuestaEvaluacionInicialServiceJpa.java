@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.RespuestaEvaluacionInicial;
 import edu.mx.utdelacosta.model.dto.OpcionRespuestaDTO;
@@ -23,22 +24,25 @@ public class RespuestaEvaluacionInicialServiceJpa implements IRespuestaEvaluacio
 	}
 	
 	@Override
+	@Transactional
 	public void eliminar(RespuestaEvaluacionInicial respuesta) {
 		resEvaIniRepo.delete(respuesta);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<OpcionRespuestaDTO> buscarOpcionesRespuestaYRespuestaPorPregunta(Integer idPregunta, Integer idPersona,Integer idEvaluacion, Integer idGrupo) {
 		return resEvaIniRepo.findOpcionRespuestaAndRespuestaByPregunta(idPregunta, idPersona, idEvaluacion, idGrupo);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<OpcionRespuestaDTO> buscarRespuestaPorPregunta(Integer idPregunta, Integer idPersona, Integer idEvaluacion, Integer idGrupo) {
 		return resEvaIniRepo.findRespuestaByPregunta(idPregunta, idPersona, idEvaluacion, idGrupo);
 	}
 
-	
 	@Override
+	@Transactional(readOnly = true)
 	public RespuestaEvaluacionInicial buscarPorId(Integer id) {
 		Optional<RespuestaEvaluacionInicial> optional = resEvaIniRepo.findById(id);
 		if (optional.isPresent()) {
@@ -48,21 +52,25 @@ public class RespuestaEvaluacionInicialServiceJpa implements IRespuestaEvaluacio
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public RespuestaEvaluacionInicial buscarRespuestaCerradaPorPregunta(Integer idEvaluacion, Integer idPregunta, Integer idPersona, Integer idGrupo) {
 		return resEvaIniRepo.findRespuestaCerradaByPregunta(idEvaluacion, idPregunta, idPersona, idGrupo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public RespuestaEvaluacionInicial buscarRespuestaAbiertaPorPregunta(Integer idEvaluacion, Integer idPregunta, Integer idPersona, Integer idGrupo) {
 		return resEvaIniRepo.findRespuestaAbiertaByPregunta(idEvaluacion, idPregunta, idPersona, idGrupo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<RespuestaEvaluacionInicial> buscarRespuestaCerradaMultiplePorPregunta(Integer idEvaluacion,Integer idPregunta, Integer idPersona, Integer idGrupo) {
 		return resEvaIniRepo.findRespuestaCerradaMultipleByPregunta(idEvaluacion, idPregunta, idPersona, idGrupo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public RespuestaEvaluacionInicial buscarRespuestaCerradaPorPreguntaYOpcionRespuesta(Integer idEvaluacion, Integer idPregunta, Integer idOpcionRespuesta, Integer idPersona, Integer idGrupo) {
 		return resEvaIniRepo.findRespuestaCerradaByPreguntaAndOpcionRespuesta(idEvaluacion, idPregunta, idOpcionRespuesta, idPersona, idGrupo);
 	}

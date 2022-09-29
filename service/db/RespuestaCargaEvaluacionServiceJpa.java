@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.RespuestaCargaEvaluacion;
 import edu.mx.utdelacosta.model.dto.OpcionRespuestaDTO;
@@ -22,18 +23,21 @@ public class RespuestaCargaEvaluacionServiceJpa implements IRespuestaCargaEvalua
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public RespuestaCargaEvaluacion buscarRespuestaPorPregunta(Integer idEvaluacion,
 			Integer idPregunta, Integer idPersona, Integer idCarga) {
 		return respuestaCarEva.findRespuestaByPregunta(idEvaluacion, idPregunta, idPersona, idCarga);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<OpcionRespuestaDTO> buscarOpcionesRespuestaYRespuestaPorPregunta(
 			Integer idEvaluacion, Integer idPregunta, Integer idPersona, Integer idCarga) {
 		return respuestaCarEva.findOpcionRespuestaAndRespuestaByPregunta(idEvaluacion, idPregunta, idPersona, idCarga);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarPorGrupoYCargaHoraria(Integer idEvaluacion, Integer idGrupo, Integer idCarga) {
 		return respuestaCarEva.countRePuestasByAlumno(idEvaluacion, idGrupo, idCarga);
 	}

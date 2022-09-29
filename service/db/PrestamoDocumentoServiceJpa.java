@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.PrestamoDocumento;
 import edu.mx.utdelacosta.repository.PrestamoDocumentoRepository;
@@ -22,11 +23,13 @@ public class PrestamoDocumentoServiceJpa implements IPrestamoDocumentoService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<PrestamoDocumento> buscarPorAlumno(Integer idAlumno) {
 		return prestamoRepository.findByAlumonOrderByFechaAlta(idAlumno);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public PrestamoDocumento buscarPorId(Integer id) {
 		Optional<PrestamoDocumento> optional = prestamoRepository.findById(id);
 		if (optional.isPresent()) {

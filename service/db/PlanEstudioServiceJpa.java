@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.PlanEstudio;
 import edu.mx.utdelacosta.repository.PlanEstudioRepository;
@@ -25,6 +26,7 @@ public class PlanEstudioServiceJpa implements IPlanEstudioService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public PlanEstudio buscarPorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<PlanEstudio> optional = planEstudioRepository.findById(id);
@@ -36,24 +38,28 @@ public class PlanEstudioServiceJpa implements IPlanEstudioService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<PlanEstudio> buscarPorPersonaCarrera(Integer idPersona) {
 		// TODO Auto-generated method stub
 		return planEstudioRepository.findByPersonaAndCarrera(idPersona);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<PlanEstudio> buscarPorCarrera(Integer idCarrera) {
 		// TODO Auto-generated method stub
 		return planEstudioRepository.findByCarrera(idCarrera);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<PlanEstudio> buscarTodos() {
 		// TODO Auto-generated method stub
 		return planEstudioRepository.findAll(Sort.by(Order.desc("id")));
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<PlanEstudio> buscarTodosOrdenPorCarrerayNivel() {
 		// TODO Auto-generated method stub
 		return planEstudioRepository.findAllOrderByCarreraNivel();

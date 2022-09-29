@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.UnidadTematica;
 import edu.mx.utdelacosta.repository.UnidadesTematicasRepository;
@@ -17,6 +18,7 @@ public class UnidadesTematicasServicesJpa implements IUnidadTematicaService{
 	private UnidadesTematicasRepository unidadesTematicasRepository;
 	
 	@Override
+	@Transactional(readOnly = true)
 	public UnidadTematica buscarPorId(Integer id) {
 		Optional<UnidadTematica> unidadTematica = unidadesTematicasRepository.findById(id);
 		if(unidadTematica.isPresent()) {
@@ -31,6 +33,7 @@ public class UnidadesTematicasServicesJpa implements IUnidadTematicaService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<UnidadTematica> buscarPorDosificacion(Integer idDosificacion) {
 		return unidadesTematicasRepository.findByDosificacion(idDosificacion);
 	}

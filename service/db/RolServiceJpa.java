@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Rol;
 import edu.mx.utdelacosta.repository.RolRepository;
@@ -19,6 +20,7 @@ public class RolServiceJpa implements IRolService{
 	private RolRepository repositoryRol;
 
 	@Override
+	@Transactional
 	public Rol buscarorId(Integer id) {
 		// TODO Auto-generated method stub
 		Optional<Rol> optional = repositoryRol.findById(id);
@@ -29,6 +31,7 @@ public class RolServiceJpa implements IRolService{
 	}
 
 	@Override
+	@Transactional
 	public List<Rol> buscarTodos() {
 		// TODO Auto-generated method stub
 		return repositoryRol.findAll(Sort.by(Order.asc("descripcion")));

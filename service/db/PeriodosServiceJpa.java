@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.repository.PeriodosRepository;
@@ -22,12 +23,14 @@ public class PeriodosServiceJpa implements IPeriodosService{
 	private PeriodosRepository periodosRepository;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Periodo> buscarTodos() {
 		// TODO Auto-generated method stub
 		return (List<Periodo>) periodosRepository.findAll(Sort.by(Order.desc("id")));
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Periodo buscarPorId(Integer idPeriodo) {
 		// TODO Auto-generated method stub
 		Optional<Periodo> optional = periodosRepository.findById(idPeriodo);
@@ -38,27 +41,32 @@ public class PeriodosServiceJpa implements IPeriodosService{
 	}
 
 	@Override
+	@Transactional
 	public void guardar(Periodo periodo) {
 		// TODO Auto-generated method stub
 		periodosRepository.save(periodo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Date> buscarDiasPorFechaInicioYFechafin(String fechaInicio, String fechaFin) {
 		return periodosRepository.findDiasByFechaInicioAndFechafin(fechaInicio, fechaFin);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Periodo buscarUltimo() {
 		return periodosRepository.findTopByOrderByIdDesc();
 	}
   
 	@Override
+	@Transactional(readOnly = true)
 	public Periodo buscarPorFechaInicioYFechafin(Date inicio, Date fin) {
 		return periodosRepository.findAllByInicioLessThanEqualAndFinGreaterThanEqual(inicio, fin);
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<Periodo> buscarUltimosCaja() {
 		return periodosRepository.findLastCaja();
 	}

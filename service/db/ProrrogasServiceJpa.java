@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
@@ -21,12 +22,14 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 	private ProrrogaRepository prorrogaRepository;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Prorroga> buscarPorCarreraYPendientes(Integer idPersona, Integer idPeriodo) {
 		// TODO Auto-generated method stub
 		return prorrogaRepository.findByCarreraAndRequested(idPersona, idPeriodo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Prorroga buscarPorId(Integer id) {
 		Optional<Prorroga> prorroga =  prorrogaRepository.findById(id);
 		if(prorroga.isPresent()) {
@@ -42,11 +45,13 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer prorrogasPorProfesorAndPeriodo(Integer idProfesor, Integer idPeriodo) {
 		// TODO Auto-generated method stub
 		return prorrogaRepository.countProrrogasByIdProfesorAndPeriodo(idProfesor, idPeriodo);
 	}
 	
+	@Transactional(readOnly = true)
 	@Override
 	public Prorroga buscarPorCargaHorariaYTipoProrrogaYActivoYAceptada(CargaHoraria cargaHoraria,
 			TipoProrroga tipoProrroga, boolean activo, boolean aceptada) {
@@ -54,43 +59,51 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 				activo, aceptada);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public Prorroga buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(CargaHoraria cargaHoraria, CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga,
 			boolean activo) {
 		return prorrogaRepository.findByCargaHorariaAndCorteEvaluativoAndTipoProrrogaAndActivo(cargaHoraria, corteEvaluativo, tipoProrroga, activo);
 	}
 	
+	@Transactional(readOnly = true)
 	@Override
 	public Prorroga buscarPorCargaHorariaYTipoProrrogaYFechaLimiteMayorQueYActivoYAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga,
 			Date fechaLimite, Boolean activo, Boolean aceptada) {
 		return prorrogaRepository.findByCargaHorariaAndTipoProrrogaAndFechaLimiteGreaterThanEqualAndActivoAndAceptada(cargaHoraria, tipoProrroga, fechaLimite, activo, aceptada);
 	}
 	
+	@Transactional(readOnly = true)
 	@Override
 	public List<Prorroga> buscarPorCargaHoraria(CargaHoraria cargaHoraria) {
 		return prorrogaRepository.findByCargaHoraria(cargaHoraria);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Prorroga> buscarPorProfesorYPeriodoYActivo(Integer idProfesor, Integer idPeriodo) {
 		return prorrogaRepository.findByProfesorAndPeriodoAndActivo(idProfesor, idPeriodo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Prorroga> buscarPorProfesorYPeriodo(Integer idProfesor, Integer idPeriodo) {
 		return prorrogaRepository.findByProfesorAndPeriodo(idProfesor, idPeriodo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Prorroga> buscarPorPersonaCarrerraAndAceptadas(Integer idPersona, Integer idPeriodo) {
 		return prorrogaRepository.findByPersonaCarreraAndAccept(idPersona, idPeriodo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarProrrogasPendientesPorPersonaYPeriodo(Integer idPersona, Integer idPeriodo) {
 		return prorrogaRepository.countPendientesByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
 	}
 	
+	@Transactional(readOnly = true)
 	public Prorroga buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(CargaHoraria cargaHoraria,
 			TipoProrroga tipoProrroga, CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada) {
 		return prorrogaRepository.findByCargaHorariaAndTipoProrrogaAndCorteEvaluativoAndActivoAndAceptada(cargaHoraria, tipoProrroga, corteEvaluativo, activo, aceptada);
