@@ -1,5 +1,6 @@
 package edu.mx.utdelacosta.controller;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +28,15 @@ import edu.mx.utdelacosta.model.AreaConocimiento;
 import edu.mx.utdelacosta.model.Cuatrimestre;
 import edu.mx.utdelacosta.model.Materia;
 import edu.mx.utdelacosta.model.PlanEstudio;
+import edu.mx.utdelacosta.model.TemaUnidad;
+import edu.mx.utdelacosta.model.UnidadTematica;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.MateriaDTO;
 import edu.mx.utdelacosta.service.IAreaConocimientoService;
 import edu.mx.utdelacosta.service.ICuatrimestreService;
 import edu.mx.utdelacosta.service.IMateriasService;
 import edu.mx.utdelacosta.service.IPlanEstudioService;
+import edu.mx.utdelacosta.service.IUnidadTematicaService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 import edu.mx.utdelacosta.util.SubirArchivo;
 
@@ -59,6 +63,9 @@ public class MateriasController {
 	@Autowired
 	private IUsuariosService usuariosService;
 	
+	@Autowired
+	private IUnidadTematicaService unidadTematicaService;
+	
 	@GetMapping("/get/{id}")
 	public String obtenerMateria(@PathVariable("id") int id, Model model, HttpSession session, Authentication auth) {
 		//nos traemos el usuario de la session 
@@ -73,7 +80,23 @@ public class MateriasController {
 		List<Cuatrimestre> cuatrimestres = cuatrimestreService.buscarTodos();
 		//lista de areas de conocimiento
 		List<AreaConocimiento> areas = areaConocimientoService.buscarAreasActivas();
-		model.addAttribute("unidades", materia.getUnidadesTematicas());
+		
+		List<UnidadTematica> unidades = new ArrayList<>();
+		for (UnidadTematica u : unidadTematicaService.buscarPorIdMateriaYActivas(id)) {
+			List<TemaUnidad> temas = new ArrayList<>();
+			for (TemaUnidad t : u.getTemasUnidad()) {
+				if(t.getActivo()) {
+					//se añade el tema a la lista de temas
+					temas.add(t);
+				}
+			}
+			//se añaden los temas a las unidad
+			u.setTemasUnidad(temas);
+			//se añade la unidad a la lista de unidades temanitas
+			unidades.add(u);
+		}
+		
+		model.addAttribute("unidades", unidades); 
 		model.addAttribute("areas", areas);
 		model.addAttribute("cuatrimestres", cuatrimestres);
 		model.addAttribute("planesEst", planesEstudio);

@@ -22,4 +22,5 @@ public interface IBajaService {
 	List<Baja> buscarPorAlumno(Alumno alumno);
 	
 	void eliminar(Baja baja);
+	Integer contarBajasActivasPorAlumno(Integer idAlumno);
 }

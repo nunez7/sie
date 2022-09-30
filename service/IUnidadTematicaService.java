@@ -11,5 +11,7 @@ public interface IUnidadTematicaService {
 	void guardar(UnidadTematica unidadTematica);
 
 	List<UnidadTematica> buscarPorDosificacion(Integer idDosificacion);
+	
+	List<UnidadTematica> buscarPorIdMateriaYActivas(Integer idMateria);
 
 }

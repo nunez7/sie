@@ -19,4 +19,9 @@ public interface UnidadesTematicasRepository extends JpaRepository<UnidadTematic
 			+ "WHERE dt.id_dosificacion=:dosificacion" , nativeQuery = true)
 
 	List<UnidadTematica> findByDosificacion(@Param("dosificacion") Integer idDosificacion);
+	
+	//busca las unidades tematicas por materia y activas
+	@Query(value = "SELECT * FROM unidades_tematicas WHERE id_materia = :idMateria "
+			+ "AND activo = 'True' ORDER BY consecutivo ", nativeQuery = true)
+	List<UnidadTematica> findByIdMateriaAndActivo(@Param("idMateria") Integer idMateria);
 }

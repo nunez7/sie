@@ -572,5 +572,59 @@ public class ControlAlumnoController {
 		
 		return "ok";
 	}
+	
+	@PreAuthorize("hasAnyAuthority('Administrador', 'Servicios Escolares')")
+	@PostMapping(path = "/regresar-aspirante", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String regresarAspirante(@RequestBody Map<String, Integer> obj, HttpSession session) {
+		int cveAlumno = obj.get("idAlumno");	
+		//cuenta los registro de alumno grupo activos del alumno
+		Integer g = alumnoGrupoService.contarGruposActivosPorAlumno(cveAlumno);
+		if (g == 1) {
+			// se desactivan los adeudos
+			List<PagoGeneral> adeudos = pagoGeneralService.buscarPorAlumno(cveAlumno, 0);
+			for (PagoGeneral adeudo : adeudos) {
+				if (adeudo.getStatus() == 0) {
+					// se desactiva el adeudo
+					adeudo.setActivo(false);
+					pagoGeneralService.guardar(adeudo);
+				}
+			}
+			// se eliminan los registro de alumno grupo
+			List<AlumnoGrupo> grupos = alumnoGrService.buscarPorIdAlumnoDesc(cveAlumno);
+			for (AlumnoGrupo ag : grupos) {
+				ag.setActivo(false);
+				alumnoGrService.guardar(ag);
+			}
+			// se desactiva el alumno
+			Alumno alumno = alumnoService.buscarPorId(cveAlumno);
+			alumno.setEstatusGeneral(0);
+			alumnoService.guardar(alumno);
+			return "ok";
+		}
+		else {
+			return "na";
+		}
+	}
+	
+	//funcion activar alumno
+	@PostMapping(path = "/activar-alumno", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String activarAlumno(@RequestBody Map<String, Integer> obj, HttpSession session) {
+		int cveAlumno = obj.get("idAlumno");
+		//para traer las bajas del alumno
+		Integer bajas = bajaService.contarBajasActivasPorAlumno(cveAlumno);
+		//si tiene menos de dos bajas se activa
+		if(bajas > 1) {
+			return "na";
+		}
+		else {
+			//se activa el alumno
+			Alumno alumno = alumnoService.buscarPorId(cveAlumno);
+			alumno.setEstatusGeneral(1);
+			alumnoService.guardar(alumno);
+			return "ok";
+		}
+	}
 
 }

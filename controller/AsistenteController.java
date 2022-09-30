@@ -676,7 +676,7 @@ public class AsistenteController {
 						AlumnoPromedioDTO alumnoDTO = new AlumnoPromedioDTO();
 						//se rellena el alumno y sus calificaciones
 						alumnoDTO.setIdAlumno(alumno.getId());
-						alumnoDTO.setNombre(alumno.getPersona().getNombreCompleto());
+						alumnoDTO.setNombre(alumno.getPersona().getNombreCompletoPorApellido());
 						List<IndicadorMateriaDTO> indicadoresMaterias = new ArrayList<IndicadorMateriaDTO>();
 						for (CargaHoraria ch : cargaHorarias) {
 							IndicadorMateriaDTO im = new IndicadorMateriaDTO();

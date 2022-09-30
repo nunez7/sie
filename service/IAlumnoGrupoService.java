@@ -20,4 +20,5 @@ public interface IAlumnoGrupoService {
 	Integer contarPorPeriodoYCuatrimestreYPagoGenerado(Integer idPeriodo, Integer idCuatrimestre);
 	List<AlumnoGrupo> buscarPorPeriodoYCuatrimestre(Integer idPeriodo, Integer idCuatrimestre);
 	Integer contarPorPeriodoAndCuatrimestre(Integer idPeriodo, Integer idCuatrimestre);
+	Integer contarGruposActivosPorAlumno(Integer idAlumno);
 }

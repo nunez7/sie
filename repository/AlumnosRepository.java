@@ -76,7 +76,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true)
 	List<Alumno> findAllAlumnosByCarreraAndActivo(@Param("carrera") Integer carrera);
 	
-	@Query(value = "SELECT a.id as idAlumno, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as alumno, a.matricula, pg.concepto, pg.monto as cantidad "
+	@Query(value = "SELECT a.id as idAlumno, CONCAT(p.primer_apellido,' ',p.segundo_apellido, ' ', p.nombre) as alumno, a.matricula, pg.concepto, pg.monto as cantidad "
 			+ "FROM pagos_generales pg "
 			+ "INNER JOIN pago_alumno pa on pg.id=pa.id_pago "
 			+ "INNER JOIN alumnos a on pa.id_alumno=a.id "
@@ -85,11 +85,11 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "INNER JOIN personas p ON p.id = a.id_persona "
 			+ "WHERE a.id_carrera IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :persona) "
 			+ "AND pg.status=0 AND g.id_periodo = :periodo "
-			+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true) 
+			+ "ORDER BY p.primer_apellido, p.segundo_apellido,p.nombre ", nativeQuery = true) 
 	List<AlumnoAdeudoDTO> getAllAlumnoAdeudoByPersonaCarreraAndPeriodo(@Param("persona") Integer idPersona, @Param("periodo") Integer idPeriodo);
 	
 	//para traer los adeudos de alumnos por carrera y periodo
-	 @Query(value = "SELECT a.id as idAlumno, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as alumno, a.matricula, c.concepto, pg.monto as cantidad, pg.concepto as descripcion "
+	 @Query(value = "SELECT a.id as idAlumno, CONCAT(p.primer_apellido,' ',p.segundo_apellido, ' ',p.nombre) as alumno, a.matricula, c.concepto, pg.monto as cantidad, pg.concepto as descripcion "
 	   + "FROM pagos_generales pg "
 	   + "INNER JOIN pago_alumno pa on pg.id=pa.id_pago "
 	   + "INNER JOIN alumnos a on pa.id_alumno=a.id "
@@ -99,7 +99,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 	   + "INNER JOIN conceptos c ON c.id = pg.id_concepto "
 	   + "WHERE a.id_carrera=:carrera "
 	   + "AND pg.status=0 AND g.id_periodo = :periodo "
-	   + "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true) 
+	   + "ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre ", nativeQuery = true) 
 	 List<AlumnoAdeudoDTO> getAllAlumnoAdeudoByCarreraAndPeriodo(@Param("carrera") Integer idCarrera, @Param("periodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT a.id AS idAlumno, a.matricula, p.primer_apellido AS primerApellido, p.segundo_apellido AS segundoApellido,  "
@@ -330,8 +330,8 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 	@Query(value = "SELECT a.* FROM alumnos a " + "INNER JOIN personas p ON a.id_persona = p.id "
 			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno = a.id " + "INNER JOIN grupos g ON g.id = ag.id_grupo "
 			+ "WHERE g.id_carrera IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) AND estatus = 1 "
-			+ "AND g.id_periodo = :idPeriodo " + "GROUP BY a.id, p.nombre, p.primer_apellido, p.segundo_apellido "
-			+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true)
+			+ "AND g.id_periodo = :idPeriodo " + "GROUP BY a.id, p.primer_apellido, p.segundo_apellido, p.nombre "
+			+ "ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre ", nativeQuery = true)
 	List<Alumno> findAllAlumnosByPersonaCarreraAndActivoAndPeriodo(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
 	
 	@Query(value = "select a.*,CONCAT(per.nombre,' ',per.primer_apellido,' ',per.segundo_apellido) AS nombreCompleto "
@@ -366,8 +366,8 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "INNER JOIN grupos g ON g.id = ag.id_grupo "
 			+ "WHERE g.id_carrera = :idCarrera AND estatus = 1 "
 			+ "AND g.id_periodo = :idPeriodo "
-			+ "GROUP BY a.id, p.nombre, p.primer_apellido, p.segundo_apellido "
-			+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true)
+			+ "GROUP BY a.id, p.primer_apellido, p.segundo_apellido, p.nombre "
+			+ "ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre ", nativeQuery = true)
 	List<Alumno> findAllAlumnosByCarreraAndActivoAndPeriodo(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT count(a.id) "
@@ -410,7 +410,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "ORDER BY a.id DESC ", nativeQuery = true)
 	List<Alumno> findAllAceptedProspectos(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo);
 	
-	@Query(value = "SELECT DISTINCT(a.id) as idalumno, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as nombre, "
+	@Query(value = "SELECT DISTINCT(a.id) as idalumno, CONCAT(p.primer_apellido,' ',p.segundo_apellido,' ', p.nombre) as nombre, "
 			   + "g.nombre as grupo, c.nombre as carrera, ag.pagado as pago, a.documentos_ingresos as documentos "
 			   + "FROM alumnos_grupos ag "
 			   + "INNER JOIN alumnos a on a.id = ag.id_alumno "

@@ -74,4 +74,10 @@ public interface BajaRepository extends CrudRepository<Baja, Integer>{
 	List<Baja> findByTipoAndStatusAndFechas(@Param("tipo") Integer tipo, @Param("estatus") Integer estatus, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
 	
 	List<Baja> findByAlumnoOrderByFechaRegistroDesc(Alumno alumno);
+	
+	//cuentas las bajas activas del alumno
+	@Query(value = "SELECT count(*) FROM bajas WHERE id_alumno = :idAlumno AND estatus = 0 ", nativeQuery = true)
+	Integer countByAlumnoActivas(@Param("idAlumno") Integer idAlumno);
+	
+	
 }

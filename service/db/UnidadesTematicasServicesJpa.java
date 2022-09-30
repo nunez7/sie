@@ -38,4 +38,11 @@ public class UnidadesTematicasServicesJpa implements IUnidadTematicaService{
 		return unidadesTematicasRepository.findByDosificacion(idDosificacion);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public List<UnidadTematica> buscarPorIdMateriaYActivas(Integer idMateria) {
+		// TODO Auto-generated method stub
+		return unidadesTematicasRepository.findByIdMateriaAndActivo(idMateria);
+	}
+
 }

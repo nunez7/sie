@@ -93,5 +93,12 @@ public class BajaServiceJpa implements IBajaService{
 	public void eliminar(Baja baja) {
 		bajaRepo.delete(baja);
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Integer contarBajasActivasPorAlumno(Integer idAlumno) {
+		// TODO Auto-generated method stub
+		return bajaRepo.countByAlumnoActivas(idAlumno);
+	}
 	
 }

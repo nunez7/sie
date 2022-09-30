@@ -108,4 +108,11 @@ public class AlumnoGrupoServiceJpa implements IAlumnoGrupoService{
 		return agRepositorio.contarPorPeriodoAndCuatrimestre(idPeriodo, idCuatrimestre);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public Integer contarGruposActivosPorAlumno(Integer idAlumno) {
+		// TODO Auto-generated method stub
+		return agRepositorio.countByAlumnoAndGrupoActivo(idAlumno);
+	}
+
 }

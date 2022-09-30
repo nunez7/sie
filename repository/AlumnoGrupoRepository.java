@@ -62,5 +62,8 @@ public interface AlumnoGrupoRepository extends CrudRepository<AlumnoGrupo, Integ
 			+ "WHERE gr.id_periodo=:periodo-1 and gr.id_cuatrimestre = :cuatrimestre-1", nativeQuery = true)
 	Integer contarPorPeriodoAndCuatrimestre(@Param("periodo") Integer idPeriodo,
 			@Param("cuatrimestre") Integer idCuatrimestre);
+	
+	@Query(value = "SELECT COUNT(*) FROM alumnos_grupos WHERE id_alumno = :idAlumno AND activo = 'True'", nativeQuery = true)
+	Integer countByAlumnoAndGrupoActivo(@Param("idAlumno") Integer idAlumno);
 
 }
