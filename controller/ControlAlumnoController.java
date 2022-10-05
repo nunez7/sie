@@ -611,6 +611,7 @@ public class ControlAlumnoController {
 	@PostMapping(path = "/activar-alumno", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String activarAlumno(@RequestBody Map<String, Integer> obj, HttpSession session) {
+		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cveAlumno = obj.get("idAlumno");
 		//para traer las bajas del alumno
 		Integer bajas = bajaService.contarBajasActivasPorAlumno(cveAlumno);
@@ -621,7 +622,22 @@ public class ControlAlumnoController {
 		else {
 			//se activa el alumno
 			Alumno alumno = alumnoService.buscarPorId(cveAlumno);
-			alumno.setEstatusGeneral(1);
+			//si el alumno esta activo se desactivará
+			if(alumno.getEstatusGeneral() == 1) {
+				alumno.setEstatusGeneral(0);
+				//se busca el alumno grupo del periodo actual
+				AlumnoGrupo ag = alumnoGrService.buscarPorIdAlumnoYIdPeriodo(alumno.getId(), usuario.getPreferencias().getIdPeriodo());
+				if(ag != null) {
+					//se desactiva el alumno grupo
+					ag.setActivo(false);
+					alumnoGrService.guardar(ag);
+				}
+				
+			}
+			// si el alumno esta inactivo se activará
+			else {
+				alumno.setEstatusGeneral(1);
+			}
 			alumnoService.guardar(alumno);
 			return "ok";
 		}

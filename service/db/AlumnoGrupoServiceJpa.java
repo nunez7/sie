@@ -115,4 +115,10 @@ public class AlumnoGrupoServiceJpa implements IAlumnoGrupoService{
 		return agRepositorio.countByAlumnoAndGrupoActivo(idAlumno);
 	}
 
+	@Override
+	public AlumnoGrupo buscarPorIdAlumnoYIdPeriodo(Integer idAlumno, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return agRepositorio.findByAlumnoAndPeriodo(idAlumno, idPeriodo);
+	}
+
 }
