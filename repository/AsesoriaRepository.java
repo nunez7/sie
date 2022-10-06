@@ -24,7 +24,7 @@ public interface AsesoriaRepository extends CrudRepository<Asesoria, Integer>{
 			+ " INNER JOIN personas p on p.id=a.id_persona "
 			+ " INNER JOIN grupos g on g.id = ag.id_grupo "
 			+ " WHERE ag.id_grupo=:idGrupo AND g.id_periodo = :idPeriodo "
-			+ " ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
+			+ " ORDER BY TRANSLATE (p.primer_apellido,'ÁÉÍÓÚÜ','AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'ÁÉÍÓÚÜ','AEIOUU') ASC, TRANSLATE (p.nombre,'ÁÉÍÓÚÜ','AEIOUU') ASC", nativeQuery = true)
 	List<AsesoriaDTO> findByIdGrupo(@Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT COALESCE(COUNT(DISTINCT(aa.id)),0) as asesorias, al.matricula as matricula, CONCAT(p.primer_apellido,' ',p.segundo_apellido,' ',p.nombre) as nombre, "
@@ -38,7 +38,7 @@ public interface AsesoriaRepository extends CrudRepository<Asesoria, Integer>{
 			+ "INNER JOIN carreras c on c.id = g.id_carrera "
 			+ "WHERE c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) AND g.id_periodo = :idPeriodo "
 			+ "GROUP BY al.matricula, p.primer_apellido, p.segundo_apellido, p.nombre,p.sexo, g.nombre "
-			+ "ORDER BY asesorias, p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
+			+ "ORDER BY TRANSLATE (p.primer_apellido,'ÁÉÍÓÚÜ','AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'ÁÉÍÓÚÜ','AEIOUU') ASC, TRANSLATE (p.nombre,'ÁÉÍÓÚÜ','AEIOUU') ASC, asesorias ", nativeQuery = true)
 	List<AsesoriaDTO> findByPersonaCarreraAndPeriodo(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT DISTINCT(a.*) FROM asesorias a "

@@ -298,7 +298,7 @@ public class CalificacionController {
 						for (Alumno alumno : alumnos) {
 							CalificacionParcialDTO calificacion = new CalificacionParcialDTO();
 							calificacion.setMatricula(alumno.getMatricula());
-							calificacion.setNombre(alumno.getPersona().getNombreCompleto());
+							calificacion.setNombre(alumno.getPersona().getNombreCompletoPorApellido());
 							
 							List<CalificacionInstrumentoDTO> mecanismos = new ArrayList<>();
 							for (MecanismoInstrumento meca : mecanismoInstrumento) {
@@ -369,7 +369,7 @@ public class CalificacionController {
 				for (Alumno alumno : alumnos) {
 					AlumnoCalificacionDTO calificacion = new AlumnoCalificacionDTO();
 					calificacion.setMatricula(alumno.getMatricula());
-					calificacion.setNombre(alumno.getPersona().getNombreCompleto());
+					calificacion.setNombre(alumno.getPersona().getNombreCompletoPorApellido());
 
 					List<CalificacionDTO> cal = new ArrayList<>();
 					for (CorteEvaluativo corte : cortes) {
