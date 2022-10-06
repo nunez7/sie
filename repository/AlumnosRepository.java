@@ -60,7 +60,8 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "INNER JOIN alumnos a ON a.id=ag.id_alumno "
 			+ "INNER JOIN personas p ON p.id=a.id_persona "
 			+ "WHERE ag.id_grupo= :idGrupo AND ag.activo = 'True' "
-			+ "ORDER BY primer_apellido ASC, segundo_apellido ASC, nombre ASC ", nativeQuery = true)
+			+ "ORDER BY TRANSLATE (p.primer_apellido,'賽邲竦','AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'賽邲竦','AEIOUU') ASC, "
+			+ "TRANSLATE (p.nombre,'賽邲竦','AEIOUU') ASC ", nativeQuery = true)
 	List<Alumno> findAllAlumnosByGrupoOrderByNombreAsc(@Param("idGrupo") Integer idGrupo);
 	
 	@Query(value = "SELECT COUNT(a.id)AS cantidad "
@@ -331,7 +332,8 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno = a.id " + "INNER JOIN grupos g ON g.id = ag.id_grupo "
 			+ "WHERE g.id_carrera IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) AND estatus = 1 "
 			+ "AND g.id_periodo = :idPeriodo " + "GROUP BY a.id, p.primer_apellido, p.segundo_apellido, p.nombre "
-			+ "ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre ", nativeQuery = true)
+			+ "ORDER BY TRANSLATE (p.primer_apellido,'賽邲竦','AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'賽邲竦','AEIOUU') ASC, "
+			+ "TRANSLATE (p.nombre,'賽邲竦','AEIOUU') ASC ", nativeQuery = true)
 	List<Alumno> findAllAlumnosByPersonaCarreraAndActivoAndPeriodo(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
 	
 	@Query(value = "select a.*,CONCAT(per.nombre,' ',per.primer_apellido,' ',per.segundo_apellido) AS nombreCompleto "
@@ -348,7 +350,8 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "INNER JOIN alumnos a ON a.id=ag.id_alumno "
 			+ "INNER JOIN personas p ON p.id=a.id_persona "
 			+ "WHERE ag.id_grupo=:idGrupo AND g.id_periodo=:idPeriodo "
-			+ "ORDER BY p.primer_apellido ASC, p.segundo_apellido ASC, p.nombre ASC", nativeQuery = true)
+			+ "ORDER BY TRANSLATE (p.primer_apellido,'賽邲竦','AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'賽邲竦','AEIOUU') ASC, "
+			+ "TRANSLATE (p.nombre,'賽邲竦','AEIOUU') ASC", nativeQuery = true)
 	List<Alumno> findByGrupoAndPeriodo(@Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo);
   
 	// para traer los adeudos de alumnos por carrera y periodo
@@ -367,7 +370,8 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "WHERE g.id_carrera = :idCarrera AND estatus = 1 "
 			+ "AND g.id_periodo = :idPeriodo "
 			+ "GROUP BY a.id, p.primer_apellido, p.segundo_apellido, p.nombre "
-			+ "ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre ", nativeQuery = true)
+			+ "ORDER BY TRANSLATE (p.primer_apellido,'賽邲竦','AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'賽邲竦','AEIOUU') ASC,"
+			+ "TRANSLATE (p.nombre,'賽邲竦','AEIOUU') ASC ", nativeQuery = true)
 	List<Alumno> findAllAlumnosByCarreraAndActivoAndPeriodo(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT count(a.id) "
