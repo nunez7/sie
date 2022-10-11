@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpSession;
@@ -149,7 +148,7 @@ public class HorariosController {
 			horario.setHoraInicio(horaInicio);
 			horario.setHoraFin(horaFin);
 		} catch (ParseException e) {
-			logger.log(Level.WARNING, "Error de parseo: " + e);
+			//logger.log(Level.WARNING, "Error de parseo: " + e);
 		}
 		horarioService.guardar(horario);
 		return "ok";

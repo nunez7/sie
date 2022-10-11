@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -66,6 +67,7 @@ import edu.mx.utdelacosta.util.ReferenciaSEP;
 import edu.mx.utdelacosta.util.Utileria;
 
 
+@CrossOrigin(origins = { "https://utnay.edu.mx" })
 @RestController
 @RequestMapping("/api")
 public class ApiController {
@@ -90,8 +92,7 @@ public class ApiController {
 	
 	@Autowired
 	private ICarrerasServices carreraService;
-	
-	
+		
 	@Autowired
 	private PdfGenerador pdfGenerator;
 	
@@ -309,7 +310,7 @@ public class ApiController {
 		pagoA.setPagoGeneral(pagoG);
 		pagoAlumnoService.guardar(pagoA);
 		
-		// se genera el registro de persona-referencia para importación de referencia por archivo de banco
+		// se genera el registro de persona-referencia para importaciï¿½n de referencia por archivo de banco
 		List<PagoGeneral> adeudos = pagoGeneralService.buscarPorAlumno(alumno.getId(), 0);
 		PagoGeneral adeudo = adeudos.get(0);
 		PersonaReferencia peRef = personaReferenciaService.buscarPorReferencia(adeudo.getReferencia());
