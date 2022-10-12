@@ -29,7 +29,6 @@ import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Dosificacion;
 import edu.mx.utdelacosta.model.Instrumento;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
-import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Usuario;
@@ -105,7 +104,7 @@ public class MecanismoInstrumentoController {
 		
 		List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCarga, true);
 
-		model.addAttribute("corte", new CorteEvaluativo(idCorte));
+		model.addAttribute("corte", corteService.buscarPorId(idCorte));
 		model.addAttribute("cActual", new CargaHoraria(idCarga));
 		model.addAttribute("mecanismos", mecanismos);
 
@@ -156,6 +155,15 @@ public class MecanismoInstrumentoController {
 		if (total.size() > 2) {
 			return "max";
 		}
+		
+		Integer provicional = null;
+		if(total.size()==2) {
+			provicional = 0;
+			for (MecanismoInstrumento mi : total) {
+				provicional = provicional+mi.getPonderacion();
+			}
+			provicional = 100 - provicional;
+		}
 
 		// comparamos si el corte tiene asignado una unidad
 		List<CalendarioEvaluacion> calendarios = calendarioService
@@ -170,6 +178,11 @@ public class MecanismoInstrumentoController {
 			mecanismo.setIdCargaHoraria(carga);
 			mecanismo.setIdCorteEvaluativo(corte);
 			mecanismo.setInstrumento(new Instrumento(instrumento));
+			if (provicional!=null) {
+				mecanismo.setPonderacion(provicional>0 && provicional<=80 ? provicional : 0);
+			}else {
+				mecanismo.setPonderacion(0);
+			}
 			mecanismoService.guardar(mecanismo);
 			return "ok";
 		} else {

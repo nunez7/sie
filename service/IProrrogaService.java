@@ -35,4 +35,6 @@ public interface IProrrogaService {
 	Prorroga buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada);
 	
 	Integer contarProrrogasPendientesPorPersonaYPeriodo(Integer idPersona, Integer idPeriodo);
+	
+	Boolean existeDeCalificacionPorFechaYCargaHorariaYCorte(Date fecha, Integer cargaHoraria, Integer corteEvaluativo);
 }

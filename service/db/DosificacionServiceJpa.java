@@ -80,14 +80,14 @@ public class DosificacionServiceJpa implements IDosificacionService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Dosificacion> buscarImportadaPorCargaHoraria(Integer idCargaHoraria) {
-		return dosificacionRepository.findImportedByCargaHoraria(idCargaHoraria);
+	public Dosificacion buscarImportadaPorCargaHoraria(Integer idCargaHoraria, Integer idCorteEvaluativo) {
+		return dosificacionRepository.findImportedByCargaHoraria(idCargaHoraria , idCorteEvaluativo);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<String> buscarColaboradoresPorDosificacion(Integer idDosificacion) {
-		return dosificacionRepository.findColaboradoresByDosificacion(idDosificacion);
+	public List<String> buscarColaboradoresPorDosificacion(Integer idDosificacion, Integer idPersona) {
+		return dosificacionRepository.findColaboradoresByDosificacion(idDosificacion, idPersona);
 	}
 
 	@Override

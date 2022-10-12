@@ -20,6 +20,10 @@ public class AlumnoCalificacionDTO {
 	private String status;
 	
 	private Integer revalidada;
+	
+	private Boolean remedial;
+	
+	private Boolean extraordinario;
 
 	public Integer getId() {
 		return id;
@@ -88,7 +92,21 @@ public class AlumnoCalificacionDTO {
 	public void setRevalidada(Integer revalidada) {
 		this.revalidada = revalidada;
 	}
-	
-	
+
+	public Boolean getRemedial() {
+		return remedial;
+	}
+
+	public void setRemedial(Boolean remedial) {
+		this.remedial = remedial;
+	}
+
+	public Boolean getExtraordinario() {
+		return extraordinario;
+	}
+
+	public void setExtraordinario(Boolean extraordinario) {
+		this.extraordinario = extraordinario;
+	}
 	
 }

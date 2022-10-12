@@ -23,21 +23,21 @@ import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Dia;
-import edu.mx.utdelacosta.model.Dosificacion;
 import edu.mx.utdelacosta.model.DosificacionComentario;
 import edu.mx.utdelacosta.model.Evaluacion;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Horario;
 import edu.mx.utdelacosta.model.Instrumento;
-import edu.mx.utdelacosta.model.MecanismoInstrumento;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Pregunta;
 import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.model.dto.DosificacionImportarDTO;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
 import edu.mx.utdelacosta.model.dto.HorarioDTO;
+import edu.mx.utdelacosta.model.dto.ParcialDosificacionDTO;
 import edu.mx.utdelacosta.model.dto.PreguntaDTO;
 import edu.mx.utdelacosta.model.dto.PromedioPreguntaDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaProfesorDTO;
@@ -50,6 +50,7 @@ import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IDiaService;
 import edu.mx.utdelacosta.service.IDosificacionComentarioService;
+import edu.mx.utdelacosta.service.IDosificacionImportadaService;
 import edu.mx.utdelacosta.service.IDosificacionService;
 import edu.mx.utdelacosta.service.IEvaluacionesService;
 import edu.mx.utdelacosta.service.IGrupoService;
@@ -142,6 +143,9 @@ public class ProfesorController {
 	
 	@Autowired
 	private ITipoProrrogaService tipoProrroService;
+	
+	@Autowired
+	private IDosificacionImportadaService dosiImpoService;
 
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 
@@ -152,45 +156,55 @@ public class ProfesorController {
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 
+		//se obtienen las cargas del profesor
  		List<CargaHoraria> cargas = cargaService.buscarPorProfesorYPeriodo(usuario.getPersona(), new Periodo(usuario.getPreferencias().getIdPeriodo()));
- 		model.addAttribute("cargas", cargas);
-		
+ 		
  		if (cveCarga != null) {
-			model.addAttribute("cveCarga", cveCarga);
+ 	
 			CargaHoraria cargaActual = cargaService.buscarPorIdCarga(cveCarga);
-			if (cargaActual.getMateria().getUnidadesTematicas().size()>0) {				
-				model.addAttribute("unidades", cargaActual.getMateria().getUnidadesTematicas());
-			}
-			List<Instrumento> instrumentos = instrumentoService.buscarTodos();
-			List<Dosificacion> dosificaciones = dosificacionService.buscarPorIdCargaHoraria(cveCarga);
+			List<Instrumento> instrumentos = instrumentoService.buscarTodos(); //se obtienen los instrumentos
+					
+			Boolean existeDosi = true; //se declara la validacion para importar/cargar la dosificacion
 			
-			if (dosificaciones.size()==0) {
-		
-				dosificaciones = dosificacionService.buscarImportadaPorCargaHoraria(cveCarga);
-		
-				if (dosificaciones.size()==0) {
-					CargaHoraria cargaCompartida = cargaService.buscarPorIdMateriaEIdPersona(cargaActual.getMateria().getId(), persona.getId());
-					if (cargaCompartida!=null) {
-						model.addAttribute("dosificacionCompartida", cargaCompartida.getId());
-						model.addAttribute("profesor", cargaCompartida.getProfesor().getNombreCompleto());
-					}	
+			List<ParcialDosificacionDTO> parciales = new ArrayList<>();
+			List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera() ,periodo);
+			
+			for (CorteEvaluativo corte : cortes) {
+				ParcialDosificacionDTO parcial = new ParcialDosificacionDTO();
+				parcial.setIdCorteEvaluativo(corte.getId());
+				parcial.setConsecutivoCorte(corte.getConsecutivo());
+				parcial.setIdCargaHoraria(cveCarga);
+				parcial.setDosificacion(dosificacionService.buscarPorIdCargaHorariaEIdCorteEvaluativo(cveCarga, corte.getId()));
+				if (parcial.getDosificacion()==null) {
+					
+					//en caso de que la dosificacion no se encuentre, se procede a buscar alguna dosificacion compartida
+					parcial.setDosificacion(dosificacionService.buscarImportadaPorCargaHoraria(cveCarga, corte.getId()));
+					if (parcial.getDosificacion()==null) {
+						existeDosi = false;
+					}
 				}
+				parcial.setInstrumentos(mecanismoService.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(cveCarga, corte.getId(), true));
+				parciales.add(parcial);
 			}
 			
+			if (existeDosi == false) {
+				List<DosificacionImportarDTO> importar = 
+				dosiImpoService.buscarImportarPorMateriaYPeriodo(cargaActual.getMateria().getId(), cveCarga, periodo.getId());
+				model.addAttribute("importar", importar);
+			}
+			
+			model.addAttribute("cveCarga", cveCarga);
+			model.addAttribute("cortes", cortes);
+			model.addAttribute("parciales", parciales);
 			model.addAttribute("instrumentos",instrumentos);
 			model.addAttribute("cActual",cargaActual);
-			model.addAttribute("dosificaciones", dosificaciones);
-			
-			List<CorteEvaluativo> corte = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera() ,periodo);
-			model.addAttribute("cortes", corte);
 		}
 		
- 		
+ 		//comentarios de dosificaciones
 		List<DosificacionComentario> comentarios = dosiComeService.buscarPorIdCargaHoraria(cveCarga); // modal observaciones
-		model.addAttribute("comentarios", comentarios);
 		
-		List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(cveCarga, true);
-		model.addAttribute("mecanismos", mecanismos);
+		model.addAttribute("cargas", cargas);
+		model.addAttribute("comentarios", comentarios);
 		
 		return "profesor/dosificacion";
 	}

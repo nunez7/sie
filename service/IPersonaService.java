@@ -26,5 +26,5 @@ public interface IPersonaService {
 	
 	Persona buscarDirectorPorCarga(Integer idCargaHoraria);
 	
-	List<Persona> buscarColaboradoresPorDosificacion(Integer dosificacion);
+	List<Persona> buscarColaboradoresPorDosificacion(Integer dosificacion, Integer persona);
 }

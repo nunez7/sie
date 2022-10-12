@@ -91,8 +91,8 @@ public class PersonasServiceJpa implements IPersonaService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Persona> buscarColaboradoresPorDosificacion(Integer dosificacion) {
-		return personasRepo.findColaboradoresByDosificacion(dosificacion);
+	public List<Persona> buscarColaboradoresPorDosificacion(Integer dosificacion, Integer persona) {
+		return personasRepo.findColaboradoresByDosificacion(dosificacion, persona);
 	}
   
 }

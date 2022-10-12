@@ -108,4 +108,10 @@ public class CorteEvaluativoServiceJpa implements ICorteEvaluativoService{
 	public Integer buscarPorCargaHorariaYCalendarioEvaluacion(Integer idCargaHoraria, Integer idCorteEvaluativo) {
 		return corteEvaluativoRepository.findByCargaHorariaAndCalendarioEvaluacion(idCargaHoraria, idCorteEvaluativo);
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Boolean buscarParcialConPlazoValido(Date fecha, Integer idCorte) {
+		return corteEvaluativoRepository.findPlazoEntregaParcial(fecha, idCorte);
+	}
 }

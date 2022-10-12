@@ -20,6 +20,8 @@ public class DosificacionTemaDto {
 	
 	private Date fechaFin;
 	
+	private Integer consecutivo;
+	
 	public Integer getIdCorte() {
 		return idCorte;
 	}
@@ -84,4 +86,12 @@ public class DosificacionTemaDto {
 		this.fechaFin = fechaFin;
 	}
 
+	public Integer getConsecutivo() {
+		return consecutivo;
+	}
+
+	public void setConsecutivo(Integer consecutivo) {
+		this.consecutivo = consecutivo;
+	}
+	
 }

@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Asistencia;
 import edu.mx.utdelacosta.model.CargaHoraria;
-import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Horario;
@@ -301,7 +300,6 @@ public class AsistenciaController {
 		
 		int cveGrupo = 0;
 		int cveParcial = 0;
-		int cveCarga = 0;
 		
 		  //se compara si el grupo es o no vacio
 		if (session.getAttribute("grupoActual")!=null) {
@@ -313,12 +311,12 @@ public class AsistenciaController {
 			List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cveGrupo);
 			
 			if (session.getAttribute("cargaActual")!=null) {
-				cveCarga = (Integer) session.getAttribute("cargaActual");
+				CargaHoraria cveCarga = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cargaActual"));
 				
-				List<CorteEvaluativo> cortesEvaluativos = corteService.buscarPorCarreraYPeriodo( new Carrera(usuario.getPreferencias().getIdCarrera()),new Periodo(usuario.getPreferencias().getIdPeriodo()));
+				List<CorteEvaluativo> cortesEvaluativos = corteService.buscarPorCarreraYPeriodo(cveCarga.getGrupo().getCarrera(),new Periodo(usuario.getPreferencias().getIdPeriodo()));
 				if (session.getAttribute("corteActual")!=null) {
 					cveParcial = (Integer) session.getAttribute("corteActual");
-					if (cveParcial > 0 && cveCarga > 0) {
+					if (cveParcial > 0 && cveCarga.getId() > 0) {
 						CorteEvaluativo corte = corteService.buscarPorId(cveParcial);
 						
 						CorteEvaluativoDTO cortesEvaluativosDTO = new CorteEvaluativoDTO();
@@ -330,7 +328,7 @@ public class AsistenciaController {
 						List<Date> meses = asistenciaService.mesesEntreFechaInicioYFechaFinAsc(corte.getFechaInicio(),
 								corte.getFechaFin());
 						List<Asistencia> asistencias = asistenciaService.buscarPorFechaInicioYFechaFinEIdCargaHorariaEIdGrupo(
-								corte.getFechaInicio(), corte.getFechaFin(), cveCarga, cveGrupo);
+								corte.getFechaInicio(), corte.getFechaFin(), cveCarga.getId(), cveGrupo);
 						model.addAttribute("asistencias", asistencias);
 
 						List<MesDTO> mesesDto = new ArrayList<>();
@@ -377,9 +375,9 @@ public class AsistenciaController {
 				}
 				model.addAttribute("cortes", cortesEvaluativos);
 				
+				model.addAttribute("cargaActual",cveCarga.getId());
 			}
 			
-			model.addAttribute("cargaActual",cveCarga);
 			model.addAttribute("cargasHorarias", cargasHorarias);
 			model.addAttribute("alumnos", alumnos);
 			model.addAttribute("cveGrupo", cveGrupo);

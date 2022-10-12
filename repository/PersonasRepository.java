@@ -62,11 +62,19 @@ public interface PersonasRepository extends CrudRepository<Persona, Integer> {
 				+ "ORDER BY p.id", nativeQuery = true)
 		Persona findDirectorCarreraByCarga(@Param("idCargaHoraria") Integer idCargaHoraria);
 		
-		@Query(value = "SELECT p.* "
+		@Query(value = "SELECT DISTINCT(p.*) "
 				+ "	FROM dosificacion_importada di "
 				+ "	INNER JOIN cargas_horarias ch ON di.id_carga_horaria = ch.id "
 				+ "	INNER JOIN personas p ON ch.id_profesor = p.id "
 				+ "	INNER JOIN nivel_estudio ne ON p.id_nivel_estudio = ne.id "
-				+ "	WHERE di.id_dosificacion = :dosificacion ", nativeQuery = true)
-		List<Persona> findColaboradoresByDosificacion(@Param("dosificacion") Integer dosificacion);
+				+ "	WHERE di.id_dosificacion = :dosificacion AND p.id <> :persona ", nativeQuery = true)
+		List<Persona> findColaboradoresByDosificacion(@Param("dosificacion") Integer dosificacion, @Param("persona") Integer persona);
+		
+		@Query(value = "SELECT p.id as IdAlumno, "
+				+ " CONCAT(p.primer_apellido,' ',p.segundo_apellido,' ',p.nombre) AS nombre, "
+				+ "	COALESCE(a.matricula, per.no_empleado) AS matricula "
+				+ "	FROM personas p "
+				+ "	LEFT JOIN alumnos a ON a.id_persona = p.id "
+				+ "	LEFT JOIN personal per ON per.id = p.id ", nativeQuery = true)
+		List<AlumnoPersonalDTO> findByNombreOrMatriculaOrEmpleado(@Param("nombre") String nombre);
 }

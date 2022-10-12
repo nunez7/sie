@@ -29,4 +29,6 @@ public interface ICorteEvaluativoService {
 	Integer contarPorFechaDosificacionYPeriodoYCarreraYCorteEvaluativo(Date fechaInicio, Integer idPeriodo, Integer idCarrera, Integer idCorte);
 	
 	Integer buscarPorCargaHorariaYCalendarioEvaluacion(Integer idCargaHoraria, Integer idCorteEvaluativo);
+	
+	Boolean buscarParcialConPlazoValido(Date fecha, Integer idCorte);
 }

@@ -70,11 +70,11 @@ public interface CargaHorariaRepository extends JpaRepository<CargaHoraria, Inte
 			+ "	INNER JOIN calendario_evaluacion ce on ce.id_carga_horaria = ch.id "
 			+ " 	WHERE ch.id_profesor = :profesor AND ch.id_periodo = :periodo "
 			+ " 	AND  ( "
-			+ " 		SELECT COUNT(DISTINCT(ce2.id_corte_evaluativo)) "
+			+ " 		SELECT COUNT(DISTINCT(ce2.id)) "
 			+ " 		FROM calendario_evaluacion ce2 "
 			+ " 		WHERE ce2.id_carga_horaria = ch.id "
 			+ " 	) = ( "
-			+ " 		SELECT COUNT(DISTINCT(ce3.id_corte_evaluativo)) "
+			+ " 		SELECT COUNT(DISTINCT(ce3.id)) "
 			+ " 		FROM calendario_evaluacion ce3 "
 			+ " 		WHERE ce3.id_carga_horaria = :carga "
 			+ " 	) AND ch.id <> :carga", nativeQuery = true)

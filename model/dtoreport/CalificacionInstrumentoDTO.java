@@ -4,7 +4,7 @@ public interface CalificacionInstrumentoDTO {
 	
 	Integer getMecanismo();
 	
-	Integer getPonderacion();
+	Float getPonderacion();
 	
 	Integer getInstrumento();
 	

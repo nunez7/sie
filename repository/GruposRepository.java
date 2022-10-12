@@ -96,7 +96,8 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 	@Query(value = "SELECT DISTINCT(g.*) FROM grupos g "
 			+ "INNER JOIN alumnos_grupos ag on g.id=ag.id_grupo "
 			+ "INNER JOIN cargas_horarias ch on g.id=ch.id_grupo "
-			+ "WHERE ch.id_profesor=:idProfesor and ch.id_periodo=:idPeriodo", nativeQuery = true)
+			+ "WHERE ch.id_profesor=:idProfesor and ch.id_periodo=:idPeriodo "
+			+ "ORDER BY nombre ", nativeQuery = true)
 	List<Grupo> findByProfesorAndPeriodo(@Param("idProfesor") Integer idProfesor, @Param("idPeriodo") Integer idPeriodo);
 	
 	@Query(value ="SELECT g.* "

@@ -41,9 +41,11 @@ import edu.mx.utdelacosta.model.TemaUnidad;
 import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.UnidadTematica;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.model.dto.CargaUnidadDTO;
 import edu.mx.utdelacosta.model.dto.DosificacionDTO;
 import edu.mx.utdelacosta.model.dto.DosificacionTemaDto;
 import edu.mx.utdelacosta.model.dto.DosificacionUnidadDTO;
+import edu.mx.utdelacosta.model.dto.ParcialDosificacionDTO;
 import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.ICalendarioEvaluacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
@@ -190,6 +192,29 @@ public class DosificacionController {
 			dosiCargas.setActivo(true);
 			dosiCargas.setDosificacion(dosificacion);
 			dosiCargaService.guardar(dosiCargas);
+			
+			// se crear un correo y se envia al director correspondiente
+
+			Mail mail = new Mail();
+			String de = correo;
+			String para = carga.getGrupo().getCarrera().getEmailCarrera();
+			mail.setDe(de);
+			mail.setPara(new String[] { para });
+
+			// Email title
+			mail.setTitulo("Programación pendiente por validar");
+
+			// Variables a plantilla
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("titulo", "Programación de asignatura pendiente por validar");
+			variables.put("cuerpoCorreo",
+					"Tienes una programación de asignatura por validar de la materia " + carga.getMateria().getNombre());
+			mail.setVariables(variables);
+			try {
+				emailService.sendEmail(mail);
+			} catch (Exception e) {
+				return "mail";
+			}
 
 		// en caso de que la dosificacion no este vacia
 		}  else {
@@ -230,31 +255,8 @@ public class DosificacionController {
 				}
 			}
 		}
-
-		// se crear un correo y se envia al director correspondiente
-
-		Mail mail = new Mail();
-		String de = correo;
-		String para = carga.getGrupo().getCarrera().getEmailCarrera();
-		mail.setDe(de);
-		mail.setPara(new String[] { para });
-
-		// Email title
-		mail.setTitulo("Programación pendiente por validar");
-
-		// Variables a plantilla
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("titulo", "Programación de asignatura pendiente por validar");
-		variables.put("cuerpoCorreo",
-				"Tienes una programación de asignatura por validar de la materia " + carga.getMateria().getNombre());
-		mail.setVariables(variables);
-		try {
-			emailService.sendEmail(mail);
-			return "ok";
-		} catch (Exception e) {
-			return "mail";
-		}
-
+		
+		return "ok";
 	}
 
 	@GetMapping("/editar/{carga}/{corte}")
@@ -286,6 +288,7 @@ public class DosificacionController {
 					temaDto.setId(temaU.getId());
 					temaDto.setIdUnidad(unidad.getId());
 					temaDto.setNombre(temaU.getTema());
+					temaDto.setConsecutivo(temaU.getConsecutivo());
 
 					for (DosificacionTema temaD : temas) {
 						if (temaU.getId().equals(temaD.getTema().getId())) {
@@ -314,7 +317,8 @@ public class DosificacionController {
 	@PostMapping(path = "/importar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String importarDosificacion(@RequestBody Map<String, String> obj, HttpSession session) {
-		Integer idCargaHoraria = Integer.parseInt(obj.get("idCargaHoraria"));
+		//Integer idCargaHoraria = Integer.parseInt(obj.get("idCargaHoraria"));		
+		Integer idCargaHoraria = (Integer) session.getAttribute("cveCarga");
 		Integer idCargaCompartida = Integer.parseInt(obj.get("idDosificacion"));
 		if (idCargaHoraria != null && idCargaCompartida != null) {
 			CargaHoraria cargaHoraria = new CargaHoraria(idCargaHoraria);
@@ -344,7 +348,7 @@ public class DosificacionController {
 				dosificacionImportadaService.guardar(dImportada);
 			}
 			
-			
+			if (calendarios.size()==0) {				
 			calendarios = calendarioService.buscarPorCargaHoraria(cargaCompartida);
 			for (CalendarioEvaluacion calendario : calendarios) {
 				CalendarioEvaluacion calen = new CalendarioEvaluacion();
@@ -352,6 +356,7 @@ public class DosificacionController {
 				calen.setCorteEvaluativo(calendario.getCorteEvaluativo());
 				calen.setUnidadTematica(calendario.getUnidadTematica());
 				calendarioService.guarda(calen);
+			}
 			}
 
 			mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCargaCompartida,
@@ -431,7 +436,7 @@ public class DosificacionController {
 		
 		//se obtienen los colaboradores de la dosificacion
 		String firmaProfesor = "";
-		List<Persona> colaboradores = personaService.buscarColaboradoresPorDosificacion(idDosificacion);
+		List<Persona> colaboradores = personaService.buscarColaboradoresPorDosificacion(idDosificacion, dosificacion.getPersona().getId());
 		
 		//se agrega el profesor actual a los colaboradores
 		colaboradores.add(carga.getProfesor());
@@ -457,7 +462,7 @@ public class DosificacionController {
 		model.addAttribute("unidades", unidadesDTO);
 		model.addAttribute("firmaProfesor", firmaProfesor);
 		model.addAttribute("firmaDirector", firmaDirector);
-		model.addAttribute("colaboradores", dosificacionService.buscarColaboradoresPorDosificacion(idDosificacion));
+		model.addAttribute("colaboradores", dosificacionService.buscarColaboradoresPorDosificacion(idDosificacion, dosificacion.getPersona().getId()));
 		model.addAttribute("director", director.getNombreCompletoConNivelEstudio());
 		model.addAttribute("mecanismos", mecanismos);
 		model.addAttribute("ponderacion", ponderacion);
@@ -476,37 +481,39 @@ public class DosificacionController {
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = new Periodo(usuario.getPreferencias().getIdPeriodo());
+		
+		//se buscan todas las cargas del profesor
+		List<CargaHoraria> cargaHorarias = cargaHorariaService.buscarPorProfesorYPeriodo(persona, periodo);
+		List<CargaUnidadDTO> fechasEntrega = new ArrayList<>();
+		
+		for (CargaHoraria cargaHoraria : cargaHorarias) {
+			CargaUnidadDTO datos = new CargaUnidadDTO();
+			datos.setCortes(corteService.buscarPorCarreraYPeriodo(cargaHoraria.getGrupo().getCarrera(),	periodo));
+			datos.setCalendarios(calendarioService.buscarPorCargaHoraria(cargaHoraria));
+			datos.setCarga(cargaHoraria);
+			
+			List<DosificacionTemaDto> temaDto = new ArrayList<>();
+			for (UnidadTematica unidad : cargaHoraria.getMateria().getUnidadesTematicas()) {
 
-		// se buscan los cortes del periodo actual
-		// List<CorteEvaluativo> cortes = corteService.buscarPorPeriodo(periodo);
-		List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera(),
-				periodo);
-
-		// se consulta el calendario evaluacion para obtener a que corte pertenece que
-		// tema
-		List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHoraria(cargaActual);
-
-		// se crea una lista de temaDto
-		List<DosificacionTemaDto> temaDto = new ArrayList<>();
-		for (UnidadTematica unidad : cargaActual.getMateria().getUnidadesTematicas()) {
-
-			// se crea un objeto de temaDto y se rellena con la informacion necesaria
-			DosificacionTemaDto tema = new DosificacionTemaDto();
-			tema.setId(unidad.getId());
-			tema.setNombre(unidad.getNombre());
-
-			// en caso de existir un calendario que coincida con el tema se consulta y se
-			// agrega el corte perteneciente al DTO
-			for (CalendarioEvaluacion calendario : calendarios) {
-				if (unidad.getId().equals(calendario.getUnidadTematica().getId())) {
-					tema.setIdCorte(calendario.getCorteEvaluativo().getId());
+				DosificacionTemaDto tema = new DosificacionTemaDto();
+				tema.setId(unidad.getId());
+				tema.setNombre(unidad.getNombre());
+				tema.setConsecutivo(unidad.getConsecutivo());
+				
+				for (CalendarioEvaluacion calendario : datos.getCalendarios()) {
+					if (unidad.getId().equals(calendario.getUnidadTematica().getId())) {
+						tema.setIdCorte(calendario.getCorteEvaluativo().getId());
+					}
 				}
+					temaDto.add(tema);
 			}
-			temaDto.add(tema);
+			datos.setDosificacionTema(temaDto);
+			
+			fechasEntrega.add(datos);
 		}
+		
+		model.addAttribute("cargas", fechasEntrega);
 		model.addAttribute("cActual", cargaActual);
-		model.addAttribute("cortes", cortes);
-		model.addAttribute("unidades", temaDto);
 		return "fragments/modal-dosificacion:: editarFechasEntrega";
 	}
 
@@ -535,16 +542,27 @@ public class DosificacionController {
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = new Periodo(usuario.getPreferencias().getIdPeriodo());
 
-		List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera(),
-				periodo);
-		List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(cargaActual.getId(),
-				true);
-		List<Dosificacion> dosificaciones = dosificacionService.buscarPorIdCargaHoraria(cargaActual.getId());
+		List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera(), periodo);
 
-		model.addAttribute("dosificaciones", dosificaciones);
-		model.addAttribute("mecanismos", mecanismos);
-		model.addAttribute("cortes", cortes);
+		
+		List<ParcialDosificacionDTO> parciales = new ArrayList<>();
+		for (CorteEvaluativo corte : cortes) {
+			ParcialDosificacionDTO parcial = new ParcialDosificacionDTO();
+			parcial.setIdCorteEvaluativo(corte.getId());
+			parcial.setConsecutivoCorte(corte.getConsecutivo());
+			parcial.setIdCargaHoraria(cargaActual.getId());
+			parcial.setDosificacion(dosificacionService.buscarPorIdCargaHorariaEIdCorteEvaluativo(cargaActual.getId(), corte.getId()));
+			if (parcial.getDosificacion()==null) {
+				//en caso de que la dosificacion no se encuentre, se procede a buscar alguna dosificacion compartida
+				parcial.setDosificacion(dosificacionService.buscarImportadaPorCargaHoraria(cargaActual.getId(), corte.getId()));
+			}
+			
+			parcial.setInstrumentos(mecanismoService.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(cargaActual.getId(), corte.getId(), true));
+			parciales.add(parcial);
+		}
+		model.addAttribute("parciales", parciales);
 		model.addAttribute("cActual", cargaActual);
+		
 		return "fragments/modal-dosificacion:: InstrumentosDosificacion";
 	}
 

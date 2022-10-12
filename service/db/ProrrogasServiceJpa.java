@@ -108,4 +108,10 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 			TipoProrroga tipoProrroga, CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada) {
 		return prorrogaRepository.findByCargaHorariaAndTipoProrrogaAndCorteEvaluativoAndActivoAndAceptada(cargaHoraria, tipoProrroga, corteEvaluativo, activo, aceptada);
 	}
+
+	@Override
+	public Boolean existeDeCalificacionPorFechaYCargaHorariaYCorte(Date fecha, Integer cargaHoraria,
+			Integer corteEvaluativo) {
+		return prorrogaRepository.existsCalificacionByCargaAndDate(fecha, cargaHoraria, corteEvaluativo);
+	}
 }

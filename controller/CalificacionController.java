@@ -23,18 +23,15 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.CalificacionCorte;
 import edu.mx.utdelacosta.model.CalificacionMateria;
 import edu.mx.utdelacosta.model.CargaHoraria;
-import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Materia;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
-import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.Remedial;
 import edu.mx.utdelacosta.model.RemedialAlumno;
 import edu.mx.utdelacosta.model.Testimonio;
-import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoCalificacionDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoDTO;
@@ -54,6 +51,7 @@ import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IMateriasService;
 import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
+import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
@@ -118,6 +116,9 @@ public class CalificacionController {
 
 	@Autowired
 	private ITestimonioService testimonioService;
+	
+	@Autowired
+	private IPeriodosService periodoService;
 		
 	@Autowired
 	private ActualizarCalificacion actualizarCalificacion;
@@ -164,17 +165,31 @@ public class CalificacionController {
 					calificaciones.add(c);
 				}
 
-				Integer editable = calificacionCorteService.buscarRevalidadaPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(), idCarga, idCorte);
-				al.setRevalidada(editable!=null ? editable : 0);
 				al.setCalificaciones(calificaciones);
+
+				Integer editable = calificacionCorteService.buscarRevalidadaPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(), idCarga, idCorte);
+				al.setRevalidada(editable!=null ? editable : 1);
+				
 				Integer status = testimonioCorteService.validarSDPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(), idCarga, idCorte);
 				al.setStatus(status!=null ? status.toString() : "0");
-				al.setCalificacionTotal(
-						calificacionCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(
-								alumno.getId(), idCarga, idCorte).floatValue());
+				
+				al.setCalificacionTotal(calificacionCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(), idCarga, idCorte).floatValue());
 				alCalCorte.add(al);
+				
+				// se buscan los remediales y extraordinarios por alumno 
+				al.setRemedial(remedialAlumnoService.exsisteRemedialAlumno(alumno.getId(), idCarga, idCorte, 1));
+				al.setExtraordinario(remedialAlumnoService.exsisteRemedialAlumno(alumno.getId(), idCarga, idCorte, 2));
 			}
+			
+			Boolean corteValido =  corteEvaluativoService.buscarParcialConPlazoValido(new Date(), idCorte);
+			if (corteValido == false) {
+				corteValido = prorrogaService.existeDeCalificacionPorFechaYCargaHorariaYCorte(new Date(), idCarga, idCorte);
+			}
+			
 
+			model.addAttribute("corteValido", corteValido);
+			model.addAttribute("mecanismos", mecanismos);
+			model.addAttribute("corteValido", corteValido);
 			model.addAttribute("cActual", cargaActual.getId());
 			model.addAttribute("alumnos", alCalCorte);
 			model.addAttribute("calCorte", calificacionesCortes);
@@ -203,24 +218,6 @@ public class CalificacionController {
 		Integer idCargaHoraria = Integer.parseInt(obj.get("idCargaHoraria"));
 		Integer idAlumno = Integer.parseInt(obj.get("idAlumno"));
 		Integer idMecanismo = Integer.parseInt(obj.get("idInstrumento"));
-
-		Date fechaHoy = new Date();
-
-		// se busca el corte y las prorrogas para comprobar que se encuentra en periodo
-		// de calificaciones
-		CorteEvaluativo corteActual = corteEvaluativoService.buscarPorId(idCorteEvaluativo);
-
-		if (corteActual.getFechaFin().before(fechaHoy)) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
-					new CargaHoraria(idCargaHoraria), new CorteEvaluativo(idCorteEvaluativo), new TipoProrroga(1), true);
-			if (prorroga != null) {
-				if (prorroga.getFechaLimite().before(fechaHoy)) {
-					return "fechaLimit";
-				}
-			} else {
-				return "fechaLimit";
-			}
-		}
 
 		// se compara que el alumno no tenga un remedial pagado para eviatar editar la
 		// calificacion
@@ -283,17 +280,17 @@ public class CalificacionController {
 			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(grupoActual,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 
 			if (session.getAttribute("cargaActual") != null) {
-				int cargaActual = (Integer) session.getAttribute("cargaActual");
+				CargaHoraria cargaActual = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cargaActual"));
 
 				List<CorteEvaluativo> cortes = corteEvaluativoService
-						.buscarPorCarreraYPeriodo(new Carrera(usuario.getPreferencias().getIdCarrera()),new Periodo(usuario.getPreferencias().getIdPeriodo()));
+						.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera(),new Periodo(usuario.getPreferencias().getIdPeriodo()));
 				if (session.getAttribute("parcialActual") != null) {
 					int parcialActual = (Integer) session.getAttribute("parcialActual");
 
 					if (parcialActual > 0) {
 						List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(grupoActual);
 						List<MecanismoInstrumento> mecanismoInstrumento = mecanismoService
-								.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(cargaActual, parcialActual, true);
+								.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(cargaActual.getId(), parcialActual, true);
 						List<CalificacionParcialDTO> calificaciones = new ArrayList<>();
 						for (Alumno alumno : alumnos) {
 							CalificacionParcialDTO calificacion = new CalificacionParcialDTO();
@@ -302,16 +299,16 @@ public class CalificacionController {
 							
 							List<CalificacionInstrumentoDTO> mecanismos = new ArrayList<>();
 							for (MecanismoInstrumento meca : mecanismoInstrumento) {
-								CalificacionInstrumentoDTO cali = calificacionService.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual, parcialActual, meca.getInstrumento().getId());
+								CalificacionInstrumentoDTO cali = calificacionService.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual.getId(), parcialActual, meca.getInstrumento().getId());
 								mecanismos.add(cali);
 							}
 							
 							calificacion.setMecanismos(mecanismos);
 							calificacion.setCalificacionOrdinaria(calificacionCorteService
 									.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(),
-											cargaActual, parcialActual).floatValue());
+											cargaActual.getId(), parcialActual).floatValue());
 							RemedialAlumno rem = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
-									alumno, new CargaHoraria(cargaActual), new Remedial(1),
+									alumno, cargaActual, new Remedial(1),
 									new CorteEvaluativo(parcialActual));
 							if (rem != null) {
 								calificacion.setCalificacionRemedial(rem.getTestimonio().getNumero());
@@ -319,7 +316,7 @@ public class CalificacionController {
 								calificacion.setCalificacionRemedial(0);
 							}
 							RemedialAlumno ex = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
-									alumno, new CargaHoraria(cargaActual), new Remedial(2),
+									alumno, cargaActual, new Remedial(2),
 									new CorteEvaluativo(parcialActual));
 							if (ex != null) {
 								calificacion.setCalificacionExtraordinario(ex.getTestimonio().getNumero());
@@ -341,7 +338,7 @@ public class CalificacionController {
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
 			model.addAttribute("cargas", cargasHorarias);
 		}
-		
+		model.addAttribute("cuatrimestre", periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo()).getNombre());
 		model.addAttribute("utName", NOMBRE_UT);
 		model.addAttribute("grupos", grupos);
 		return "profesor/reporteCalificaciones";
@@ -360,9 +357,9 @@ public class CalificacionController {
 			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(grupoActual,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 
 			if (session.getAttribute("cargaActual") != null && (Integer) session.getAttribute("cargaActual") > 0) {
-				int cargaActual = (Integer) session.getAttribute("cargaActual");
+				CargaHoraria cargaActual = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cargaActual"));
 				List<CorteEvaluativo> cortes = corteEvaluativoService
-						.buscarPorCarreraYPeriodo(new Carrera(usuario.getPreferencias().getIdCarrera()),new Periodo(usuario.getPreferencias().getIdPeriodo()));
+						.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera(),new Periodo(usuario.getPreferencias().getIdPeriodo()));
 
 				List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(grupoActual);
 				List<AlumnoCalificacionDTO> calificaciones = new ArrayList<>();
@@ -376,9 +373,9 @@ public class CalificacionController {
 						CalificacionDTO cali = new CalificacionDTO();
 						cali.setCaliCorte(
 								calificacionCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(
-										alumno.getId(), cargaActual, corte.getId()).floatValue());
+										alumno.getId(), cargaActual.getId(), corte.getId()).floatValue());
 						RemedialAlumno remedial = remedialAlumnoService
-								.buscarUltimoPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(), cargaActual,
+								.buscarUltimoPorAlumnoYCargaHorariaYCorteEvaluativo(alumno.getId(), cargaActual.getId(),
 										corte.getId());
 						if (remedial != null) {
 							if (remedial.getRemedial().getId() == 1) {
@@ -392,8 +389,7 @@ public class CalificacionController {
 						cal.add(cali);
 					}
 					calificacion.setCalificaciones(cal);
-					CalificacionMateria cm = calificacionMateriaService.buscarPorCargayAlumno(new CargaHoraria(cargaActual),
-							alumno);
+					CalificacionMateria cm = calificacionMateriaService.buscarPorCargayAlumno(cargaActual, alumno);
 					if (cm != null) {
 						calificacion.setCalificacionTotal(cm.getCalificacion());
 						calificacion.setStatus(cm.getEstatus());
@@ -406,7 +402,7 @@ public class CalificacionController {
 
 				model.addAttribute("alumnos", calificaciones);
 
-				model.addAttribute("cargaActual", cargaActual);
+				model.addAttribute("cargaActual", cargaActual.getId());
 				model.addAttribute("cortes", cortes);
 			}
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
