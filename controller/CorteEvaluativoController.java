@@ -51,21 +51,23 @@ public class CorteEvaluativoController {
 	@ResponseBody
 	public String agregar(@RequestBody Map<String, String> obj, HttpSession session) {
 		//se toman las variables que se envian del formulario
-		Date fc1 = Date.valueOf(obj.get("fc1"));
-		Date fc2 = Date.valueOf(obj.get("fc2"));
-		Date ff1 = Date.valueOf(obj.get("ff1"));
-		Date ff2 = Date.valueOf(obj.get("ff2"));
-		Date ir1 = Date.valueOf(obj.get("ir1"));
-		Date ir2 = Date.valueOf(obj.get("ir2"));
-		Date fr1 = Date.valueOf(obj.get("fr1"));
-		Date fr2 = Date.valueOf(obj.get("fr2"));
-		Date iex1 = Date.valueOf(obj.get("ie1"));
-		Date iex2 = Date.valueOf(obj.get("ie2"));
-		Date fex1 = Date.valueOf(obj.get("fe1"));
-		Date fex2 = Date.valueOf(obj.get("fe2"));
-		Date iev = Date.valueOf(obj.get("iev"));
-		Date fev = Date.valueOf(obj.get("fev"));
-		Date fd = Date.valueOf(obj.get("fd"));
+		Date fc1 = Date.valueOf(obj.get("fc1")); //fecha de inicio de periodo 1
+		Date fc2 = Date.valueOf(obj.get("fc2")); //fecha de inicio de periodo 2
+		Date ff1 = Date.valueOf(obj.get("ff1")); //fecha fin de periodo 1
+		Date ff2 = Date.valueOf(obj.get("ff2")); //fecha fin de periodo 2
+		Date ir1 = Date.valueOf(obj.get("ir1")); //fecha inicio remedial 1
+		Date ir2 = Date.valueOf(obj.get("ir2")); //fecha inicio remedial 2
+		Date fr1 = Date.valueOf(obj.get("fr1")); //fecha fin remedial 1
+		Date fr2 = Date.valueOf(obj.get("fr2")); //fecha fin remedial 2
+		Date iex1 = Date.valueOf(obj.get("ie1")); //fecha inicio extraordinario  1
+		Date iex2 = Date.valueOf(obj.get("ie2")); //fecha inicio extraordinario  2
+		Date fex1 = Date.valueOf(obj.get("fe1")); //fecha fin extraordinario 1
+		Date fex2 = Date.valueOf(obj.get("fe2")); //fecha fin extraordinario 2
+		Date iev = Date.valueOf(obj.get("iev"));  //fecha inicio evauaciones docentes
+		Date fev = Date.valueOf(obj.get("fev"));  //fecha fin evaluaciones docentes	
+		Date fd = Date.valueOf(obj.get("fd"));  //fecha limite captura programacion asig
+		Date flc1 = Date.valueOf(obj.get("flc1")); //fecha limite captura periodo 1
+		Date flc2 = Date.valueOf(obj.get("flc2")); //fecha limite captura periodo 2
 		//creamos el usuario de acuerdo a la authenticación 
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona")); 
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
@@ -96,6 +98,7 @@ public class CorteEvaluativoController {
 			corteEvaluativo1.setFechaAsistencia(ff1);
 			corteEvaluativo1.setConsecutivo(1);
 			corteEvaluativo1.setFechaDosificacion(fd);
+			corteEvaluativo1.setLimiteCaptura(flc1);
 			Carrera carrera1 = carrerasServices.buscarPorId(carreras.get(i).getId());
 			corteEvaluativo1.setCarrera(carrera1);
 			corteEvaluativoService.guardar(corteEvaluativo1);
@@ -112,6 +115,7 @@ public class CorteEvaluativoController {
 			corteEvaluativo2.setFechaAsistencia(ff2);
 			corteEvaluativo2.setConsecutivo(2);
 			corteEvaluativo2.setFechaDosificacion(fd);
+			corteEvaluativo2.setLimiteCaptura(flc2);
 			Carrera carrera2 = carrerasServices.buscarPorId(carreras.get(i).getId());
 			corteEvaluativo2.setCarrera(carrera2);
 			corteEvaluativoService.guardar(corteEvaluativo2);

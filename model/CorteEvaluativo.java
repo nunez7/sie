@@ -82,8 +82,12 @@ public class CorteEvaluativo {
 	@Temporal(TemporalType.DATE) 
 	@DateTimeFormat(pattern = "dd/MM/yyyy") 
 	@Column(name = "fecha_dosificacion") 
-
 	private Date fechaDosificacion;
+	
+	@Temporal(TemporalType.DATE) 
+	@DateTimeFormat(pattern = "dd/MM/yyyy") 
+	@Column(name = "limite_captura") 
+	private Date limiteCaptura;
 
 	public CorteEvaluativo() {
 	}
@@ -204,4 +208,12 @@ public class CorteEvaluativo {
 		this.fechaDosificacion = fechaDosificacion;
 	}
 
+	public Date getLimiteCaptura() {
+		return limiteCaptura;
+	}
+
+	public void setLimiteCaptura(Date limiteCaptura) {
+		this.limiteCaptura = limiteCaptura;
+	}
+	
 }
