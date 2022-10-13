@@ -76,7 +76,7 @@ public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 	Integer countPendientesByPersonaCarreraAndPeriodo(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT EXISTS (SELECT * FROM prorroga p "
-			+ "WHERE fecha_limite <= :fecha "
+			+ "WHERE fecha_limite >= :fecha "
 			+ "AND id_corte_evaluativo = :corte AND id_carga_horaria = :carga "
 			+ "AND p.activo = TRUE AND aceptada = TRUE AND id_tipo_prorroga = 1)", nativeQuery = true)
 	Boolean existsCalificacionByCargaAndDate(@Param("fecha") Date fecha, @Param("carga") Integer cargaHoraria, @Param("corte") Integer corteEvaluativo);

@@ -186,7 +186,6 @@ public class CalificacionController {
 				corteValido = prorrogaService.existeDeCalificacionPorFechaYCargaHorariaYCorte(new Date(), idCarga, idCorte);
 			}
 			
-
 			model.addAttribute("corteValido", corteValido);
 			model.addAttribute("mecanismos", mecanismos);
 			model.addAttribute("corteValido", corteValido);
@@ -279,7 +278,7 @@ public class CalificacionController {
 			grupoActual = (Integer) session.getAttribute("grupoActual");
 			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(grupoActual,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 
-			if (session.getAttribute("cargaActual") != null) {
+			if (session.getAttribute("cargaActual") != null  && (Integer) session.getAttribute("cargaActual")!=0) {
 				CargaHoraria cargaActual = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cargaActual"));
 
 				List<CorteEvaluativo> cortes = corteEvaluativoService

@@ -309,8 +309,7 @@ public class AsistenciaController {
 			List<CargaHoraria> cargasHorarias = null;	
 			cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(cveGrupo, persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 			List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cveGrupo);
-			
-			if (session.getAttribute("cargaActual")!=null) {
+			if (session.getAttribute("cargaActual")!=null && (Integer) session.getAttribute("cargaActual")!=0) {
 				CargaHoraria cveCarga = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cargaActual"));
 				
 				List<CorteEvaluativo> cortesEvaluativos = corteService.buscarPorCarreraYPeriodo(cveCarga.getGrupo().getCarrera(),new Periodo(usuario.getPreferencias().getIdPeriodo()));

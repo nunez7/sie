@@ -438,13 +438,13 @@ public class ProfesorController {
 			grupoActual= (Integer) session.getAttribute("grupoActual");
 			List<CargaHoraria> cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(grupoActual,persona.getId() ,usuario.getPreferencias().getIdPeriodo());
 			
-			if (session.getAttribute("cargaActual")!=null) {
+			if (session.getAttribute("cargaActual")!=null  && (Integer) session.getAttribute("cargaActual")!=0) {
 				//se crea la carga
 				CargaHoraria cargaActual = cargaService.buscarPorIdCarga((Integer)session.getAttribute("cargaActual"));
 				
 				//se crea la lista de alumnos y se obtienen los cortes
 				Integer alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(grupoActual).size();
-				List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(new Carrera(usuario.getPreferencias().getIdCarrera()),new Periodo(usuario.getPreferencias().getIdPeriodo()));
+				List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera(),new Periodo(usuario.getPreferencias().getIdPeriodo()));
 				
 				//se crea la lista de indicadores
 				List<IndicadorProfesorDTO> indicadoresSD = new ArrayList<>();
