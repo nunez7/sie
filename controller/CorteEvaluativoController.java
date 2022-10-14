@@ -1,8 +1,6 @@
 package edu.mx.utdelacosta.controller;
 
-import java.sql.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
@@ -20,6 +18,7 @@ import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.model.dto.parcialesDTO;
 import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IPeriodosService;
@@ -49,25 +48,7 @@ public class CorteEvaluativoController {
 
 	@PostMapping(path = "/agregar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String agregar(@RequestBody Map<String, String> obj, HttpSession session) {
-		//se toman las variables que se envian del formulario
-		Date fc1 = Date.valueOf(obj.get("fc1")); //fecha de inicio de periodo 1
-		Date fc2 = Date.valueOf(obj.get("fc2")); //fecha de inicio de periodo 2
-		Date ff1 = Date.valueOf(obj.get("ff1")); //fecha fin de periodo 1
-		Date ff2 = Date.valueOf(obj.get("ff2")); //fecha fin de periodo 2
-		Date ir1 = Date.valueOf(obj.get("ir1")); //fecha inicio remedial 1
-		Date ir2 = Date.valueOf(obj.get("ir2")); //fecha inicio remedial 2
-		Date fr1 = Date.valueOf(obj.get("fr1")); //fecha fin remedial 1
-		Date fr2 = Date.valueOf(obj.get("fr2")); //fecha fin remedial 2
-		Date iex1 = Date.valueOf(obj.get("ie1")); //fecha inicio extraordinario  1
-		Date iex2 = Date.valueOf(obj.get("ie2")); //fecha inicio extraordinario  2
-		Date fex1 = Date.valueOf(obj.get("fe1")); //fecha fin extraordinario 1
-		Date fex2 = Date.valueOf(obj.get("fe2")); //fecha fin extraordinario 2
-		Date iev = Date.valueOf(obj.get("iev"));  //fecha inicio evauaciones docentes
-		Date fev = Date.valueOf(obj.get("fev"));  //fecha fin evaluaciones docentes	
-		Date fd = Date.valueOf(obj.get("fd"));  //fecha limite captura programacion asig
-		Date flc1 = Date.valueOf(obj.get("flc1")); //fecha limite captura periodo 1
-		Date flc2 = Date.valueOf(obj.get("flc2")); //fecha limite captura periodo 2
+	public String agregar(@RequestBody parcialesDTO  dto, HttpSession session) {
 		//creamos el usuario de acuerdo a la authenticación 
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona")); 
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
@@ -87,35 +68,39 @@ public class CorteEvaluativoController {
 			}
 			
 			corteEvaluativo1.setPeriodo(periodo);
-			corteEvaluativo1.setFechaInicio(fc1);
-			corteEvaluativo1.setFechaFin(ff1);
-			corteEvaluativo1.setInicioRemedial(ir1);
-			corteEvaluativo1.setFinRemedial(fr1);
-			corteEvaluativo1.setInicioExtraordinario(iex1);
-			corteEvaluativo1.setFinExtraordinario(fex1);
-			corteEvaluativo1.setInicioEvaluaciones(iev);
-			corteEvaluativo1.setFinEvaluaciones(fev);
-			corteEvaluativo1.setFechaAsistencia(ff1);
+			corteEvaluativo1.setFechaInicio(dto.getFc1());
+			corteEvaluativo1.setFechaFin(dto.getFf1());
+			corteEvaluativo1.setInicioRemedial(dto.getIr1());
+			corteEvaluativo1.setFinRemedial(dto.getFr1());
+			corteEvaluativo1.setInicioExtraordinario(dto.getIe1());
+			corteEvaluativo1.setFinExtraordinario(dto.getFe1());
+			corteEvaluativo1.setInicioEvaluaciones(dto.getIev());
+			corteEvaluativo1.setFinEvaluaciones(dto.getFev());
+			corteEvaluativo1.setFechaAsistencia(dto.getFc1());
 			corteEvaluativo1.setConsecutivo(1);
-			corteEvaluativo1.setFechaDosificacion(fd);
-			corteEvaluativo1.setLimiteCaptura(flc1);
+			corteEvaluativo1.setFechaDosificacion(dto.getFd());
+			corteEvaluativo1.setLimiteCaptura(dto.getFlc1());//captura de calificaciones
+			corteEvaluativo1.setLimiteRemedial(dto.getFcr1());//limite captura de remediales
+			corteEvaluativo1.setLimiteExtraordinario(dto.getFce1());
 			Carrera carrera1 = carrerasServices.buscarPorId(carreras.get(i).getId());
 			corteEvaluativo1.setCarrera(carrera1);
 			corteEvaluativoService.guardar(corteEvaluativo1);
 			//inserta el segundo corte evaluativo
 			corteEvaluativo2.setPeriodo(periodo);
-			corteEvaluativo2.setFechaInicio(fc2);
-			corteEvaluativo2.setFechaFin(ff2);
-			corteEvaluativo2.setInicioRemedial(ir2);
-			corteEvaluativo2.setFinRemedial(fr2);
-			corteEvaluativo2.setInicioExtraordinario(iex2);
-			corteEvaluativo2.setFinExtraordinario(fex2);
-			corteEvaluativo2.setInicioEvaluaciones(iev);
-			corteEvaluativo2.setFinEvaluaciones(fev);
-			corteEvaluativo2.setFechaAsistencia(ff2);
+			corteEvaluativo2.setFechaInicio(dto.getFc2());
+			corteEvaluativo2.setFechaFin(dto.getFf2());
+			corteEvaluativo2.setInicioRemedial(dto.getIr2());
+			corteEvaluativo2.setFinRemedial(dto.getFr2());
+			corteEvaluativo2.setInicioExtraordinario(dto.getIe2());
+			corteEvaluativo2.setFinExtraordinario(dto.getFe2());
+			corteEvaluativo2.setInicioEvaluaciones(dto.getIev());
+			corteEvaluativo2.setFinEvaluaciones(dto.getFev());
+			corteEvaluativo2.setFechaAsistencia(dto.getFf2());
 			corteEvaluativo2.setConsecutivo(2);
-			corteEvaluativo2.setFechaDosificacion(fd);
-			corteEvaluativo2.setLimiteCaptura(flc2);
+			corteEvaluativo2.setFechaDosificacion(dto.getFd());
+			corteEvaluativo2.setLimiteCaptura(dto.getFlc2());//captura de calificaciones
+			corteEvaluativo2.setLimiteRemedial(dto.getFcr2());//limite captura de remediales
+			corteEvaluativo2.setLimiteExtraordinario(dto.getFce2());
 			Carrera carrera2 = carrerasServices.buscarPorId(carreras.get(i).getId());
 			corteEvaluativo2.setCarrera(carrera2);
 			corteEvaluativoService.guardar(corteEvaluativo2);
