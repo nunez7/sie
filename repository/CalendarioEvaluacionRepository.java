@@ -18,7 +18,11 @@ public interface CalendarioEvaluacionRepository extends CrudRepository<Calendari
 	
 	CalendarioEvaluacion findByCargaHorariaAndUnidadTematica(CargaHoraria carga, UnidadTematica unidad);
 	
-	List<CalendarioEvaluacion> findByCargaHorariaAndCorteEvaluativo(CargaHoraria carga, CorteEvaluativo corte);
+	@Query(value = "SELECT * FROM calendario_evaluacion ce "
+			+ "	INNER JOIN unidades_tematicas ut ON ce.id_unidad_tematica = ut.id "
+			+ "	WHERE id_carga_horaria = :carga AND id_corte_evaluativo = :periodo "
+			+ "	ORDER BY ut.consecutivo ", nativeQuery = true)
+	List<CalendarioEvaluacion> findByCargaHorariaAndCorteEvaluativo(@Param("carga") CargaHoraria carga, @Param("periodo") CorteEvaluativo corte);
 	
 	List<CalendarioEvaluacion> findByCargaHoraria(CargaHoraria cargaHoraria);
 	
