@@ -236,6 +236,8 @@ public class DosificacionController {
 
 		for (CalendarioEvaluacion calendarioEvaluacion : calendarios) {
 			for (TemaUnidad temaUnidad : calendarioEvaluacion.getUnidadTematica().getTemasUnidad()) {
+				if (temaUnidad.getActivo() == true) {
+					
 				DosificacionTema tema = dosiTemaService.buscarPorTemaYDosificacion(temaUnidad, dosificacion);
 				if (tema == null) {
 					tema = new DosificacionTema();
@@ -252,6 +254,7 @@ public class DosificacionController {
 					tema.setFechaInicio(java.sql.Date.valueOf(obj.get("fi" + temaUnidad.getId())));
 					tema.setFechaFin(java.sql.Date.valueOf(obj.get("ff" + temaUnidad.getId())));
 					dosiTemaService.guardar(tema);
+				}
 				}
 			}
 		}
@@ -284,6 +287,9 @@ public class DosificacionController {
 			List<DosificacionTemaDto> temasDto = new ArrayList<>();
 			for (UnidadTematica unidad : cargaActual.getMateria().getUnidadesTematicas()) {
 				for (TemaUnidad temaU : unidad.getTemasUnidad()) {
+					
+					if (temaU.getActivo()==true) {
+					
 					DosificacionTemaDto temaDto = new DosificacionTemaDto();
 					temaDto.setId(temaU.getId());
 					temaDto.setIdUnidad(unidad.getId());
@@ -299,6 +305,8 @@ public class DosificacionController {
 						}
 					}
 					temasDto.add(temaDto);
+					
+					}
 				}
 			}
 			model.addAttribute("temasDto", temasDto);
