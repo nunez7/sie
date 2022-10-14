@@ -89,6 +89,16 @@ public class CorteEvaluativo {
 	@Column(name = "limite_captura") 
 	private Date limiteCaptura;
 
+	@Temporal(TemporalType.DATE) 
+	@DateTimeFormat(pattern = "dd/MM/yyyy") 
+	@Column(name = "limite_remedial") 
+	private Date limiteRemedial;
+	
+	@Temporal(TemporalType.DATE) 
+	@DateTimeFormat(pattern = "dd/MM/yyyy") 
+	@Column(name = "limite_extraordinario") 
+	private Date limiteExtraordinario;
+
 	public CorteEvaluativo() {
 	}
 
@@ -214,6 +224,22 @@ public class CorteEvaluativo {
 
 	public void setLimiteCaptura(Date limiteCaptura) {
 		this.limiteCaptura = limiteCaptura;
+	}
+
+	public Date getLimiteRemedial() {
+		return limiteRemedial;
+	}
+
+	public void setLimiteRemedial(Date limiteRemedial) {
+		this.limiteRemedial = limiteRemedial;
+	}
+
+	public Date getLimiteExtraordinario() {
+		return limiteExtraordinario;
+	}
+
+	public void setLimiteExtraordinario(Date limiteExtraordinario) {
+		this.limiteExtraordinario = limiteExtraordinario;
 	}
 	
 }
