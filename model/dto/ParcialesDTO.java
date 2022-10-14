@@ -2,7 +2,7 @@ package edu.mx.utdelacosta.model.dto;
 
 import java.util.Date;
 
-public class parcialesDTO {
+public class ParcialesDTO {
 
 	private Integer idCorte;
 	private Integer consecutivo;

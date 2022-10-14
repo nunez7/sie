@@ -18,7 +18,7 @@ import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Usuario;
-import edu.mx.utdelacosta.model.dto.parcialesDTO;
+import edu.mx.utdelacosta.model.dto.ParcialesDTO;
 import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IPeriodosService;
@@ -48,7 +48,7 @@ public class CorteEvaluativoController {
 
 	@PostMapping(path = "/agregar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String agregar(@RequestBody parcialesDTO  dto, HttpSession session) {
+	public String agregar(@RequestBody ParcialesDTO  dto, HttpSession session) {
 		//creamos el usuario de acuerdo a la authenticación 
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona")); 
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
