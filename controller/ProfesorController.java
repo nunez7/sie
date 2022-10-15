@@ -349,7 +349,11 @@ public class ProfesorController {
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		List<Carrera> carreras = serviceCarrera.buscarCarrerasPorPersonaYPeriodo(persona.getId(), periodo.getId());
-		List<CorteEvaluativo> corte = corteService.buscarPorCarreraYPeriodo(new Carrera(usuario.getPreferencias().getIdCarrera()) ,periodo);
+		List<CorteEvaluativo> corte = null;
+		if (carreras.size()>0) {
+			corte = corteService.buscarPorCarreraYPeriodo(carreras.get(0) ,periodo);
+		}
+		System.err.println("carrea"+usuario.getPreferencias().getIdCarrera()+"periodo: "+periodo.getId());
 		model.addAttribute("carreraActual", usuario.getPreferencias().getIdCarrera());
 		model.addAttribute("carreras", carreras);
 		model.addAttribute("cortes", corte);
