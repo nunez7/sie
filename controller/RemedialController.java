@@ -98,7 +98,7 @@ public class RemedialController {
 		// se compara el tipo de remdial, si es remedial o extraordinario
 		if (tipo.equals("remedial")) {
 			// se busca si el periodo de remediales esta activo
-			if (fechaHoy.before(corte.getInicioRemedial()) || fechaHoy.after(corte.getFinRemedial())) {
+			if (fechaHoy.before(corte.getInicioRemedial()) || fechaHoy.after(corte.getLimiteRemedial())) {
 				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
 						new CargaHoraria(idCarga),corte,new TipoProrroga(1), true);
 				if (prorroga != null) {
@@ -150,7 +150,7 @@ public class RemedialController {
 		}
 
 		if (tipo.equals("extraordinario")) {
-			if (fechaHoy.before(corte.getInicioEvaluaciones()) && fechaHoy.after(corte.getFinExtraordinario())) {
+			if (fechaHoy.before(corte.getInicioEvaluaciones()) && fechaHoy.after(corte.getLimiteExtraordinario())) {
 				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
 						new CargaHoraria(idCarga),corte,new TipoProrroga(1), true);
 				if (prorroga != null) {

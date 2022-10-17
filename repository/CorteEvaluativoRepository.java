@@ -59,6 +59,6 @@ List<CorteEvaluativo> findByPeriodoAndCarreraOrderByFechaInicioAsc(Periodo perio
 	@Query(value = "SELECT EXISTS(SELECT id "
 			+ "				  FROM cortes_evaluativos ce "
 			+ "				  WHERE ce.id = :idCorte "
-			+ "				  AND ce.fecha_inicio <= :fecha AND ce.fecha_fin >= :fecha)	", nativeQuery = true)
+			+ "				  AND ce.fecha_inicio <= :fecha AND ce.limite_captura >= :fecha)	", nativeQuery = true)
 	Boolean findPlazoEntregaParcial(@Param("fecha") Date fecha, @Param("idCorte") Integer idCorte);
 }
