@@ -1323,7 +1323,7 @@ public class TutorController {
 			model.addAttribute("dias", dias);			
 			
 			//formato de hora 				
-			DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss"); 
+			DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss"); 
 			
 			//Se extrae una lista de las horas unicas de la lista de horas asociadas al grupo			
 			List<Horario> horas = serviceHorario.buscarPorGrupoDistinctPorHoraInicio(cveGrupo);
@@ -1336,7 +1336,7 @@ public class TutorController {
 			for (Horario hora : horas) {
 														
 				for (Dia dia : dias) {
-					String horaI = dateFormat.format(hora.getHoraInicio());				
+					String horaI = dateFormat.format(hora.getHoraInicio());		
 					//se genera el horario al comparar la lista de horas únicas y la lista de días 						
 					List<Horario> horario = serviceHorario.buscarPorHoraInicioDiaYGrupo(horaI, dia.getId(), cveGrupo);						
 					for(Horario hr : horario) {
