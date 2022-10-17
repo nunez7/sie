@@ -502,7 +502,8 @@ public class DosificacionController {
 			
 			List<DosificacionTemaDto> temaDto = new ArrayList<>();
 			for (UnidadTematica unidad : cargaHoraria.getMateria().getUnidadesTematicas()) {
-
+				if (unidad.getActivo() == true) {
+					
 				DosificacionTemaDto tema = new DosificacionTemaDto();
 				tema.setId(unidad.getId());
 				tema.setNombre(unidad.getNombre());
@@ -514,6 +515,7 @@ public class DosificacionController {
 					}
 				}
 					temaDto.add(tema);
+				}
 			}
 			datos.setDosificacionTema(temaDto);
 			
