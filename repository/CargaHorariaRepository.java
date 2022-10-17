@@ -12,7 +12,7 @@ import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 
 public interface CargaHorariaRepository extends JpaRepository<CargaHoraria, Integer> {
-	List<CargaHoraria> findByGrupoAndActivoTrue(Grupo grupo);
+	List<CargaHoraria> findByGrupoAndActivoTrueAndMateriaCurricularTrueAndMateriaCalificacionTrue(Grupo grupo);
 
 	// busca la carga horaria por materia y periodo
 	@Query(value = "SELECT * FROM cargas_horarias "

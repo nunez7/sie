@@ -23,7 +23,7 @@ public class CargaHorariaServiceJpa implements  ICargaHorariaService{
 	@Override
 	@Transactional(readOnly = true)
 	public List<CargaHoraria> buscarPorGrupo(Grupo grupo) {
-		return cargaHorariasRepository.findByGrupoAndActivoTrue(grupo);
+		return cargaHorariasRepository.findByGrupoAndActivoTrueAndMateriaCurricularTrueAndMateriaCalificacionTrue(grupo);
 	}
 
 	@Override
