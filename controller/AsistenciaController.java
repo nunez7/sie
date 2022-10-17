@@ -122,7 +122,7 @@ public class AsistenciaController {
 		// ---------------
 
 		//se busca que la fecha actual no sobrepase el limite de captura de asistencias 
-		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(fechaHoy, carga.getPeriodo().getId(), carga.getGrupo().getCarrera().getId());
+		CorteEvaluativo corte = corteService.buscarPorFechaAsistenciaYLimiteCaptura(fechaHoy, carga.getPeriodo(), carga.getGrupo().getCarrera());
 		if (corte == null) {
 			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYActivoYAceptada(carga, new TipoProrroga(2), true, true);
 			if (prorroga != null) {

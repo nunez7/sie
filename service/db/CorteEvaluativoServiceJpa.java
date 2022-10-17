@@ -65,8 +65,8 @@ public class CorteEvaluativoServiceJpa implements ICorteEvaluativoService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public CorteEvaluativo buscarPorFechaAsistenciaMayorQueYPeriodo(Date fechaAsistencia, Periodo periodo) {
-		return corteEvaluativoRepository.findByFechaAsistenciaGreaterThanEqualAndPeriodo(fechaAsistencia, periodo);
+	public CorteEvaluativo buscarPorFechaAsistenciaYLimiteCaptura(Date fechaAsistencia, Periodo periodo, Carrera carrera) {
+		return corteEvaluativoRepository.findByFechaAsistenciaAndLimiteCaptura(fechaAsistencia, periodo, carrera);
 	}
 	
 	@Override
