@@ -99,22 +99,23 @@ public class BanamexController {
 		FileReader fr = null;
 		try {
 			fr = new FileReader(archivo);
-			BufferedReader br = new BufferedReader(fr);
-			String linea = "";
-			//se lee la linea 
-			while((linea = br.readLine()) != null) {
-				if(!linea.isEmpty()) {
-					//se parte la linea para extraer los datos
-					String [] cadena = linea.split("\\|");
-					//preguntamos si la cadena es de 10 posiciones para saber que es una cadena de pago
-					if(cadena.length == 10) {
-						//se compara para que sea la referencia y no la comprobación del pago
-						if(cadena[7].length() > 20) {
-							//fecha, referencia, cajero, importe y tipo de pago
-							generarFolio(cadena[1], cadena[7], cajero, cadena[8].replace(",", ""), 2);
+			try (BufferedReader br = new BufferedReader(fr)) {
+				String linea = "";
+				//se lee la linea 
+				while((linea = br.readLine()) != null) {
+					if(!linea.isEmpty()) {
+						//se parte la linea para extraer los datos
+						String [] cadena = linea.split("\\|");
+						//preguntamos si la cadena es de 10 posiciones para saber que es una cadena de pago
+						if(cadena.length == 10) {
+							//se compara para que sea la referencia y no la comprobación del pago
+							if(cadena[7].length() > 20) {
+								//fecha, referencia, cajero, importe y tipo de pago
+								generarFolio(cadena[1], cadena[7], cajero, cadena[8].replace(",", ""), 2);
+							}
 						}
+						
 					}
-					
 				}
 			}
 		} catch (Exception e) {
