@@ -170,7 +170,7 @@ public class AsistenteController {
 	@Autowired
 	private IPeriodosService periodoService;
   
-  @Autowired
+	@Autowired
 	private IRemedialAlumnoService remedialAlumnoService;
 	
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";

@@ -564,7 +564,6 @@ public class EncuestasController {
 		
 		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");
 		Evaluacion evaluacion = null;
-		System.err.println(cveGrupo);
 		if (cveGrupo != null) {			
 			//se valida si el cuatrimestre al que pertenece el grupo seleccionado
 			Grupo grupo = serviceGrupo.buscarPorId(cveGrupo);

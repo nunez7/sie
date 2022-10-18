@@ -95,6 +95,7 @@ import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IPreguntaService;
 import edu.mx.utdelacosta.service.IProgramacionTutoriaService;
+import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionInicialService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionTutorService;
 import edu.mx.utdelacosta.service.IServicioService;
@@ -211,6 +212,9 @@ public class TutorController {
 	
 	@Autowired
 	private IServicioService servicioService;
+	
+	@Autowired
+	private IRemedialAlumnoService remedialAlumnoService;
 
     @GetMapping("/cargar-alumno/{dato}")
    	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato,  Model model, HttpSession session, Authentication auth) { 
@@ -1490,7 +1494,7 @@ public class TutorController {
 					AlumnoPromedioDTO alumnoDTO = new AlumnoPromedioDTO();
 					//se rellena el alumno y sus calificaciones
 					alumnoDTO.setIdAlumno(alumno.getId());
-					alumnoDTO.setNombre(alumno.getPersona().getNombreCompleto());
+					alumnoDTO.setNombre(alumno.getPersona().getNombreCompletoPorApellido());
 					List<IndicadorMateriaDTO> indicadoresMaterias = new ArrayList<IndicadorMateriaDTO>();
 					for (CargaHoraria ch : cargaHorarias) {
 						IndicadorMateriaDTO im = new IndicadorMateriaDTO();
@@ -1509,6 +1513,9 @@ public class TutorController {
 							ip.setIdMateria(ch.getMateria().getId());
 							ip.setParcial(c.getId());
 							ip.setPromedio(calificacionTotal);
+							// para guardar si tiene remediales o extraordinarios
+							ip.setRemediales(remedialAlumnoService.buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(alumno.getId(), ch.getId(), c.getId(), 1));
+							ip.setExtraordinarios(remedialAlumnoService.buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(alumno.getId(), ch.getId(), c.getId(), 2));
 							// se agrega el objeto a la lista de indicador parcial
 							indicaroresParcial.add(ip);
 						}
