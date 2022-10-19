@@ -20,10 +20,15 @@ public interface ICorteEvaluativoService {
 	CorteEvaluativo buscarPorId(Integer id);
 	
 	List<CorteEvaluativo> buscarPorPeriodo(Periodo periodo);
-	CorteEvaluativo buscarPorFechaAsistenciaYLimiteCaptura(Date fechaAsistencia, Periodo periodo, Carrera carrera);
-	CorteEvaluativo buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(Date fecha, Integer periodo, Integer carrera);
+	
+	CorteEvaluativo buscarPorCorteYLimiteCaptura(Date fecha, CorteEvaluativo corte);
+	
+	CorteEvaluativo buscarPorFechaInicioYFechaFinYPeriodoYCarrera(Date fecha, Periodo periodo, Carrera carrera);
+	
 	CorteEvaluativo buscarPorFechaInicioMenorQueYFinEvaluacionesMayorQueYPeriodoYCarrera(Date fechaInicio, Date fechaFin, Periodo periodo, Carrera carrera);
+	
 	CorteEvaluativo buscarPorInicioRemedialMenorQueYFinRemedialMayorQueYPeriodoYCarrera(Date fechaInicio, Date fechaFin, Periodo periodo, Carrera carrera);
+	
 	CorteEvaluativo buscarPorInicioExtraordinarioMenorQueYFinExtraordinarioMayorQueYPeriodoYCarrera(Date fechaInicio, Date fechaFin, Periodo periodo, Carrera carrera);
 
 	Integer contarPorFechaDosificacionYPeriodoYCarreraYCorteEvaluativo(Date fechaInicio, Integer idPeriodo, Integer idCarrera, Integer idCorte);

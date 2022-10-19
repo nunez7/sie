@@ -157,6 +157,8 @@ public class DosificacionController {
 		Integer existeCorte = corteService.contarPorFechaDosificacionYPeriodoYCarreraYCorteEvaluativo(new Date(),
 				carga.getPeriodo().getId(), carga.getGrupo().getCarrera().getId(),
 				Integer.parseInt(obj.get("idCorteEvaluativo")));
+		//variable que manda el resultado del correo
+		String resultadoMail = null;
 
 		if (existeCorte == 0) {
 			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(
@@ -213,7 +215,7 @@ public class DosificacionController {
 			try {
 				emailService.sendEmail(mail);
 			} catch (Exception e) {
-				return "mail";
+				resultadoMail = "mail";
 			}
 
 		// en caso de que la dosificacion no este vacia
@@ -259,7 +261,8 @@ public class DosificacionController {
 			}
 		}
 		
-		return "ok";
+		//en caso de que haya error de correo, el mensaje de error se regresa, de caso contrario se regresa un ok
+		return resultadoMail!=null ? resultadoMail : "ok";
 	}
 
 	@GetMapping("/editar/{carga}/{corte}")
@@ -334,15 +337,25 @@ public class DosificacionController {
 
 			// SE COMPARA QUE TANTO LAS UNIDADES COMO LOS INSTRUMENTOS ESTÉN VACÍOS
 			List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHoraria(cargaHoraria);
-			if (calendarios.size()>0) {
+			
+			/*
+			se retira restriccion de fechas de entrega en importacion de dosificacion
+			if (calendarios.size()>0) { 
 				return "calInv";
 			}
+			*/
 			
 			List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(cargaHoraria.getId(),
 					true);
-			if (mecanismos.size()>0) {
+			
+			/* se retira la restriccion de mecanismos en dosificacion, en caso de que ya haya 
+			 * instrumentos registrados, se omite el copia de instrumentos, dejandolos como estan sin
+			 * afectar calificaciones en caso de existir
+			
+			if (mecanismos.size()>0) { 
 				return "mecInv";
 			}
+			*/
 			
 			// SE OBTIENEN LAS DOSIFICACIONES Y SE GUARDAN COMO NUEVAS USANDO LA CARGA
 			// COMPARTIDA
@@ -367,6 +380,7 @@ public class DosificacionController {
 			}
 			}
 
+			if (mecanismos.size()==0) {	
 			mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCargaCompartida,
 					true);
 			for (MecanismoInstrumento mecanismo : mecanismos) {
@@ -378,6 +392,7 @@ public class DosificacionController {
 				meca.setInstrumento(mecanismo.getInstrumento());
 				meca.setPonderacion(mecanismo.getPonderacion());
 				mecanismoService.guardar(meca);
+				}
 			}
 		}
 		return "ok";

@@ -121,27 +121,33 @@ public class AsistenciaController {
 		// --------------- SE HACE UN CONTEO DEL NUEVO NUMERO DE ASISTENCIAS
 		// ---------------
 
-		//se busca que la fecha actual no sobrepase el limite de captura de asistencias 
-		CorteEvaluativo corte = corteService.buscarPorFechaAsistenciaYLimiteCaptura(fechaHoy, carga.getPeriodo(), carga.getGrupo().getCarrera());
+		//se busca al parcial que pertenece la fecha seleccionada 
+		CorteEvaluativo corte = 
+				corteService.buscarPorFechaInicioYFechaFinYPeriodoYCarrera(fecha, periodo, carga.getGrupo().getCarrera());
+		
+		// en caso de que el corte sea nulo, se devuleve el mensaje de que la fecha no pertenece a ningun parcial
+		if (corte==null) {
+			return "limit";
+		}
+		
+		//se guarda el id del corte en una variable para buscar una prorroga para dicho parcial en caso de ser necesaria
+		Integer idCorte = corte.getId();
+		
+		//se busca si existe el corte existente no ha sobrepasado la fecha limite de captura
+		corte = corteService.buscarPorCorteYLimiteCaptura(fechaHoy, corte);
+		
+		
+		//se busca una prorroga, en caso de nulo, se envia el mensaje de que el periodo de asistencias ya termino
 		if (corte == null) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYActivoYAceptada(carga, new TipoProrroga(2), true, true);
+			System.err.println("carga: "+carga.getId()+", fecha: "+fechaHoy+", corte: "+idCorte);
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYFecha(carga, new TipoProrroga(2), fechaHoy, new CorteEvaluativo(idCorte));
 			if (prorroga != null) {
-				if (prorroga.getFechaLimite().before(fechaHoy)) {
-					return "inv";
-				} else {
 					corte = prorroga.getCorteEvaluativo();
-				}
 			} else {
 				return "inv";
 			}
 		}
 		
-		corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
-				fecha, periodo.getId(), carga.getGrupo().getCarrera().getId());
-		if (corte==null) {
-			return "limit";
-		}
-
 		Integer noAsistencias = asistenciaService.contarPorFechaInicioYFechaFindYCargaHoraria(corte.getFechaInicio(),
 				corte.getFechaFin(), carga.getId());
 
@@ -219,6 +225,8 @@ public class AsistenciaController {
 	public String obtenerSesionDia(@RequestBody Map<String, String> obj, Model model, HttpSession session) {
 		Persona persona = new Persona((Integer)session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
+		Periodo periodo = new Periodo(usuario.getPreferencias().getIdPeriodo());
+		CargaHoraria carga = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cveCarga"));
 		
 		// --------------- PROCESO DE OBTENCION DE DATOS ---------------
 		Date fechaSeleccionada = java.sql.Date.valueOf(obj.get("fecha"));
@@ -229,10 +237,9 @@ public class AsistenciaController {
 		}
 		
 		//se compara que la fecha pertenezca a algun corte
-		CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
-				fechaSeleccionada, usuario.getPreferencias().getIdPeriodo(), usuario.getPreferencias().getIdCarrera());
-		//CorteEvaluativo corte = corteService.buscarPorFechaInicioMenorQueYFechaAsistenciaMayorQueYPeriodoYCarrera(
-		//		fechaSeleccionada, new Periodo(usuario.getPreferencias().getIdPeriodo()), new Carrera(usuario.getPreferencias().getIdCarrera()));
+		CorteEvaluativo corte = corteService.buscarPorFechaInicioYFechaFinYPeriodoYCarrera(
+				fechaSeleccionada, periodo, carga.getGrupo().getCarrera());
+		
 		if (corte==null) {
 		}
 		

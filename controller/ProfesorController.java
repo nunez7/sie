@@ -349,13 +349,17 @@ public class ProfesorController {
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		List<Carrera> carreras = serviceCarrera.buscarCarrerasPorPersonaYPeriodo(persona.getId(), periodo.getId());
-		List<CorteEvaluativo> corte = null;
+		Carrera carreraActual = null;
 		if (carreras.size()>0) {
-			corte = corteService.buscarPorCarreraYPeriodo(carreras.get(0) ,periodo);
+			for (Carrera carrera : carreras) {
+				if (carrera.getId()==usuario.getPreferencias().getIdCarrera()) {
+					carreraActual = carrera;
+				}
+			}
 		}
-		model.addAttribute("carreraActual", usuario.getPreferencias().getIdCarrera());
+		model.addAttribute("carreraActual", carreraActual!=null ? carreraActual.getId() : carreras.get(0).getId());
 		model.addAttribute("carreras", carreras);
-		model.addAttribute("cortes", corte);
+		model.addAttribute("cortes", carreraActual!=null ? corteService.buscarPorCarreraYPeriodo(carreraActual,periodo) : corteService.buscarPorCarreraYPeriodo(carreras.get(0) ,periodo));
 		return "profesor/fechasEntrega";
 	}
 

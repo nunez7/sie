@@ -140,11 +140,11 @@ public class MecanismoInstrumentoController {
 		Integer carga = Integer.parseInt(obj.get("idCargaHoraria"));
 		Integer corte = Integer.parseInt(obj.get("idCorteEvaluativo"));
 		Integer instrumento = Integer.parseInt(obj.get("idInstrumento"));
-		MecanismoInstrumento mecanismo = mecanismoService.buscarPorIdCargaHorariaEIdCorteEvaluativoEInstrumentoYActivo(
-				carga, corte, instrumentoService.buscarPorId(instrumento), true);
+		//MecanismoInstrumento mecanismo = mecanismoService.buscarPorIdCargaHorariaEIdCorteEvaluativoEInstrumentoYActivo(
+		//		carga, corte, instrumentoService.buscarPorId(instrumento), true);
 		
 		//comprobamos si la dosificacion esta validada
-		boolean dosificacionValida = comprobarDosificacionValida(carga);
+		boolean dosificacionValida = comprobarDosificacionValida(carga, corte);
 		if (dosificacionValida == true) {
 			return "val";
 		}
@@ -172,33 +172,30 @@ public class MecanismoInstrumentoController {
 			return "non";
 		}
 
-		if (mecanismo == null) {
-			mecanismo = new MecanismoInstrumento();
-			mecanismo.setActivo(true);
-			mecanismo.setIdCargaHoraria(carga);
-			mecanismo.setIdCorteEvaluativo(corte);
-			mecanismo.setInstrumento(new Instrumento(instrumento));
-			if (provicional!=null) {
-				mecanismo.setPonderacion(provicional>0 && provicional<=80 ? provicional : 0);
-			}else {
-				mecanismo.setPonderacion(0);
-			}
-			mecanismoService.guardar(mecanismo);
-			return "ok";
-		} else {
-			return "dupli";
+		// se guarda el istrumento - se retiro la limitacion de 1 instrumento por tipo
+		MecanismoInstrumento mecanismo = new MecanismoInstrumento();
+		mecanismo.setActivo(true);
+		mecanismo.setIdCargaHoraria(carga);
+		mecanismo.setIdCorteEvaluativo(corte);
+		mecanismo.setInstrumento(new Instrumento(instrumento));
+		if (provicional!=null) {
+			mecanismo.setPonderacion(provicional>0 && provicional<=80 ? provicional : 0);
+		}else {
+			mecanismo.setPonderacion(0);
 		}
+		mecanismoService.guardar(mecanismo);
+		return "ok";
+		
 	}
 
 	@PostMapping(path = "/eliminar-instrumento", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String eliminaInstrumento(@RequestBody Map<String, String> obj, HttpSession session) {
-		boolean dosificacionValida = comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"));
+		MecanismoInstrumento mecanismo = mecanismoService.buscarPorId(Integer.parseInt(obj.get("idInstrumento")));
+		boolean dosificacionValida = comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"), mecanismo.getIdCorteEvaluativo());
 		if (dosificacionValida == true) {
 			return "val";
 		}
-		MecanismoInstrumento mecanismo = mecanismoService.buscarPorId(Integer.parseInt(obj.get("idInstrumento")));
-		// new MecanismoInstrumento(Integer.parseInt(obj.get("idInstrumento")));
 		List<Calificacion> calificaciones = calificacionService.buscarPorMecanismoInstrumento(mecanismo);
 		if (calificaciones.size()>0) {
 			
@@ -232,13 +229,15 @@ public class MecanismoInstrumentoController {
 	public String guardaPonderacion(@RequestBody Map<String, String> obj, Model model, HttpSession session) {
 		Integer ponderacion = Integer.parseInt(obj.get("ponderacion")); // se recibe el dato
 		Integer idMeca = Integer.parseInt(obj.get("idMecanismo")); // se recibe el dato
-		boolean dosificacionValida = comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"));
-		if (dosificacionValida == true) {
-			return "val";
-		}
-		if (ponderacion > 0 && ponderacion <= 85) { // se comprueba que su valor sea mayor a 0 y menor o igual a 85
+	//	if (ponderacion > 0 && ponderacion <= 85) { // se comprueba que su valor sea mayor a 0 y menor o igual a 85
+		if (ponderacion > 0) { // se comprueba que su valor sea mayor a 0
 			MecanismoInstrumento mecanismo = mecanismoService.buscarPorIdYActivo(idMeca, true); // se busca si el
 																								// mecanismo
+			boolean dosificacionValida = comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"), mecanismo.getIdCorteEvaluativo());
+			if (dosificacionValida == true) {
+				return "val";
+			}
+			
 			List<MecanismoInstrumento> lista = mecanismoService.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(
 					Integer.parseInt(obj.get("cargaActual")), Integer.parseInt(obj.get("corteEvaluativo")), true);
 			if (lista != null) { // se compara el tamano de la lista
@@ -343,12 +342,12 @@ public class MecanismoInstrumentoController {
 	@ResponseBody
 	public String guardarInstrumentoArchivo(@RequestParam("archivoInstrumento") MultipartFile multiPart,
 			@RequestParam("idInstrumento") Integer idInstrumento, HttpSession session) {
-		if (comprobarDosificacionValida((Integer) session.getAttribute("cveCarga")) == true) {
-			return "limit";
-		}
 		MecanismoInstrumento mecanismo = new MecanismoInstrumento();
 		if (idInstrumento != null) {
 			mecanismo = mecanismoService.buscarPorIdYActivo(idInstrumento, true);
+		}
+		if (comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"), mecanismo.getIdCorteEvaluativo()) == true) {
+			return "limit";
 		}
 		if (!multiPart.isEmpty()) {
 			String nombreImagen = SubirArchivo.guardarArchivo(multiPart, rutaDocs + "/profesor/instrumento/");
@@ -364,13 +363,16 @@ public class MecanismoInstrumentoController {
 	@PostMapping(path = "/eliminar-instrumento-archivo", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String eliminarInstrumentoArchivo(@RequestBody Map<String, String> obj, HttpSession session) {
-		if (comprobarDosificacionValida((Integer) session.getAttribute("cveCarga")) == true) {
-			return "limit";
-		}
 		Integer idInstrumento = Integer.parseInt(obj.get("idInstrumento"));
 		MecanismoInstrumento mecanismo = new MecanismoInstrumento();
 		if (idInstrumento != null) {
 			mecanismo = mecanismoService.buscarPorIdYActivo(idInstrumento, true);
+			
+			
+			if (comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"), mecanismo.getIdCorteEvaluativo()) == true) {
+				return "limit";
+			}
+			
 			SubirArchivo.borrarArchivo(rutaDocs + "/profesor/instrumento/" + mecanismo.getArchivo());
 			mecanismo.setArchivo(null);
 			mecanismoService.guardar(mecanismo);
@@ -379,10 +381,10 @@ public class MecanismoInstrumentoController {
 	}
 
 	// metodos genericos
-	public boolean comprobarDosificacionValida(Integer idCarga) {
+	public boolean comprobarDosificacionValida(Integer idCarga, Integer idCorte) {
 		List<Dosificacion> dosificaciones = dosificacionService.buscarPorIdCargaHoraria(idCarga);
 		for (Dosificacion dosificacion : dosificaciones) {
-			if (dosificacion.getValidaDirector() == true) {
+			if (dosificacion.getValidaDirector() == true && dosificacion.getIdCorteEvaluativo()==idCorte) {
 				return true;
 			}
 		}

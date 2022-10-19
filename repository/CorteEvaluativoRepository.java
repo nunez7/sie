@@ -27,15 +27,15 @@ List<CorteEvaluativo> findByPeriodoAndCarreraOrderByFechaInicioAsc(Periodo perio
 	List<CorteEvaluativo> findAll();
 	
 	@Query(value = "SELECT ce.* from cortes_evaluativos ce "
-			+ "WHERE id_periodo = :idPeriodo and fecha_inicio <= :fecha  AND limite_captura >= :fecha "
-			+ "AND id_carrera = :idCarrera "
-			+ "ORDER BY consecutivo LIMIT 1 ", nativeQuery = true)
-	CorteEvaluativo findByFechaAsistenciaAndLimiteCaptura(@Param("fecha")Date fechaAsistencia,@Param("idPeriodo") Periodo periodo, @Param("idCarrera") Carrera carrera);
+			+ "WHERE ce.id = :corte AND ce.limite_captura >= :fecha", nativeQuery = true)
+	CorteEvaluativo findByCorteAndLimiteCaptura(@Param("fecha")Date fecha,@Param("corte") CorteEvaluativo corte);
 	
-	@Query(value = "SELECT ce.* from cortes_evaluativos ce "
-			+ "WHERE id_periodo = :idPeriodo and fecha_inicio <= :fecha and fecha_asistencia >= :fecha "
-			+ "AND id_carrera = :idCarrera ", nativeQuery = true)
-	CorteEvaluativo findByFechaInicioLessThanEqualAndFechaAsistenciaGreaterThanEqualAndPeriodoAndCarrera(@Param("fecha")Date fecha,@Param("idPeriodo") Integer periodo,@Param("idCarrera") Integer carrera);
+	//se busca un corte en base a la fecha, periodo y carrera
+	@Query(value = "SELECT ce.* "
+			+ "FROM cortes_evaluativos ce "
+			+ "WHERE ce.id_periodo = :periodo AND id_carrera = :carrera "
+			+ "AND ce.fecha_inicio <= :fecha AND fecha_fin >= :fecha", nativeQuery = true)
+	CorteEvaluativo findByFechaInicioAndFechaFinAndPeriodoAndCarrera(@Param("fecha")Date fecha,@Param("periodo") Periodo periodo,@Param("carrera") Carrera carrera);
 	
 	Optional<CorteEvaluativo> findById(Integer id);
 	
