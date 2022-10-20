@@ -18,4 +18,10 @@ public class DosificacionValidaServiceJpa implements IDosificacionValida{
 		dosificacionValidaRepository.save(dosificacionValida);
 	}
 
+	@Override
+	public DosificacionValida buscarPorIdDosificacion(Integer idDosificacion) {
+		// TODO Auto-generated method stub
+		return dosificacionValidaRepository.buscarPorIdDosificacion(idDosificacion);
+	}
+
 }

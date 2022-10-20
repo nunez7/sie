@@ -677,11 +677,11 @@ public class DosificacionController {
 		mail.setDe(de);
 		mail.setPara(new String[] { para });
 		// Email title
-		mail.setTitulo("¡Dosificación rechazada!");
+		mail.setTitulo("¡Programación de asignatura rechazada!");
 		// Variables a plantilla
 		Map<String, Object> variables = new HashMap<>();
-		variables.put("titulo", "Dosificación rechazada");
-		variables.put("cuerpoCorreo", "Tu dosificación de la materia: " + cargaHoraria.getMateria().getNombre()
+		variables.put("titulo", "Programación de asignatura rechazada");
+		variables.put("cuerpoCorreo", "Tu programación de asignatura de la materia: " + cargaHoraria.getMateria().getNombre()
 				+ " fue rechazada por el siguiente motivo: " + comentario + ".");
 		mail.setVariables(variables);
 		try {
@@ -707,7 +707,11 @@ public class DosificacionController {
 		dosificacion.setValidaDirector(true);
 		dosificacionService.guardar(dosificacion);
 		// se crea el objeto dosificacionValida para guardar los datos
-		DosificacionValida dosificacionValida = new DosificacionValida();
+		DosificacionValida dosificacionValida = dosificacionValidaService.buscarPorIdDosificacion(dosificacion.getId());
+		//se verifica si ya hay un objeto de dosificacion
+		if(dosificacionValida == null) {
+			dosificacionValida = new DosificacionValida();
+		}
 		dosificacionValida.setDosificacion(dosificacion);
 		dosificacionValida.setDirector(persona);
 		dosificacionValida.setFechaAlta(new Date());
@@ -719,12 +723,12 @@ public class DosificacionController {
 		String para = profesor.getEmail();
 		mail.setDe(de);
 		mail.setPara(new String[] { para }); // Email title
-		mail.setTitulo("¡Dosificación validada!");
+		mail.setTitulo("¡Programación de asignatura validada!");
 		// Variables a plantilla
 		Map<String, Object> variables = new HashMap<>();
-		variables.put("titulo", "Dosificación validada");
+		variables.put("titulo", "Programación de asignatura validada");
 		variables.put("cuerpoCorreo",
-				"Tu dosificación de la materia: " + cargaHoraria.getMateria().getNombre() + " fue validada.");
+				"Tu programación de asignatura de la materia: " + cargaHoraria.getMateria().getNombre() + " fue validada.");
 		mail.setVariables(variables);
 		try {
 			emailService.sendEmail(mail);
