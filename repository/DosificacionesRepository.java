@@ -17,7 +17,8 @@ public interface DosificacionesRepository extends CrudRepository<Dosificacion, I
 			+ "	FROM dosificaciones d "
 			+ "	left join dosificaciones_cargas dc on d.id=dc.id_dosificacion "
 			+ "	left join dosificacion_importada di on di.id_dosificacion = d.id "
-			+ "	WHERE (dc.id_carga_horaria=:idCargaHoraria or di.id_carga_horaria=:idCargaHoraria) AND d.id_corte_evaluativo=:idCorteEvaluativo ", nativeQuery = true)
+			+ "	WHERE (dc.id_carga_horaria=:idCargaHoraria or di.id_carga_horaria=:idCargaHoraria) "
+			+ " AND d.activo = TRUE AND d.id_corte_evaluativo=:idCorteEvaluativo ", nativeQuery = true)
 	Dosificacion findByIdCargaHorariaAndIdCorteEvaluativo(@Param("idCargaHoraria") Integer icCargaHoraria, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
 	
 	@Query(value="SELECT df.* FROM dosificaciones df "

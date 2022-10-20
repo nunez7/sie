@@ -164,7 +164,7 @@ public class ProfesorController {
 			CargaHoraria cargaActual = cargaService.buscarPorIdCarga(cveCarga);
 			List<Instrumento> instrumentos = instrumentoService.buscarTodos(); //se obtienen los instrumentos
 					
-			Boolean existeDosi = true; //se declara la validacion para importar/cargar la dosificacion
+			Integer existeDosi = 0; //se declara la validacion para importar/cargar la dosificacion
 			
 			List<ParcialDosificacionDTO> parciales = new ArrayList<>();
 			List<CorteEvaluativo> cortes = corteService.buscarPorCarreraYPeriodo(cargaActual.getGrupo().getCarrera() ,periodo);
@@ -180,14 +180,14 @@ public class ProfesorController {
 					//en caso de que la dosificacion no se encuentre, se procede a buscar alguna dosificacion compartida
 					parcial.setDosificacion(dosificacionService.buscarImportadaPorCargaHoraria(cveCarga, corte.getId()));
 					if (parcial.getDosificacion()==null) {
-						existeDosi = false;
+						existeDosi = existeDosi +1;
 					}
 				}
 				parcial.setInstrumentos(mecanismoService.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(cveCarga, corte.getId(), true));
 				parciales.add(parcial);
 			}
 			
-			if (existeDosi == false) {
+			if (existeDosi == 2) {
 				List<DosificacionImportarDTO> importar = 
 				dosiImpoService.buscarImportarPorMateriaYPeriodo(cargaActual.getMateria().getId(), cveCarga, periodo.getId());
 				model.addAttribute("importar", importar);
