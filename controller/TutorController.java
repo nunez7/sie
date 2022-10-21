@@ -1481,7 +1481,7 @@ public class TutorController {
 			model.addAttribute("cveGrupo", cveGrupo);
 			model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
 			//proceso para sacar las materias
-			List<CargaHoraria> cargaHorarias = cargaHorariaService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
+			List<CargaHoraria> cargaHorarias = cargaHorariaService.buscarPorGrupoYPeriodoYCalificacionSi(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 			model.addAttribute("cargasHorarias", cargaHorarias);
 			List<CorteEvaluativo> corte = corteEvaluativoService.buscarPorCarreraYPeriodo(usuario.getPreferencias().getIdCarrera(), usuario.getPreferencias().getIdPeriodo());
 			List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
