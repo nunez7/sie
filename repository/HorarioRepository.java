@@ -77,7 +77,7 @@ public interface HorarioRepository extends CrudRepository<Horario, Integer>{
 			@Param("profesor") Integer idProfesor, @Param("periodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT h.* " + "FROM horarios h " + "INNER JOIN cargas_horarias cg on h.id_carga_horaria=cg.id "
-			+ "INNER JOIN dias d on h.id_dia=d.id " + "WHERE cg.id=:idCargaHoraria and d.id=:idDia "
+			+ "INNER JOIN dias d on h.id_dia=d.id WHERE cg.id=:idCargaHoraria and d.id=:idDia AND h.activo='True' "
 			+ "ORDER BY hora_inicio ASC", nativeQuery = true)
 	List<Horario> findByCargaHorariaAndDia(@Param("idCargaHoraria") Integer idCargaHoraria,
 			@Param("idDia") Integer idDia);
