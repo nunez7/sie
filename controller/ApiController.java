@@ -67,7 +67,7 @@ import edu.mx.utdelacosta.util.ReferenciaSEP;
 import edu.mx.utdelacosta.util.Utileria;
 
 
-@CrossOrigin(origins = { "https://utnay.edu.mx" })
+@CrossOrigin(origins = { "https://utnay.edu.mx", "http://localhost:8080/siest" })
 @RestController
 @RequestMapping("/api")
 public class ApiController {

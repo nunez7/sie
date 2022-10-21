@@ -333,13 +333,7 @@ public class ProfesorController {
 		     }
 		    }
 		   }
-		     
-		    
-		   
 		   model.addAttribute("horasDto", horasDto);
-		   
-	
-		
 		return "profesor/horario";
 	}
 
