@@ -52,6 +52,7 @@ import edu.mx.utdelacosta.service.ITestimonioCorteService;
 import edu.mx.utdelacosta.service.ITestimonioService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 import edu.mx.utdelacosta.util.ActualizarCalificacion;
+import edu.mx.utdelacosta.util.ActualizarRemedial;
 
 @Controller
 @PreAuthorize("hasRole('Administrador') and hasRole('Profesor') and hasRole('Rector') and hasRole('Informatica') and hasRole('Director') and hasRole('Asistente')")
@@ -100,6 +101,9 @@ public class AsistenciaController {
 	@Autowired
 	private IPeriodosService periodoService;
 	
+	@Autowired
+	private ActualizarRemedial actualizarRemedial;
+	
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 
 	@PostMapping(path = "/guardar", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -139,7 +143,6 @@ public class AsistenciaController {
 		
 		//se busca una prorroga, en caso de nulo, se envia el mensaje de que el periodo de asistencias ya termino
 		if (corte == null) {
-			System.err.println("carga: "+carga.getId()+", fecha: "+fechaHoy+", corte: "+idCorte);
 			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYFecha(carga, new TipoProrroga(2), fechaHoy, new CorteEvaluativo(idCorte));
 			if (prorroga != null) {
 					corte = prorroga.getCorteEvaluativo();
@@ -156,6 +159,7 @@ public class AsistenciaController {
 			valor = obj.get(alumno.getId().toString());
 			if (valor != null) {
 				Integer asistenciasTotales = noAsistencias;
+				String valor_antiguo="";
 				Asistencia asistencia = asistenciaService.buscarPorFechaYAlumnoYHorario(fecha, alumno, horario);
 
 				if (asistencia == null) {
@@ -168,14 +172,17 @@ public class AsistenciaController {
 					asistenciaService.guardar(asistencia); // guarda el nuevo valor de la asistencia
 					asistenciasTotales++;
 				} else {
+					valor_antiguo = asistencia.getValor();
 					asistencia.setFechaAlta(fechaHoy);
 					asistencia.setValor(valor);
 					asistenciaService.guardar(asistencia); // actualiza el valor de la asistencia
 				}
+				
+				if (!valor_antiguo.equals(valor)) {
 
 				// *************** PROCESO DE CALCULO DEL ESTADO DEL ALUMNO ***************
 				List<Asistencia> faltas = asistenciaService.buscarFaltasPorIdAlumnoYIdCargaHoraria(alumno.getId(),
-						carga.getId(), corte.getFechaInicio(), corte.getFechaAsistencia());
+						carga.getId(), corte.getFechaInicio(), corte.getFechaFin());
 				List<Asistencia> retardos = asistenciaService.buscarRetardosPorIdAlumnoYIdCargaHoraria(alumno.getId(),
 						carga.getId());
 				Integer noFaltas = faltas.size() + (retardos.size()/3);
@@ -183,10 +190,13 @@ public class AsistenciaController {
 						carga.getId(), corte.getId());
 
 				boolean SD = false;
-				
 				if (noFaltas >= (asistenciasTotales * .15)) {
-//				if (noFaltas >= (Math.round(asistenciasTotales * .15))) {
 					SD = true;
+					actualizarRemedial.generarPorCalificacionOrdinariaRemedial(alumno.getId(), idCargaHoraria, idCorte);
+				}
+				
+				if (SD==false) {
+					actualizarRemedial.eliminarPorCalificacionOrdinariaRemedial(alumno.getId(), idCargaHoraria, idCorte);
 				}
 
 				if (testimonio == null) {
@@ -198,20 +208,17 @@ public class AsistenciaController {
 					testimonio.setFechaUltimaEdicion(fechaHoy);
 					testimonio.setReprobado(false);
 					testimonio.setSinDerecho(SD);
-					if (SD == true) {
-						testimonio.setTestimonio(testimonioService.buscarPorId(12));
-					} else {
-						testimonio.setTestimonio(testimonioService.buscarPorId(1));
-					}
-					testimonioCorteService.guardar(testimonio);
+					testimonio.setTestimonio(SD==true ?  testimonioService.buscarPorId(12) : testimonioService.buscarPorId(1));
 				} else {
 					testimonio.setSinDerecho(SD);
 					testimonio.setFechaUltimaEdicion(fechaHoy);
-					testimonioCorteService.guardar(testimonio);
 				}
+				
+				testimonioCorteService.guardar(testimonio);
 				
 				actualizaCalificacion.actualizaTestimonioCalificacion(alumno.getId(), carga.getId(), corte.getId(), SD);
 				
+				}
 			}
 
 		}

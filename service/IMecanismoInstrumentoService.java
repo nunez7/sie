@@ -4,6 +4,7 @@ import java.util.List;
 
 import edu.mx.utdelacosta.model.Instrumento;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
+import edu.mx.utdelacosta.model.dto.MecanismoInstrumentoDTO;
 
 public interface IMecanismoInstrumentoService {
 	
@@ -22,4 +23,6 @@ public interface IMecanismoInstrumentoService {
 	List<MecanismoInstrumento> buscarPorIdCargaHorariaYActivo(Integer idCargaHoraria, Boolean activo);
 	
 	Integer sumaPonderacionPorIdCargaHorariaEIdCorteEvaluativo(Integer idCargaHoraria, Integer idCorteEvaluativo);
+	
+	MecanismoInstrumentoDTO contarMecanismosPorCargahorariaYCorteEvaluativo(Integer cargaHoraria, Integer corteEvaluativo , Integer alumno);
 }

@@ -88,6 +88,6 @@ public interface RemedialAlumnoRepository extends CrudRepository<RemedialAlumno,
 	
 	@Query(value = "SELECT EXISTS (SELECT ra.id FROM remedial_alumno ra "
 			+ "	WHERE id_carga_horaria = :carga AND tipo_remedial = :tipo_remedial "
-			+ "	AND id_corte = :corte AND ra.id_alumno = :alumno) " ,  nativeQuery = true)
+			+ "	AND id_corte = :corte AND ra.id_alumno = :alumno AND ra.tipo_testimonio IS NOT NULL) " ,  nativeQuery = true)
 	Boolean existsRemedialAlumno(@Param("alumno")Integer idAlumno, @Param("carga") Integer idCargaHoraria,@Param("corte") Integer idCorteEvaluativo, @Param("tipo_remedial") Integer tipoRemedial);
 }

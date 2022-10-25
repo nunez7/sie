@@ -224,7 +224,7 @@ public class CalificacionController {
 				new Alumno(idAlumno), new CargaHoraria(idCargaHoraria), new Remedial(1),
 				new CorteEvaluativo(idCorteEvaluativo));
 		
-		if (remedial != null) {
+		if (remedial != null && remedial.getTestimonio()!=null) {
 			return "forbidden";
 		}
 
@@ -236,31 +236,30 @@ public class CalificacionController {
 		} catch (Exception e) {
 			return "notNum";
 		}
-				
-		if (ponderacion < 0 || ponderacion > 10) {
-			return "plimit";
-		}
 
 		// se obtiene el mecanismo del alumno
 		MecanismoInstrumento mecanismo = mecanismoService.buscarPorIdYActivo(idMecanismo, true); //
 		// se actualiza la calificacion del instrumento en singular
-		String cali = actualizarCalificacion.actualizaCalificacionInstrumento(idAlumno, mecanismo, ponderacion);
+		actualizarCalificacion.actualizaCalificacionInstrumento(idAlumno, mecanismo, ponderacion, idCargaHoraria, idCorteEvaluativo);
 
-		if (cali.equals("noEdit") || cali.equals("SD")) {
-			return cali;
-		}
 
 		// se actualiza la calificacion del corte y se obtiene la calificacion total del
 		// corte
 		float calificacionTotal = actualizarCalificacion.actualizaCalificacionCorte(idAlumno, idCargaHoraria,
 				idCorteEvaluativo);
+		
+		if (calificacionTotal <8) {
+			actualizarRemedial.generarPorCalificacionOrdinariaRemedial(idAlumno, idCargaHoraria, idCorteEvaluativo);
+		}else {
+			actualizarRemedial.eliminarPorCalificacionOrdinariaRemedial(idAlumno, idCargaHoraria, idCorteEvaluativo);
+		}
 
 		// se actualiza el testimonio del corte
 		actualizarCalificacion.actualizaTestimonioCorte(idAlumno, calificacionTotal, idCargaHoraria, idCorteEvaluativo);
 
 		String resultado = actualizarCalificacion.actualizaCalificacionMateria(idAlumno, idCargaHoraria);
 
-		return resultado + Math.round(calificacionTotal);
+		return resultado + (calificacionTotal);
 
 	}
 
@@ -310,9 +309,9 @@ public class CalificacionController {
 									alumno, cargaActual, new Remedial(1),
 									new CorteEvaluativo(parcialActual));
 							if (rem != null) {
-								calificacion.setCalificacionRemedial(rem.getTestimonio().getNumero());
+								calificacion.setCalificacionRemedial(rem.getTestimonio()!=null ? rem.getTestimonio().getNumero() : 0);
 							} else {
-								calificacion.setCalificacionRemedial(0);
+								calificacion.setCalificacionRemedial(null);
 							}
 							RemedialAlumno ex = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 									alumno, cargaActual, new Remedial(2),
@@ -320,7 +319,7 @@ public class CalificacionController {
 							if (ex != null) {
 								calificacion.setCalificacionExtraordinario(ex.getTestimonio().getNumero());
 							} else {
-								calificacion.setCalificacionExtraordinario(0);
+								calificacion.setCalificacionExtraordinario(null);
 							}
 							calificaciones.add(calificacion);
 

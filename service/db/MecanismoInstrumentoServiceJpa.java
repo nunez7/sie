@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Instrumento;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
+import edu.mx.utdelacosta.model.dto.MecanismoInstrumentoDTO;
 import edu.mx.utdelacosta.repository.MecanismoInstrumentoRepository;
 import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
 
@@ -74,6 +75,12 @@ public class MecanismoInstrumentoServiceJpa implements IMecanismoInstrumentoServ
 	public Integer sumaPonderacionPorIdCargaHorariaEIdCorteEvaluativo(Integer idCargaHoraria,
 			Integer idCorteEvaluativo) {
 		return mecanismoRepository.sumPonderacionByIdCargaHorariaAndIdCorteEvaluativo(idCargaHoraria, idCorteEvaluativo);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public MecanismoInstrumentoDTO contarMecanismosPorCargahorariaYCorteEvaluativo(Integer cargaHoraria, Integer corteEvaluativo, Integer alumno) {
+		return mecanismoRepository.countMecanismoIntrumentoByCargaHorariaAndCorteEvaluativo(cargaHoraria, corteEvaluativo, alumno);
 	}	
 
 }
