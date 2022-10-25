@@ -29,6 +29,7 @@ import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.Asistencia;
 import edu.mx.utdelacosta.model.Baja;
 import edu.mx.utdelacosta.model.BajaAutoriza;
+import edu.mx.utdelacosta.model.BajaEstatus;
 import edu.mx.utdelacosta.model.CambioGrupo;
 import edu.mx.utdelacosta.model.Canalizacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
@@ -676,8 +677,8 @@ public class DirectorController {
 		} catch (Exception e) {
 			cvePersona = usuario.getPersona().getId();
 		}	
-		
-		List<Baja> bajas = bajaService.buscarPorPersonaYEstatus(cvePersona, 0);
+		//busca las solicitudes de bajas por persona 
+		List<Baja> bajas = bajaService.buscarPorPersonaYEstatus(cvePersona, 2, usuario.getPreferencias().getIdPeriodo());
 		model.addAttribute("bajas", bajas);
 		return "director/bajas";
 	}
@@ -713,7 +714,7 @@ public class DirectorController {
 		if (cveBaja != null) {
 
 			Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
-			baja.setEstatus(1);
+			baja.setBajaEstatus(new BajaEstatus(1));// estatus de aceptada
 			baja.setFechaAutorizacion(fechaHoy);
 			bajaService.guardar(baja);
 
@@ -721,48 +722,47 @@ public class DirectorController {
 			bajaAutorizada.setBaja(baja);
 			bajaAutorizada.setFechaRegistro(fechaHoy);
 			bajaAutorizada.setPersona(new Persona(cvePersona));
-			bajaAutorizada.setTipo(1);
+			bajaAutorizada.setTipo(baja.getTipoBaja());
 			bajaAutorizaService.guardar(bajaAutorizada);
-			
-			// Se valida y actualiza el estado del alumno, usuario, alumno Grupo la false 
-			if(baja.getAlumno().getEstatusGeneral() != 0) {
-		
-				Alumno alumno = baja.getAlumno();
-				alumno.setEstatusGeneral(0);
-				alumnoService.guardar(alumno);
-				
-				//Se desactiva la relación alumno grupo del último grupo al que el alumno allá pertenecido
-				AlumnoGrupo alumnoGrupo = alumnoGrupoService.buscarPorAlumnoYGrupo(alumno, baja.getGrupo());
-				alumnoGrupo.setActivo(false);
-				alumnoGrupoService.guardar(alumnoGrupo);
-				
-				Usuario userAlumno = usuarioService.buscarPorPersona((baja.getAlumno().getPersona()));
-				userAlumno.setActivo(false);
-				usuarioService.guardar(userAlumno);
-				
-				//correo
-				Mail mail = new Mail();
-				String de = correo;
-				String para1 = baja.getPersona().getEmail();
-				String para2 = baja.getAlumno().getPersona().getEmail();
-				mail.setDe(de);
-				mail.setPara(new String[] {para1, para2});		
-				//Email title
-				mail.setTitulo("Nueva solicitud de baja.");		
-				//Variables a plantilla
-				Map<String, Object> variables = new HashMap<>();
-				variables.put("titulo", "Solicitud de baja aprobada");						
-				variables.put("cuerpoCorreo","La solicitud de baja del alumno(a) "+baja.getAlumno().getPersona().getNombreCompleto()+" con matrícula "+baja.getAlumno().getMatricula()+" fue aprobada por el director(a) de carrera.");					
-				mail.setVariables(variables);			
-				try {							
-					emailService.sendEmail(mail);													
-				}catch (Exception e) {
-					return "errorMen";
-			  	}
-				return "ok";
-			}else
-				return "alumnoInactivo";
+
+			Alumno alumno = baja.getAlumno();
+			alumno.setEstatusGeneral(0);
+			alumnoService.guardar(alumno);
+
+			// Se desactiva la relaci�n alumno grupo del último grupo al que el alumno
+			// allaa pertenecido
+			AlumnoGrupo alumnoGrupo = alumnoGrupoService.buscarPorAlumnoYGrupo(alumno, baja.getGrupo());
+			alumnoGrupo.setActivo(false);
+			alumnoGrupoService.guardar(alumnoGrupo);
+
+			Usuario userAlumno = usuarioService.buscarPorPersona((baja.getAlumno().getPersona()));
+			userAlumno.setActivo(false);
+			usuarioService.guardar(userAlumno);
+
+			// correo
+			Mail mail = new Mail();
+			String de = correo;
+			String para1 = baja.getPersona().getEmail();
+			String para2 = baja.getAlumno().getPersona().getEmail();
+			mail.setDe(de);
+			mail.setPara(new String[] { para1, para2 });
+			// Email title
+			mail.setTitulo("Nueva solicitud de baja.");
+			// Variables a plantilla
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("titulo", "Solicitud de baja aprobada");
+			variables.put("cuerpoCorreo",
+					"La solicitud de baja del alumno(a) " + baja.getAlumno().getPersona().getNombreCompleto()
+							+ " con matrícula " + baja.getAlumno().getMatricula()
+							+ " fue aprobada por el director(a) de carrera.");
+			mail.setVariables(variables);
+			try {
+				emailService.sendEmail(mail);
+			} catch (Exception e) {
+				return "errorMen";
 			}
+			return "ok";
+		}
 		return "error";
 	}
 	
@@ -773,7 +773,7 @@ public class DirectorController {
 		String motivo = obj.get("motivo");	
 		if(cveBaja!=null){
 			Baja baja = bajaService.buscarPorId(Integer.parseInt(cveBaja));
-			baja.setEstatus(1);
+			baja.setBajaEstatus(new BajaEstatus(3));//estatus rechazada
 			bajaService.guardar(baja);
 			//correo
 			Mail mail = new Mail();
@@ -787,7 +787,7 @@ public class DirectorController {
 			//Variables a plantilla
 			Map<String, Object> variables = new HashMap<>();
 			variables.put("titulo", "Baja rechazada por el director(a) de la carrera.");						
-			variables.put("cuerpoCorreo","La solicitud de baja para el alumno(a) "+baja.getAlumno().getPersona().getNombreCompleto()+" fue rechazada por el director de la carrera, debido al siguiente motivo: "+motivo);
+			variables.put("cuerpoCorreo","La solicitud de baja para el alumno(a) "+baja.getAlumno().getPersona().getNombreCompleto()+" fue rechazada por el director de la carrera, debido al siguiente motivo:�"+motivo);
 			mail.setVariables(variables);			
 			try {							
 				emailService.sendEmail(mail);													

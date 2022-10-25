@@ -28,6 +28,7 @@ import edu.mx.utdelacosta.model.AlumnoReingreso;
 import edu.mx.utdelacosta.model.Baja;
 import edu.mx.utdelacosta.model.BajaAutoriza;
 import edu.mx.utdelacosta.model.BajaEliminada;
+import edu.mx.utdelacosta.model.Bitacora;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Documento;
@@ -52,6 +53,7 @@ import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IBajaAutorizaService;
 import edu.mx.utdelacosta.service.IBajaEliminadaService;
 import edu.mx.utdelacosta.service.IBajaService;
+import edu.mx.utdelacosta.service.IBitacoraService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.ICarrerasServices;
@@ -133,6 +135,9 @@ public class ControlAlumnoController {
 
 	@Autowired
 	private IUsuariosService usuariosService;
+	
+	@Autowired
+	private IBitacoraService bitacoraService;
 
 	@Value("${siestapp.ruta.docs}")
 	private String rutaDocs;
@@ -495,7 +500,7 @@ public class ControlAlumnoController {
 				Usuario userAlumno = usuariosService.buscarPorPersona((baja.getAlumno().getPersona()));
 				userAlumno.setActivo(true);
 				usuariosService.guardar(userAlumno);
-
+				
 				// se registra que se deshizo el registro de baja
 				BajaEliminada bajaEliminada = new BajaEliminada();
 				bajaEliminada.setBaja(baja.getId());
@@ -505,7 +510,17 @@ public class ControlAlumnoController {
 				bajaEliminada.setFechaRegistro(fechaHoy);
 				bajaEliminadaService.guardar(bajaEliminada);
 				
+				
+				//se registra en bitacora quien elimino la baja
+				Bitacora bitacora = new Bitacora();
+				bitacora.setPersona(usuario.getPersona());//persona que elimino la baja
+				bitacora.setAccion("ELIMINACIÓN DE BAJA");
+				bitacora.setDetalle("LA PERSONA: "+usuario.getPersona().getId() + ", ELIMINO LA BAJA DEL ALUMNO: "+baja.getAlumno().getId()); //id del alumno
+				bitacora.setFechaAlta(new Date());
+				bitacoraService.guardar(bitacora);
+				
 				// se envia un correo notificando que deshizo la baja y el motivo
+				
 				Mail mail = new Mail();
 				String de = correo;
 				String para1 = MailTutor;
@@ -537,7 +552,7 @@ public class ControlAlumnoController {
 					emailService.sendEmail(mail);
 				} catch (Exception e) {
 					return "errorMen";
-				}
+				} 
 				return "ok";
 			}
 			return "noMo";

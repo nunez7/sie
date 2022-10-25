@@ -32,6 +32,7 @@ import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.AsistenciaTemaGrupal;
 import edu.mx.utdelacosta.model.Baja;
 import edu.mx.utdelacosta.model.BajaAutoriza;
+import edu.mx.utdelacosta.model.BajaEstatus;
 import edu.mx.utdelacosta.model.Canalizacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.CausaBaja;
@@ -58,6 +59,7 @@ import edu.mx.utdelacosta.model.TutoriaIndividual;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoAsistenciaDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
+import edu.mx.utdelacosta.model.dto.BajaDto;
 import edu.mx.utdelacosta.model.dto.ComentarioDTO;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
 import edu.mx.utdelacosta.model.dto.HorarioDTO;
@@ -80,6 +82,7 @@ import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
 import edu.mx.utdelacosta.service.ICanalizacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
+import edu.mx.utdelacosta.service.ICausaBajaService;
 import edu.mx.utdelacosta.service.IComentarioEvaluacionTutorService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IDiaService;
@@ -215,6 +218,9 @@ public class TutorController {
 	
 	@Autowired
 	private IRemedialAlumnoService remedialAlumnoService;
+	
+	@Autowired
+	private ICausaBajaService causaBajaService;
 
     @GetMapping("/cargar-alumno/{dato}")
    	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato,  Model model, HttpSession session, Authentication auth) { 
@@ -277,7 +283,7 @@ public class TutorController {
 		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");		
 		List<Alumno> alumnos = new ArrayList<>();				
 		if (cveGrupo != null) {						
-			alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());		
+			alumnos = alumnoService.buscarPorGrupo(cveGrupo);		
 		}
 		
 		List<Motivo> motivos = motivoService.buscarTodo();		
@@ -537,19 +543,53 @@ public class TutorController {
 		List<Alumno> alumnos = new ArrayList<>();		
 		
 		if (cveGrupo != null) {						
-			alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());				
+			alumnos = alumnoService.buscarPorGrupo(cveGrupo);				
 		}
 		
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		
+		List<CausaBaja> causas = causaBajaService.buscarActivas();
+		model.addAttribute("causas", causas);
 		model.addAttribute("alumnos", alumnos);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("cveGrupo", cveGrupo);
+		model.addAttribute("fechaHoy", dateFormat.format(new Date()));
 		return "tutorias/bajaAlumno";		
+	}
+	
+	//para editar la baja
+	@GetMapping("/baja-get/{id}")
+	public String getBajaAlumno(@PathVariable(name = "id", required = true) Integer idBaja, Model model) {
+		//busca el objeto de la baja
+		Baja baja = bajaService.buscarPorId(idBaja);
+		//lista causas de baja
+		List<CausaBaja> causas = causaBajaService.buscarActivas();
+		model.addAttribute("causas", causas);
+		model.addAttribute("baja", baja);
+		return "tutorias/editarBajaAlumno";
+	}
+	
+	//para editar el registro de la baja
+	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
+	@PostMapping(path = "/editar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String editarBaja(@RequestBody BajaDto baja, HttpSession session) throws ParseException {
+		//se busca el objeto de la baja y se rellenan los datos
+		Baja b = bajaService.buscarPorId(baja.getIdBaja());
+		b.setTipoBaja(baja.getIdTipoBaja());
+		b.setCausaBaja(new CausaBaja(baja.getIdCausaBaja()));
+		b.setOtraCausa(baja.getDescripcion());
+		b.setFechaAsistencia(baja.getUltimaFechaAsistio());
+		b.setFechaSolicitud(baja.getFechaSolicitud());
+		b.setDescripcion(baja.getMotivo());
+		bajaService.guardar(b);
+		return "ok";
 	}
 	
 	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
 	@PostMapping(path = "/guardar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String guardarBaja(@RequestBody Map<String, String> obj,HttpSession session) throws ParseException {	
+	public String guardarBaja(@RequestBody BajaDto baja, HttpSession session) throws ParseException {	
 		// Extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
@@ -558,38 +598,31 @@ public class TutorController {
 		} catch (Exception e) {
 			cvePersona = usuario.getPersona().getId();
 		}		
-		SimpleDateFormat dFDia = new SimpleDateFormat("dd/MM/yyyy");
 		Date fecha = new Date();	
+		
 		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");	
-		String cveAlumno = obj.get("idAlumno");
-		String ultimaFechaAsistio = obj.get("ultimaFechaAsistio");
-		String fechaSolicitud = obj.get("fechaSolicitud");
-		String tipoBaja = obj.get("tipoBaja");
-		String causaBaja = obj.get("causaBaja");
-		String expTipoBaja = obj.get("exp-tipoBaja");
-		String motivoBaja = obj.get("motivoBaja");	
 						
-		if(cveAlumno!=null) {
-			if(causaBaja!=null) {
-				Baja ComprobarBaja = bajaService.buscarPorEstadoAlumnoYFechaAutorizacion(0, new Alumno(Integer.parseInt(cveAlumno)), null);
+		if(baja.getIdAlumno()!=null) {
+			if(baja.getIdCausaBaja()!=null) {
+				Baja ComprobarBaja = bajaService.buscarPorEstadoAlumnoYFechaAutorizacion(1, baja.getIdAlumno());
 				if(ComprobarBaja==null) {
-					Baja baja = new Baja();
-					baja.setGrupo(new Grupo(cveGrupo));
-					baja.setPeriodo(new Periodo(usuario.getPreferencias().getIdPeriodo()));//---
-					baja.setPersona(new Persona(cvePersona));
-					baja.setAlumno(new Alumno(Integer.parseInt(cveAlumno)));
-					baja.setTipoBaja(Integer.parseInt(tipoBaja));
-					baja.setCausaBaja(new CausaBaja(Integer.parseInt(causaBaja)));
-					baja.setOtraCausa(expTipoBaja);
-					baja.setFechaAsistencia(dFDia.parse(ultimaFechaAsistio));
-					baja.setFechaSolicitud(dFDia.parse(fechaSolicitud));
-					baja.setFechaAutorizacion(null);
-					baja.setDescripcion(motivoBaja);
-					baja.setEstatus(0);
-					baja.setFechaRegistro(fecha);
-					bajaService.guardar(baja);
+					Baja newbaja = new Baja();
+					newbaja.setGrupo(new Grupo(cveGrupo));
+					newbaja.setPeriodo(new Periodo(usuario.getPreferencias().getIdPeriodo()));
+					newbaja.setPersona(new Persona(cvePersona));
+					newbaja.setAlumno(new Alumno(baja.getIdAlumno()));
+					newbaja.setTipoBaja(baja.getIdTipoBaja());
+					newbaja.setCausaBaja(new CausaBaja(baja.getIdCausaBaja()));
+					newbaja.setOtraCausa(baja.getDescripcion());
+					newbaja.setFechaAsistencia(baja.getUltimaFechaAsistio());
+					newbaja.setFechaSolicitud(baja.getFechaSolicitud());
+					newbaja.setFechaAutorizacion(null);
+					newbaja.setDescripcion(baja.getMotivo());
+					newbaja.setBajaEstatus(new BajaEstatus(2));//estatus de solicitada
+					newbaja.setFechaRegistro(fecha);
+					bajaService.guardar(newbaja);
 					
-					Alumno alumno = alumnoService.buscarPorId(Integer.parseInt(cveAlumno));
+					Alumno alumno = alumnoService.buscarPorId(baja.getIdAlumno());
 					Persona persona = personaService.buscarPorId(cvePersona);
 					//correo
 					Mail mail = new Mail();
@@ -608,7 +641,7 @@ public class TutorController {
 						emailService.sendEmail(mail);													
 					}catch (Exception e) {
 						return "errorMen";
-				  	}
+					}
 					
 					return "ok";
 				}
@@ -640,7 +673,7 @@ public class TutorController {
 		if (cveGrupo != null) {	
 			Boolean GrupoEnPeriodo = grupoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 			if(GrupoEnPeriodo==true) {
-				alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
+				alumnos = alumnoService.buscarPorGrupo(cveGrupo);	
 				fortalezas = fortalezaService.buscarPorGrupo(new Grupo(cveGrupo));
 				focosAtencion = focoAtenService.buscarPorGrupo(new Grupo(cveGrupo));
 				temasGrupales = temaGrupalService.buscarPorGrupo(new Grupo(cveGrupo));	
@@ -679,7 +712,6 @@ public class TutorController {
 			return "noGrupo";
 		}else{
 			String edFortaleza = obj.get("ed-fortaleza").trim();
-			System.out.println("id:"+cveFortaleza+" fortaleza:"+edFortaleza);
 			
 			Fortaleza UpFortaleza = fortalezaService.buscarPorId(Integer.parseInt(cveFortaleza));
 			UpFortaleza.setFortaleza(edFortaleza);
@@ -937,7 +969,7 @@ public class TutorController {
 				
 		if (cveGrupo != null) {				
 			Grupo grupo = grupoService.buscarPorId(cveGrupo);			
-			alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());				
+			alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cveGrupo);				
 			
 			List<Date> DiasAlviles = periodoService.buscarDiasPorFechaInicioYFechafin(f.format(grupo.getPeriodo().getInicio()), f.format(grupo.getPeriodo().getFin()));
 			
@@ -1207,7 +1239,7 @@ public class TutorController {
 			List<Alumno> alumnos = new ArrayList<>();
 			Boolean allAlumnos = false;
 			if(cveGrupo!=null) {				
-				alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
+				alumnos = alumnoService.buscarPorGrupo(cveGrupo);	
 				if((String) session.getAttribute("rti-fechaInicio")!=null) {					
 					Date fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("rti-fechaInicio"));				
 					if((String) session.getAttribute("rti-fechaFin")!=null) {						
@@ -1294,7 +1326,7 @@ public class TutorController {
 			List<Alumno> alumnos = new ArrayList<>();
 			
 			if (cveGrupo != null) {						
-				alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());				
+				alumnos = alumnoService.buscarPorGrupo(cveGrupo);				
 			}
 			
 			Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
@@ -1400,7 +1432,7 @@ public class TutorController {
 		if(cveGrupo!=null) {
 			Boolean GrupoEnPeriodo = grupoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 			if(GrupoEnPeriodo==true) {
-				bajas = bajaService.buscarPorTipoStatusGrupoYPeriodo(1, 1, cveGrupo, usuario.getPreferencias().getIdPeriodo());
+				bajas = bajaService.buscarPorGrupo(cveGrupo);
 			}
 		}
 		
@@ -1562,7 +1594,7 @@ public class TutorController {
 		Evaluacion evaluacion = null;
 		
 		if (cveGrupo != null) {			
-			List<Alumno> alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
+			List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);	
 			Integer cvePersonaAl = (Integer) session.getAttribute("rei-cvePersonaAl");
 			//se valida si el cuatrimestre al que pertenece el grupo seleccionado
 			
@@ -1621,7 +1653,7 @@ public class TutorController {
 		Evaluacion evaluacion = null;
 		
 		if (cveGrupo != null) {			
-			List<Alumno> alumnos = alumnoService.buscarPorGrupoYPeriodo(cveGrupo, usuario.getPreferencias().getIdPeriodo());	
+			List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);	
 			Integer cvePersonaAl = (Integer) session.getAttribute("rei2-cvePersonaAl");	
 			if(cvePersonaAl!=null) {
 				Integer numEvaluacion = (Integer) session.getAttribute("rei2-numEvaluacion");

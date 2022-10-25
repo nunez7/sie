@@ -36,14 +36,14 @@ public class BajaServiceJpa implements IBajaService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public Baja buscarPorEstadoAlumnoYFechaAutorizacion(Integer estatus, Alumno alumno, Date fecha) {
-		return bajaRepo.findByEstatusAndAlumnoAndFechaAutorizacion(estatus, alumno, fecha);
+	public Baja buscarPorEstadoAlumnoYFechaAutorizacion(Integer estatus, Integer idAlumno) {
+		return bajaRepo.findByEstatusAndAlumnoAndFechaAutorizacion(estatus, idAlumno);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Baja> buscarPorPersonaYEstatus(Integer idPersona, Integer estatus) {
-		return bajaRepo.findByPersonaAndStatusAndFechaNull(idPersona, estatus);
+	public List<Baja> buscarPorPersonaYEstatus(Integer idPersona, Integer estatus, Integer idPeriodo) {
+		return bajaRepo.findByPersonaAndStatusAndFechaNull(idPersona, estatus, idPeriodo);
 	}
 
 	@Override
@@ -99,6 +99,12 @@ public class BajaServiceJpa implements IBajaService{
 	public Integer contarBajasActivasPorAlumno(Integer idAlumno) {
 		// TODO Auto-generated method stub
 		return bajaRepo.countByAlumnoActivas(idAlumno);
+	}
+
+	@Override
+	public List<Baja> buscarPorGrupo(Integer idGrupo) {
+		// TODO Auto-generated method stub
+		return bajaRepo.findByGrupo(idGrupo);
 	}
 	
 }

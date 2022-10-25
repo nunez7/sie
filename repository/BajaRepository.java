@@ -11,16 +11,22 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Baja;
 
 public interface BajaRepository extends CrudRepository<Baja, Integer>{
-	Baja findByEstatusAndAlumnoAndFechaAutorizacion(Integer estatus, Alumno alumno, Date fecha);
+	//busca si hay una baja solicitda por el alumno
+	@Query(value = "SELECT * FROM bajas WHERE id_alumno= :idAlumno "
+			+ "AND estatus = :estatus AND fecha_autorizacion IS NULL ", nativeQuery = true)
+	Baja findByEstatusAndAlumnoAndFechaAutorizacion(@Param("estatus") Integer estatus, @Param("idAlumno") Integer idAlumno);
 	//Extrae todas las solicitudes de baja de los alumnos pertenecientes
 	//a los grupos de las carreras que tiene asociada el usuario.
-	@Query(value = "SELECT DISTINCT ON (ag.id_alumno) b.* FROM bajas b "
+	@Query(value = "SELECT DISTINCT ON (ag.id_alumno, b.id) b.* FROM bajas b "
 			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno=b.id_alumno "
 			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
 			+ "INNER JOIN carreras c ON c.id=g.id_carrera "
 			+ "INNER JOIN persona_carrera pc ON c.id=pc.id_carrera "
-			+ "WHERE pc.id_persona =:idPersona AND b.estatus=:estatus AND b.fecha_autorizacion is null", nativeQuery = true)
-	List<Baja> findByPersonaAndStatusAndFechaNull(@Param("idPersona") Integer idPersona, @Param("estatus") Integer estatus);
+			+ "WHERE pc.id_persona =:idPersona AND b.estatus=:estatus "
+			+ "AND b.id_periodo = :idPeriodo "
+			+ "AND b.fecha_autorizacion IS NULL ORDER BY b.id DESC", nativeQuery = true)
+	List<Baja> findByPersonaAndStatusAndFechaNull(@Param("idPersona") Integer idPersona, @Param("estatus") Integer estatus,
+				@Param("idPeriodo") Integer idPeriodo);
 	
 	//bajas para scolares 
 	@Query(value = "SELECT b.* FROM bajas b "
@@ -79,5 +85,8 @@ public interface BajaRepository extends CrudRepository<Baja, Integer>{
 	@Query(value = "SELECT count(*) FROM bajas WHERE id_alumno = :idAlumno AND estatus = 0 ", nativeQuery = true)
 	Integer countByAlumnoActivas(@Param("idAlumno") Integer idAlumno);
 	
+	///busca las bajas por grupo
+	@Query(value = "SELECT * FROM bajas WHERE id_grupo = :idGrupo", nativeQuery = true)
+	List<Baja> findByGrupo(@Param("idGrupo") Integer idGrupo);
 	
 }

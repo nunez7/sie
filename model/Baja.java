@@ -10,7 +10,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name = "bajas")
@@ -20,19 +25,19 @@ public class Baja {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	
-	@ManyToOne(fetch = FetchType.EAGER)
+	@OneToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name="id_periodo")
 	private Periodo periodo; 
 	
-	@ManyToOne(fetch = FetchType.EAGER)
+	@OneToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name="id_grupo")
 	private Grupo grupo; 
 	
-	@ManyToOne(fetch = FetchType.EAGER)
+	@OneToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_persona")
 	private Persona persona;
 	
-	@ManyToOne(fetch = FetchType.EAGER)
+	@OneToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name="id_alumno")
 	private Alumno alumno;
 	
@@ -46,18 +51,26 @@ public class Baja {
 	@Column(name="otra_causa")
 	private String otraCausa;
 	
+	@Temporal(TemporalType.DATE)
+	@DateTimeFormat(pattern = "dd/MM/yyyy")
 	@Column(name="fecha_asistencia")
 	private Date fechaAsistencia;
-
+	
+	@Temporal(TemporalType.DATE)
+	@DateTimeFormat(pattern = "dd/MM/yyyy")
 	@Column(name="fecha_solicitud")
 	private Date fechaSolicitud;
 	
+	@Temporal(TemporalType.DATE)
+	@DateTimeFormat(pattern = "dd/MM/yyyy")
 	@Column(name="fecha_autorizacion")
 	private Date fechaAutorizacion;
 	
 	private String descripcion;
 	
-	private Integer estatus;
+	@OneToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name="estatus")
+	private BajaEstatus bajaEstatus;
 	
 	@Column(name="fecha_registro")
 	private Date fechaRegistro;
@@ -166,12 +179,12 @@ public class Baja {
 		this.descripcion = descripcion;
 	}
 
-	public Integer getEstatus() {
-		return estatus;
+	public BajaEstatus getBajaEstatus() {
+		return bajaEstatus;
 	}
 
-	public void setEstatus(Integer estatus) {
-		this.estatus = estatus;
+	public void setBajaEstatus(BajaEstatus bajaEstatus) {
+		this.bajaEstatus = bajaEstatus;
 	}
 
 	public Date getFechaRegistro() {

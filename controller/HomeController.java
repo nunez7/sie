@@ -130,7 +130,7 @@ public class HomeController {
 		usuario = (Usuario) session.getAttribute("usuario");
 		int rol = usuario.getRoles().get(0).getId();
 		//notificaciones 
-		int bajasDirector = rol == 3 ? bajaService.buscarPorPersonaYEstatus(usuario.getPersona().getId(), 0).size():0;
+		int bajasDirector = rol == 3 ? bajaService.buscarPorPersonaYEstatus(usuario.getPersona().getId(), 2, usuario.getPreferencias().	getIdPeriodo()).size():0;
 		int apTutorias = rol == 1 ? tutoriaIndService.buscarPorAlumnoYValidada(alumnoService.buscarPorPersona(new Persona(usuario.getPersona().getId())), false).size():0;
 		int observacionesP = rol == 2 ? dosiComentaService.contarPorProfesorYPeriodo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()):0;
 		int dosificacionesP = rol == 2 ? dosiCargaService.contarNoEntregadas(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo()):0;
