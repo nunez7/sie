@@ -11,6 +11,7 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dto.ProspectoDTO;
+import edu.mx.utdelacosta.model.dto.RemedialAlumnoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoNoReinscritoDTO;
@@ -362,5 +363,11 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	@Transactional(readOnly = true)
 	public List<AlumnoRegularDTO> buscarTodosProspectoReinscripcion(Integer carrera, Integer periodo) {
 		return alumnosRepo.findAllRegularProspecto(carrera, periodo);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<RemedialAlumnoDTO> buscarTodosRemedial() {
+		return alumnosRepo.findAllRemedial();
 	}
 }

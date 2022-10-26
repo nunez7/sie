@@ -14,6 +14,7 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dto.ProspectoDTO;
+import edu.mx.utdelacosta.model.dto.RemedialAlumnoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoNoReinscritoDTO;
@@ -555,4 +556,13 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "	WHERE a.id_carrera=:carrera AND a.matricula ILIKE '%-3%' "
 			+ "	ORDER BY c.nombre, p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
 	List<AlumnoRegularDTO> findAllRegularProspecto(@Param("carrera") Integer carrera, @Param("periodo") Integer periodo);
+	
+	@Query(value = "SELECT id_alumno AS alumno, id_carga_horaria AS carga, "
+			+ "id_corte_evaluativo AS corte, m.nombre AS materia "
+			+ "FROM calificacion_corte cc "
+			+ "INNER JOIN cargas_horarias ch ON ch.id = cc.id_carga_horaria "
+			+ "INNER JOIN materias m ON ch.id_materia = m.id "
+			+ "WHERE valor < 8 AND ch.id_periodo = 11 AND ch.activo = true ", nativeQuery = true)
+	List<RemedialAlumnoDTO> findAllRemedial();
+	
 }

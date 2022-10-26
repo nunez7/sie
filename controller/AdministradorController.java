@@ -11,12 +11,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Carrera;
 import edu.mx.utdelacosta.model.Grupo;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.model.dto.RemedialAlumnoDTO;
 import edu.mx.utdelacosta.model.dtoreport.UpdatePasswordsAlumnoDTO;
 import edu.mx.utdelacosta.model.dtoreport.UpdatePasswordsPersonalDTO;
 import edu.mx.utdelacosta.service.IAlumnoService;
@@ -24,6 +26,7 @@ import edu.mx.utdelacosta.service.ICarrerasServices;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IUsuariosService;
+import edu.mx.utdelacosta.util.ActualizarRemedial;
 import edu.mx.utdelacosta.util.Utileria;
 
 @Controller
@@ -45,6 +48,9 @@ public class AdministradorController {
 	
 	@Autowired
 	private IAlumnoService alumnoService;
+	
+	@Autowired
+	private ActualizarRemedial actualizarRemedial;
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -120,5 +126,17 @@ public class AdministradorController {
 		model.addAttribute("usuarios", UpdateUsuarios);
 		return "fragments/reset-passwords :: cargar-usuarios-personal";
 	}
+	
+	@GetMapping("/remedial")
+	@ResponseBody
+	public String prueba(Model model) {
+		List<RemedialAlumnoDTO> alumnos = alumnoService.buscarTodosRemedial();
+		for (RemedialAlumnoDTO a : alumnos) {
+			actualizarRemedial.crearRemedialOrdinariaAuxiliar(a.getAlumno(), a.getCarga(), 
+				a.getCorte(), a.getMateria());
+		}
+		return alumnos.size()+" remdiales generados correctamente :)";
+	}
+	
 	
 }

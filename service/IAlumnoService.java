@@ -10,6 +10,7 @@ import edu.mx.utdelacosta.model.dtoreport.AlumnoNoReinscritoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoRegularDTO;
 import edu.mx.utdelacosta.model.dto.ProspectoDTO;
+import edu.mx.utdelacosta.model.dto.RemedialAlumnoDTO;
 import edu.mx.utdelacosta.model.dtoreport.ProspectoEscolaresDTO;
 
 public interface IAlumnoService {
@@ -115,5 +116,7 @@ public interface IAlumnoService {
 	List<AlumnoInfoDTO> buscarTodosPorPeriodo(Integer idPeriodo);
 	
 	List<AlumnoRegularDTO> buscarTodosProspectoReinscripcion(Integer carrera, Integer periodo);
+	
+	List<RemedialAlumnoDTO> buscarTodosRemedial();
 
 }
