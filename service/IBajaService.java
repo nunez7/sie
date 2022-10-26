@@ -15,8 +15,8 @@ public interface IBajaService {
 	List<Baja> buscarPorTipoStatusGrupoYPeriodo(Integer tipo, Integer estatus, Integer idGrupo, Integer idPeriodo);
 	List<Baja> buscarPorTipoStatusCarreraYPeriodo(Integer tipo, Integer estatus, Integer idCarrera, Integer idPeriodo);
 	
-	List<Baja> buscarPorTipoStatusCarreraEntreFechas(Integer tipo, Integer estatus, Integer idCarrera, Date fechaInicio, Date fechaFin);
-	List<Baja> buscarPorTipoStatusPersonaEntreFechas(Integer tipo, Integer estatus, Integer idPersona, Date fechaInicio, Date fechaFin);
+	List<Baja> buscarPorTipoStatusCarreraEntreFechas(Integer estatus, Integer idCarrera, Date fechaInicio, Date fechaFin);
+	List<Baja> buscarPorTipoStatusPersonaEntreFechas(Integer estatus, Integer idPersona, Date fechaInicio, Date fechaFin);
 	List<Baja> buscarPorTipoStatusEntreFechas(Integer tipo, Integer estatus, Date fechaInicio, Date fechaFin);
 	
 	List<Baja> buscarPorAlumno(Alumno alumno);

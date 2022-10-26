@@ -821,9 +821,9 @@ public class DirectorController {
 			if((String) session.getAttribute("rdb-fechaFin")!=null) {						
 				Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("rdb-fechaFin"));
 				if(cveCarrera==null || cveCarrera==0) {
-					bajas = bajaService.buscarPorTipoStatusPersonaEntreFechas(1, 1, cvePersona, fechaInicio, fechaFin);
+					bajas = bajaService.buscarPorTipoStatusPersonaEntreFechas(1, cvePersona, fechaInicio, fechaFin);
 				}else{
-					bajas = bajaService.buscarPorTipoStatusCarreraEntreFechas(1, 1, cveCarrera, fechaInicio, fechaFin);
+					bajas = bajaService.buscarPorTipoStatusCarreraEntreFechas(1, cveCarrera, fechaInicio, fechaFin);
 				}
 				model.addAttribute("fechaFin", fechaFin);
 			}

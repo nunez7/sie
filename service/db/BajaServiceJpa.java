@@ -66,14 +66,14 @@ public class BajaServiceJpa implements IBajaService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Baja> buscarPorTipoStatusCarreraEntreFechas(Integer tipo, Integer estatus, Integer idCarrera, Date fechaInicio, Date fechaFin) {
-		return bajaRepo.findByTipoAndStatusAndCarreraAndFechas(tipo, estatus, idCarrera, fechaInicio, fechaFin);
+	public List<Baja> buscarPorTipoStatusCarreraEntreFechas(Integer estatus, Integer idCarrera, Date fechaInicio, Date fechaFin) {
+		return bajaRepo.findByTipoAndStatusAndCarreraAndFechas(estatus, idCarrera, fechaInicio, fechaFin);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Baja> buscarPorTipoStatusPersonaEntreFechas(Integer tipo, Integer estatus, Integer idPersona, Date fechaInicio, Date fechaFin) {
-		return bajaRepo.findByTipoAndStatusAndPersonaAndFechas(tipo, estatus, idPersona, fechaInicio, fechaFin);
+	public List<Baja> buscarPorTipoStatusPersonaEntreFechas(Integer estatus, Integer idPersona, Date fechaInicio, Date fechaFin) {
+		return bajaRepo.findByTipoAndStatusAndPersonaAndFechas(estatus, idPersona, fechaInicio, fechaFin);
 	}
 
 	@Override

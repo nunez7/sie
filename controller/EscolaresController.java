@@ -1091,7 +1091,7 @@ public class EscolaresController {
 				if(cveCarrera==null || cveCarrera==0) {
 					bajas = bajaService.buscarPorTipoStatusEntreFechas(1, 1, fechaInicio, fechaFin);
 				}else{
-					bajas = bajaService.buscarPorTipoStatusCarreraEntreFechas(1, 1, cveCarrera, fechaInicio, fechaFin);
+					bajas = bajaService.buscarPorTipoStatusCarreraEntreFechas(1, cveCarrera, fechaInicio, fechaFin);
 				}
 				model.addAttribute("fechaFin", fechaFin);
 			}

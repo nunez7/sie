@@ -523,6 +523,35 @@ public class AsistenteController {
 		return "asistente/grupos";
 	}
 	
+	//fechas de entrega
+	@GetMapping("/fechas")
+	public String fechas(Model model, HttpSession session) {
+		//creamos el usuario de acuerdo a la authenticación 
+		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona")); 
+		Usuario usuario = usuariosService.buscarPorPersona(persona);
+		// buscamos las carreras de acuerdo a las preferencias y permisos del usuario
+		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(usuario.getPersona().getId());
+		if (carreras.size() > 0) {
+			model.addAttribute("carreras", carreras.size());
+			List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(carreras.get(0).getId(),
+					usuario.getPreferencias().getIdPeriodo());
+			if (cortes.size() > 0) {
+				model.addAttribute("corte1", cortes.get(0));
+				model.addAttribute("corte2", cortes.get(1));
+			} else {
+				CorteEvaluativo corte1 = new CorteEvaluativo();
+				CorteEvaluativo corte2 = new CorteEvaluativo();
+				model.addAttribute("corte1", corte1);
+				model.addAttribute("corte2", corte2);
+			}
+		} else {
+			// para decirle que no tiene permisos
+			model.addAttribute("carreras", 0);
+		}
+		return "asistente/fechas";
+	}
+	
+	
 	@GetMapping("/reportes")
 	public String reportes() {
 		return "asistente/reportes";
@@ -659,16 +688,20 @@ public class AsistenteController {
 			model.addAttribute("grupos",grupos); 
 			model.addAttribute("cveCarrera", cveCarrera);
 			if (session.getAttribute("cveGrupo") != null) {
-				  int cveGrupo = (Integer) session.getAttribute("cveGrupo");
+				int cveGrupo = (Integer) session.getAttribute("cveGrupo");
 				model.addAttribute("cveGrupo", cveGrupo);
-				model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
+				//model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
 				//proceso para sacar las materias
 				List<CargaHoraria> cargaHorarias = cargaHorariaService.buscarPorGrupoYPeriodoYCalificacionSi(cveGrupo, usuario.getPreferencias().getIdPeriodo());
 				model.addAttribute("cargasHorarias", cargaHorarias);
-				List<CorteEvaluativo> corte = corteEvaluativoService.buscarPorCarreraYPeriodo(usuario.getPreferencias().getIdCarrera(), usuario.getPreferencias().getIdPeriodo());
+				List<CorteEvaluativo> corte = corteEvaluativoService.buscarPorCarreraYPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo());
 				List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
 				model.addAttribute("alumnos", alumnos);
+				for (CargaHoraria ch : cargaHorarias) {
+					System.err.println("carga: "+ch.getMateria().getNombre());
+				}
 				//lista para rellenar alumnos con calificaciones
+				
 				List<AlumnoPromedioDTO> alumnosCalificaciones =  new ArrayList<AlumnoPromedioDTO>();
 				if (alumnos.size() > 0) {
 					for (Alumno alumno : alumnos) {
@@ -716,6 +749,7 @@ public class AsistenteController {
 						//se agregan los alumnos al arreglo
 						alumnosCalificaciones.add(alumnoDTO);
 					}
+					
 					model.addAttribute("alumnosCali", alumnosCalificaciones);
 					List<IndicadorMateriaDTO> indicadoresMaterias = new ArrayList<IndicadorMateriaDTO>();
 					//proceso para tabla de indicadores
@@ -773,8 +807,8 @@ public class AsistenteController {
 						// se retorna la lista de indicadores materia
 						model.addAttribute("materias", indicadoresMaterias);
 						model.addAttribute("alumnos", alumnos.size());
-					}
-				}
+					} 
+				} 
 			}
 		}
 		Periodo periodo = servicePeriodo.buscarPorId(usuario.getPreferencias().getIdPeriodo());
