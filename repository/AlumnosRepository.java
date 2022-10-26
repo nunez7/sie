@@ -562,7 +562,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "FROM calificacion_corte cc "
 			+ "INNER JOIN cargas_horarias ch ON ch.id = cc.id_carga_horaria "
 			+ "INNER JOIN materias m ON ch.id_materia = m.id "
-			+ "WHERE valor < 8 AND ch.id_periodo = 11 AND ch.activo = true ", nativeQuery = true)
+			+ "WHERE valor < 7.5 AND ch.id_periodo = 11 AND ch.activo = true ", nativeQuery = true)
 	List<RemedialAlumnoDTO> findAllRemedial();
 	
 }
