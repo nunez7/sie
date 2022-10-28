@@ -5,6 +5,7 @@ import java.util.List;
 public class AlumnoPromedioDTO {
 	private Integer idAlumno;
 	private String nombre;
+	private String matricula;
 	private List<IndicadorMateriaDTO> materias;
 	
 	public Integer getIdAlumno() {
@@ -25,6 +26,10 @@ public class AlumnoPromedioDTO {
 	public void setMaterias(List<IndicadorMateriaDTO> materias) {
 		this.materias = materias;
 	}
-	
-	
+	public String getMatricula() {
+		return matricula;
+	}
+	public void setMatricula(String matricula) {
+		this.matricula = matricula;
+	}
 }

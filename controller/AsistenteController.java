@@ -230,19 +230,24 @@ public class AsistenteController {
 	
 	@GetMapping("/calificaciones")
 	public String calificaciones(Model model, HttpSession session) {
+		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona")); 
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
-		int cvePersona = (Integer) session.getAttribute("cvePersona");
-		Persona persona = personaService.buscarPorId(cvePersona);
 		int cveGrupo;
 		try {
 			cveGrupo = (Integer) session.getAttribute("cveGrupo");
 		} catch (Exception e) {
 			cveGrupo = 0;
 		}
-
-		List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera(usuario.getPreferencias().getIdPeriodo(), usuario.getPreferencias().getIdCarrera());
-		List<Materia> materias = materiasService.buscarPorCargaActivaEnGrupo(cveGrupo, usuario.getPreferencias().getIdCarrera());
+		Grupo grupo = grupoService.buscarPorId(cveGrupo);
+		if(grupo != null) {
+			//debo de buscar porcuatrimestre, carrera y periodo
+			List<Grupo> listGrupos = grupoService.buscarPorCuatrimestreCarreraYPeriodo(grupo.getCuatrimestre().getId(), grupo.getCarrera().getId(), usuario.getPreferencias().getIdPeriodo());
+			model.addAttribute("gruposC", listGrupos);
+		}
+		List<Grupo> grupos = grupoService.buscarPorPeriodoyCarrera( usuario.getPreferencias().getIdPeriodo(),usuario.getPreferencias().getIdCarrera()); //se tomara de la session la carrera y el periodo
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(persona.getId());
+		List<Materia> materias = materiasService.buscarPorCargaActivaEnGrupo(cveGrupo, usuario.getPreferencias().getIdCarrera());
+		//para mandar los grupos a cambiar
 		List<AlumnoDTO> alumnos = new ArrayList<AlumnoDTO>();
 		if(!materias.isEmpty()) {
 			AlumnoDTO alumno;
@@ -272,8 +277,8 @@ public class AsistenteController {
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("carreras", carrerasServices.buscarTodasMenosIngles());
 		model.addAttribute("grupos", grupos);
-		model.addAttribute("alumnos", alumnos);
 		model.addAttribute("carreras", carreras);
+		model.addAttribute("alumnos", alumnos);
 		return "asistente/calificaciones";
 	}
 	
@@ -697,11 +702,7 @@ public class AsistenteController {
 				List<CorteEvaluativo> corte = corteEvaluativoService.buscarPorCarreraYPeriodo(cveCarrera, usuario.getPreferencias().getIdPeriodo());
 				List<Alumno> alumnos = alumnoService.buscarPorGrupo(cveGrupo);
 				model.addAttribute("alumnos", alumnos);
-				for (CargaHoraria ch : cargaHorarias) {
-					System.err.println("carga: "+ch.getMateria().getNombre());
-				}
 				//lista para rellenar alumnos con calificaciones
-				
 				List<AlumnoPromedioDTO> alumnosCalificaciones =  new ArrayList<AlumnoPromedioDTO>();
 				if (alumnos.size() > 0) {
 					for (Alumno alumno : alumnos) {
@@ -710,6 +711,7 @@ public class AsistenteController {
 						//se rellena el alumno y sus calificaciones
 						alumnoDTO.setIdAlumno(alumno.getId());
 						alumnoDTO.setNombre(alumno.getPersona().getNombreCompletoPorApellido());
+						alumnoDTO.setMatricula(alumno.getMatricula());
 						List<IndicadorMateriaDTO> indicadoresMaterias = new ArrayList<IndicadorMateriaDTO>();
 						for (CargaHoraria ch : cargaHorarias) {
 							IndicadorMateriaDTO im = new IndicadorMateriaDTO();

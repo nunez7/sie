@@ -33,9 +33,10 @@ public interface GruposRepository extends CrudRepository<Grupo, Integer> {
 			+ "WHERE ag.id_alumno=:idAlumno " + "ORDER BY id_periodo DESC LIMIT 1", nativeQuery = true)
 	Grupo findLastGrupoByAlumno(@Param("idAlumno") Integer idAlumno);
 
-	@Query(value = "SELECT * " + "FROM grupos g "
-			+ "WHERE id_periodo=:idPeriodo AND id_carrera=:idCarrera AND activo=true "
-			+ "ORDER BY nombre DESC", nativeQuery = true)
+	@Query(value = "SELECT g.* FROM grupos g "
+			+ "INNER JOIN cuatrimestres c ON g.id_cuatrimestre = c.id "
+			+ "WHERE id_periodo = :idPeriodo AND id_carrera = :idCarrera "
+			+ "AND activo = 'True' ORDER BY c.consecutivo, g.nombre", nativeQuery = true)
 	List<Grupo> findAllByPeriodoAndCarreraOrderByNombre(@Param("idPeriodo") Integer idPeriodo,
 			@Param("idCarrera") Integer idCarrera);
 

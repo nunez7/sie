@@ -370,4 +370,12 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	public List<RemedialAlumnoDTO> buscarTodosRemedial() {
 		return alumnosRepo.findAllRemedial();
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<AlumnoRegularDTO> buscarTodosPorCarreraYCuatrimestreYPeriodo(Integer idCarrera, Integer idCuatrimestre,
+			Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.findAllByCarreraAndCuatrimestreAndPeriodo(idCarrera, idCuatrimestre, idPeriodo);
+	}
 }

@@ -17,18 +17,18 @@ public interface CargaHorariaRepository extends JpaRepository<CargaHoraria, Inte
 	// busca la carga horaria por materia y periodo
 	@Query(value = "SELECT * FROM cargas_horarias "
 			+ "WHERE id_materia = :materia AND id_periodo = :periodo AND id_grupo = :grupo "
-			+ "AND activo = 'true' ", nativeQuery = true)
+			+ "AND activo = 'True' ", nativeQuery = true)
 	CargaHoraria findByMateriaAndPeriodoAndGrupo(@Param("materia") Integer materia, @Param("periodo") Integer periodo,
 			@Param("grupo") Integer grupo);
 
 	@Query(value = "SELECT ch.* FROM cargas_horarias ch " + "INNER JOIN materias m ON ch.id_materia = m.id "
 			+ "WHERE id_grupo = :grupo and id_periodo = :periodo "
-			+ "AND ch.activo = 'true' ORDER BY m.nombre", nativeQuery = true)
+			+ "AND ch.activo = 'True' ORDER BY m.nombre", nativeQuery = true)
 	List<CargaHoraria> findByGrupoAndPeriodo(@Param("grupo") Integer grupo, @Param("periodo") Integer periodo);
 	
 	@Query(value = "SELECT ch.* FROM cargas_horarias ch " + "INNER JOIN materias m ON ch.id_materia = m.id "
 			+ "WHERE id_grupo = :grupo and id_periodo = :periodo "
-			+ "AND ch.activo = 'true' AND m.calificacion = 'True' ORDER BY m.nombre", nativeQuery = true)
+			+ "AND ch.activo = 'True' AND m.calificacion = 'True' AND m.activo = 'True' ORDER BY m.nombre", nativeQuery = true)
 	List<CargaHoraria> findByGrupoAndPeriodoAndCalificacionSi(@Param("grupo") Integer idGrupo, @Param("periodo") Integer idPeriodo);
 
 	List<CargaHoraria> findByProfesorAndPeriodoAndActivo(Persona profesor, Periodo periodo, Boolean activo);

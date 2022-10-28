@@ -1116,5 +1116,36 @@ public class EscolaresController {
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "escolares/reporteBajas"; 
 	 }
+	
+	//reporte de alumnos Inscritos por cuatrimestre y carrera
+	@GetMapping("/reporte-alumnos-carrera")
+	public String reporteAlumnosCarrera(Model model, HttpSession session) {
+		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
+		Usuario usuario = usuarioService.buscarPorPersona(persona);
+		//se buscan las carreras
+		List<Carrera> carreras = carreraService.buscarTodasMenosIngles();
+		List<AlumnoRegularDTO> alumnos = new ArrayList<>();
+		//se compara que no sea null la carrera
+		if(session.getAttribute("cveCarreraEs") != null) {
+			int cveCarrera = (Integer) session.getAttribute("cveCarreraEs");
+			model.addAttribute("cveCarreraEs", cveCarrera);
+			//se buscan los cuatrimestres
+			List<Cuatrimestre> cuatrimestres = cuatrimestreService.buscarTodos();
+			model.addAttribute("cuatrimestres", cuatrimestres);
+			//se compar� si el cuatrimestre no es nulo
+			if(session.getAttribute("cveCuatrimestreEs") != null) {
+				int cveCuatrimestre = (Integer) session.getAttribute("cveCuatrimestreEs");
+				model.addAttribute("cveCuatrimestreEs", cveCuatrimestre);
+				//busca los alumnos 
+				alumnos = alumnoService.buscarTodosPorCarreraYCuatrimestreYPeriodo(cveCarrera, cveCuatrimestre, usuario.getPreferencias().getIdPeriodo());
+			}
+		}
+		Periodo periodo = periodosService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		model.addAttribute("cuatrimestre", periodo.getNombre());
+		model.addAttribute("alumnos", alumnos);
+		model.addAttribute("carreras", carreras);
+		model.addAttribute("nombreUT", NOMBRE_UT);
+		return "escolares/reporteAlumnosCarrera";
+	}
 
 }

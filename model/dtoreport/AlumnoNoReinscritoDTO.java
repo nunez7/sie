@@ -6,6 +6,8 @@ public interface AlumnoNoReinscritoDTO {
 	
 	String getNombre();
 	
+	String getMatricula();
+	
 	String getGrupo();
 	
 	String getCarrera();

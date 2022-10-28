@@ -69,9 +69,9 @@ public class ProrrogaController {
 	@PostMapping(path= "/aceptar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String aceptar(@RequestBody Map<String, String> obj) {		
-		int idProrroga = Integer.valueOf(obj.get("id"));
-		int idPersona = Integer.valueOf(obj.get("idPersona"));
-		int idMateria = Integer.valueOf(obj.get("idMateria"));
+		Integer idProrroga = Integer.valueOf(obj.get("id"));
+		Integer idPersona = Integer.valueOf(obj.get("idPersona"));
+		Integer idMateria = Integer.valueOf(obj.get("idMateria"));
 		Date fechaLimite = Date.valueOf(obj.get("fechaLimite"));
 		Materia materia = materiasService.buscarPorId(idMateria);
 		Prorroga prorroga = prorrogaService.buscarPorId(idProrroga);
@@ -102,8 +102,8 @@ public class ProrrogaController {
 		try {
 			emailService.sendEmail(mail);
 			System.out.println("Enviado");
-		} catch (MessagingException | IOException e) {
-			System.out.println("Error "+e);
+		} catch (Exception e) {
+			System.out.println("mail");
 		}
 		return "ok";
 	}
@@ -140,8 +140,8 @@ public class ProrrogaController {
 		try {
 			emailService.sendEmail(mail);
 			System.out.println("Enviado");
-		} catch (MessagingException | IOException e) {
-			System.out.println("Error "+e);
+		} catch (Exception e) {
+			System.out.println("mail");
 		} 
 		return "ok";
 	}

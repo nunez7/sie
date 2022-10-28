@@ -118,5 +118,7 @@ public interface IAlumnoService {
 	List<AlumnoRegularDTO> buscarTodosProspectoReinscripcion(Integer carrera, Integer periodo);
 	
 	List<RemedialAlumnoDTO> buscarTodosRemedial();
+	
+	List<AlumnoRegularDTO> buscarTodosPorCarreraYCuatrimestreYPeriodo(Integer idCarrera, Integer idCuatrimestre, Integer idPeriodo);
 
 }

@@ -19,15 +19,15 @@ public class ProrrogaAutoriza {
 	private Integer id;
 	
 	@Column(name = "id_autoriza")
-	private int idAutoriza;
+	private Integer idAutoriza;
 	
 	@Column(name = "id_prorroga")
-	private int idProrroga;
+	private Integer idProrroga;
 	
 	@Column(name = "fecha_alta")
 	private Date fechaAlta;
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
@@ -35,19 +35,19 @@ public class ProrrogaAutoriza {
 		this.id = id;
 	}
 
-	public int getIdAutoriza() {
+	public Integer getIdAutoriza() {
 		return idAutoriza;
 	}
 
-	public void setIdAutoriza(int idAutoriza) {
+	public void setIdAutoriza(Integer idAutoriza) {
 		this.idAutoriza = idAutoriza;
 	}
 
-	public int getIdProrroga() {
+	public Integer getIdProrroga() {
 		return idProrroga;
 	}
 
-	public void setIdProrroga(int idProrroga) {
+	public void setIdProrroga(Integer idProrroga) {
 		this.idProrroga = idProrroga;
 	}
 
@@ -58,6 +58,4 @@ public class ProrrogaAutoriza {
 	public void setFechaAlta(Date fechaAlta) {
 		this.fechaAlta = fechaAlta;
 	}
-	
-	
 }

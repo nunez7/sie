@@ -17,5 +17,20 @@ public interface AlumnoRegularDTO {
 	String getPrimerApellido();
 	
 	String getSegundoApellido();
-
+	
+	String getCarrera();
+	
+	String getSiglasCarrera();
+	
+	String getSexo();
+	
+	Boolean getIndigena();
+	
+	Boolean getDiscapacitado();
+	
+	String getCurp();
+	
+	String getCuatrimestre();
+	
+	String getCorreo();
 }

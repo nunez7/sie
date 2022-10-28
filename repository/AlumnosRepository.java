@@ -416,7 +416,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "ORDER BY a.id DESC ", nativeQuery = true)
 	List<Alumno> findAllAceptedProspectos(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo);
 	
-	@Query(value = "SELECT DISTINCT(a.id) as idalumno, CONCAT(p.primer_apellido,' ',p.segundo_apellido,' ', p.nombre) as nombre, "
+	@Query(value = "SELECT DISTINCT(a.id) as idalumno, a.matricula, CONCAT(p.primer_apellido,' ',p.segundo_apellido,' ', p.nombre) as nombre, "
 			   + "g.nombre as grupo, c.nombre as carrera, ag.pagado as pago, a.documentos_ingresos as documentos "
 			   + "FROM alumnos_grupos ag "
 			   + "INNER JOIN alumnos a on a.id = ag.id_alumno "
@@ -564,5 +564,23 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "INNER JOIN materias m ON ch.id_materia = m.id "
 			+ "WHERE valor < 7.5 AND ch.id_periodo = 11 AND ch.activo = true ", nativeQuery = true)
 	List<RemedialAlumnoDTO> findAllRemedial();
+	
+	@Query(value = "SELECT c.clave AS siglascarrera, c.nombre AS carrera, a.matricula ,"
+			+ "p.nombre AS nombre, p.primer_apellido as primerapellido, p.segundo_apellido as segundoapellido, p.email AS correo, p.sexo ,"
+			+ "da.discapacitado, da.indigena, dp.curp, g.nombre as grupoactual, c2.consecutivo as cuatrimestre "
+			+ "FROM alumnos a "
+			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno = a.id "
+			+ "INNER JOIN grupos g ON ag.id_grupo = g.id "
+			+ "INNER JOIN cuatrimestres c2 ON g.id_cuatrimestre = c2.id "
+			+ "INNER JOIN personas p ON p.id = a.id_persona "
+			+ "INNER JOIN carreras c ON c.id = a.id_carrera "
+			+ "INNER JOIN datos_alumno da ON da.id_alumno = a.id "
+			+ "INNER JOIN datos_personales dp ON dp.id_persona = p.id "
+			+ "WHERE g.id_cuatrimestre = :idCuatrimestre AND g.id_carrera = :idCarrera  "
+			+ "AND g.id_periodo = :idPeriodo "
+			+ "ORDER BY g.nombre, TRANSLATE (p.primer_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, TRANSLATE (p.segundo_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, "
+			+ "TRANSLATE (p.nombre,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC", nativeQuery = true)
+	List<AlumnoRegularDTO> findAllByCarreraAndCuatrimestreAndPeriodo(@Param("idCarrera") Integer idCarrera, @Param("idCuatrimestre") Integer idCuatrimestre,
+			@Param("idPeriodo") Integer idPeriodo);
 	
 }
