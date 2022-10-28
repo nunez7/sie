@@ -88,45 +88,40 @@ public class RemedialController {
 	@GetMapping("/cargar/{alumno}/{tipo}/{carga}/{corte}")
 	public String verInstrumentos(@PathVariable(name = "alumno", required = true) Integer idAlumno,
 			@PathVariable(name = "tipo", required = true) String tipo,
-			@PathVariable(name = "corte", required = true) String corteActual,
+			@PathVariable(name = "corte", required = true) Integer corteActual,
 			@PathVariable(name = "carga", required = true) Integer idCarga, Model model, HttpSession session) {
 		Date fechaHoy = new Date();
-		Integer corActual = Integer.parseInt(corteActual);
-		// se busca el corte evaluativo en base
-		CorteEvaluativo corte = corteEvaluativoService.buscarPorId(corActual);
-
+		CorteEvaluativo corte = corteEvaluativoService.buscarPorId(corteActual);
+		Alumno alumno = new Alumno(idAlumno);
+		CargaHoraria carga = new CargaHoraria(idCarga);
+		
 		// se compara el tipo de remdial, si es remedial o extraordinario
 		if (tipo.equals("remedial")) {
+			
 			// se busca si el periodo de remediales esta activo
-			if (fechaHoy.before(corte.getInicioRemedial()) || fechaHoy.after(corte.getLimiteRemedial())) {
-				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
-						new CargaHoraria(idCarga),corte,new TipoProrroga(1), true);
-				if (prorroga != null) {
-					if (prorroga.getFechaLimite().before(fechaHoy)) {
+			if (corteEvaluativoService.buscarPorCorteYFechaRemedial(corte, fechaHoy)==null) {
+				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrga(
+						new CargaHoraria(idCarga),corte,new TipoProrroga(1), new Date());
+				if (prorroga == null) {
 						model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de remediales");
 						return "fragments/modal-calificar:: verRemedialExtra";
-					}
-				} else {
-					model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de remediales");
-					return "fragments/modal-calificar:: verRemedialExtra";
 				}
 
 			}
 			
 			// se busca si el alumno tiene un remedial
-			RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
-			new Alumno(idAlumno), new CargaHoraria(idCarga), new Remedial(1),
-			new CorteEvaluativo(corActual));
+			RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(alumno, 
+					new CargaHoraria(idCarga), new Remedial(1),corte);
 
 			if (remedial==null) {
 						
 				//en caso de no tener se busca si el alumno es apto para generar un remedial
-				boolean aptoRemedial = comprobarRemedial(idAlumno, idCarga, corActual);
+				boolean aptoRemedial = comprobarRemedial(idAlumno, idCarga, corteActual);
 				if (aptoRemedial == false) {		
 					// caso negativo se devuelve la vista
 					model.addAttribute("respuesta", "El alumno no se encuentra en remedial");
 				}else {
-					CargaHoraria carga = cargaService.buscarPorIdCarga(idCarga);
+					carga = cargaService.buscarPorIdCarga(idCarga);
 					List<Testimonio> testimonios = testimonioService.buscarTodosPorIntegradora(carga.getMateria().getIntegradora());
 					model.addAttribute("remedial", remedial);					
 					model.addAttribute("tipo", 1);
@@ -137,7 +132,7 @@ public class RemedialController {
 			}else{
 					
 				//se construye la carga y se buscan los testimonios en base a la materia (integradora o no)
-				CargaHoraria carga = cargaService.buscarPorIdCarga(idCarga);
+				carga = cargaService.buscarPorIdCarga(idCarga);
 				List<Testimonio> testimonios = testimonioService.buscarTodosPorIntegradora(carga.getMateria().getIntegradora());
 
 				model.addAttribute("remedial", remedial);					
@@ -150,23 +145,18 @@ public class RemedialController {
 		}
 
 		if (tipo.equals("extraordinario")) {
-			if (fechaHoy.before(corte.getInicioEvaluaciones()) && fechaHoy.after(corte.getLimiteExtraordinario())) {
-				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(
-						new CargaHoraria(idCarga),corte,new TipoProrroga(1), true);
-				if (prorroga != null) {
-					if (prorroga.getFechaLimite().before(fechaHoy)) {
-						model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de remediales");
-						return "fragments/modal-calificar:: verRemedialExtra";
-					}
-				} else {
+			if (corteEvaluativoService.buscarPorCorteYFechaExtraordinario(corte, fechaHoy)==null) {
+				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrga(
+						new CargaHoraria(idCarga),corte,new TipoProrroga(1), new Date());
+				if (prorroga == null) {
 					model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de remediales");
-					return "fragments/modal-calificar:: verRemedialExtra";
+						return "fragments/modal-calificar:: verRemedialExtra";
 				}
 			}
 			
-				boolean remedial = comprobarExtraordinario(idAlumno, idCarga, Integer.parseInt(corteActual));
+				boolean remedial = comprobarExtraordinario(idAlumno, idCarga, corteActual);
 				if (remedial == true) {
-					CargaHoraria carga = cargaService.buscarPorIdCarga(idCarga);
+					carga = cargaService.buscarPorIdCarga(idCarga);
 					List<Testimonio> testimonios = testimonioService
 							.buscarTodosPorIntegradoraExtra(carga.getMateria().getIntegradora());
 					RemedialAlumno extra = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedial(
@@ -181,9 +171,6 @@ public class RemedialController {
 					model.addAttribute("respuesta", "El alumno no se encuentra en extraordinario");
 				}
 		}
-			/*} else {
-				model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de extraordinarios");
-			}*/
 
 		model.addAttribute("corteActual", corteActual);
 		model.addAttribute("alumno", idAlumno);
@@ -200,55 +187,6 @@ public class RemedialController {
 		
 		String respuesta = actualizarRemedial.eliminar(carga, remedial);
 		
-		/*
-		if (remedial.getRemedial().getId() == 1) {
-			// si es un remedial se comprueba si existe en extraordinario activo
-			RemedialAlumno extraordinario = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
-					remedial.getAlumno(), remedial.getCargaHoraria(), new Remedial(2), remedial.getCorteEvaluativo());
-			if (extraordinario != null) {
-				return "extra";
-			}
-		}
-
-		//se compara si el remedial ya esta pagado
-		if (remedial.isPagado() == true) {
-			return "inv";
-		}
-		
-		//se obtiene el tipo de concepto en base al tipo de remedia;
-		Integer concepto = remedial.getRemedial().getId();
-		String status = "";
-		if (concepto == 1) {
-			status = "O";
-			concepto = 22;
-		} else {
-			status = "R";
-			concepto = 13;
-		}
-
-		// se busca si existe un adeudo ya pagado de parte del alumno
-		PagoGeneral pagoGeneral = pagoGeneralService.buscarPorAlumnoYConceptoYCargaHoraria(remedial.getAlumno().getId(),
-				concepto, carga.getId());
-		if (pagoGeneral != null) {
-			//si existe el pago y esta validado se regresa
-			if (pagoGeneral.getStatus() == 1) {
-				return "inv";
-			}
-
-			// se cambia el estado a false del pago
-			pagoGeneral.setActivo(false);
-			pagoGeneralService.guardar(pagoGeneral);
-		}
-
-		//se actualiza el testimonio del alumno
-		CalificacionMateria caMateria = calificacionMateriaService.buscarPorCargayAlumno(new CargaHoraria(carga.getId()), new Alumno(remedial.getAlumno().getId()));
-		caMateria.setEstatus(status);
-		calificacionMateriaService.guardar(caMateria);
-		
-		//se procede a eliminar el remedial
-		remedialAlumnoService.eliminar(remedial);
-		*/
-
 		return respuesta;
 	}
 
@@ -280,7 +218,7 @@ public class RemedialController {
 					usuario.getPreferencias().getIdPeriodo(), tipoRemedial);
 
 			if (tipoRemedial == 1) {
-				if (contarRemediales.size() >= 3) {
+				if (contarRemediales.size() >= 4) {
 					return "baja";
 				}
 			} else {
@@ -302,11 +240,9 @@ public class RemedialController {
 			remedialAlumnoService.guardar(remedialAlumno);
 		}
 
-		
-		
 		//se actualiza el valor de la calificacion corte
 		CalificacionCorte caCorte = calificacionCorteService.buscarPorAlumnoYCargaHorariaYCorteEvaluativo(new Alumno(idAlumno), new CargaHoraria(carga.getId()), new CorteEvaluativo(idCorte));
-		caCorte.setValor( testimonio.getNumero().floatValue() );
+		caCorte.setValor( testimonio.getNumero().floatValue());
 		calificacionCorteService.guardar(caCorte);
 		
 		//se busca la calificacion materia y se actualiza su estatus 
@@ -322,10 +258,13 @@ public class RemedialController {
 		// se busca si ya esxiste un adeudo
 		PagoGeneral pago = new PagoGeneral();
 		Concepto concepto = new Concepto();
+		String tipoConcepto;
 		if (tipoRemedial == 1) {
 			concepto = conceptoService.buscarPorId(22);
+			tipoConcepto = "REMEDIAL";
 		} else {
 			concepto = conceptoService.buscarPorId(13);
+			tipoConcepto = "EXTRAORDINARIO";
 		}
 		pago = pagoGeneralService.buscarPorAlumnoYConceptoYCargaHorariaYCorte(idAlumno, concepto.getId(),
 				carga.getId(), idCorte);
@@ -335,7 +274,7 @@ public class RemedialController {
 			pago.setCantidad(1);
 			pago.setCliente(0);
 			pago.setActivo(true);
-			pago.setDescripcion("REMEDIAL " + carga.getMateria().getNombre().toUpperCase());
+			pago.setDescripcion(tipoConcepto +" "+ carga.getMateria().getNombre().toUpperCase());
 			pago.setConcepto(concepto);
 			pago.setDescuento(0.0);
 			pago.setFechaAlta(new Date());
@@ -396,7 +335,7 @@ public class RemedialController {
 		if (calificacionCorte == null) {
 			return false;
 		}
-		if (calificacionCorte.getValor() < 8) {
+		if (calificacionCorte.getValor() < 7.5) {
 			return true;
 		} else {
 			return false;
@@ -406,7 +345,7 @@ public class RemedialController {
 	public boolean comprobarExtraordinario(Integer idAlumno, Integer idCarga, Integer idCorte) {
 		RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 				new Alumno(idAlumno), new CargaHoraria(idCarga), new Remedial(1), new CorteEvaluativo(idCorte));
-		if (remedial != null) {
+		if (remedial != null && remedial.getTestimonio()!=null) {
 			if (remedial.getTestimonio().getAbreviatura().equals("NA")) {
 				return true;
 			}

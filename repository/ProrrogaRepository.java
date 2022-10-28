@@ -55,11 +55,15 @@ public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 	Prorroga findByCargaHorariaAndTipoProrrogaAndCorteEvaluativoAndActivoAndAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga,
 			CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada);
 
-	Prorroga findByCargaHorariaAndTipoProrrogaAndFechaLimiteGreaterThanEqualAndActivoAndAceptada(
-			CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, Date fecha, Boolean activo, Boolean aceptada);
-
 	Prorroga findByCargaHorariaAndCorteEvaluativoAndTipoProrrogaAndActivo(CargaHoraria cargaHoraria,
 			CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, boolean activo);
+
+	@Query(value = "SELECT * FROM prorroga p "
+			+ "WHERE p.id_carga_horaria = :carga AND "
+			+ "p.id_corte_evaluativo = :corte AND p.id_tipo_prorroga = :tipo "
+			+ "AND p.activo = TRUE AND p.fecha_limite >= :fecha ", nativeQuery = true)
+	Prorroga findByCargaHorariaAndCorteEvaluativoAndTipoProrroga(@Param("carga")CargaHoraria carga,@Param("corte")CorteEvaluativo corte,
+			@Param("tipo")TipoProrroga tipo, @Param("fecha") Date fecha);
 	
 	//busca las prorrogas autorizadas por personaCarrera 
 	@Query(value = "SELECT pr.* FROM prorroga pr " + "INNER JOIN cargas_horarias ch ON pr.id_carga_horaria = ch.id "

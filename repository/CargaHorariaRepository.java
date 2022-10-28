@@ -34,9 +34,11 @@ public interface CargaHorariaRepository extends JpaRepository<CargaHoraria, Inte
 	List<CargaHoraria> findByProfesorAndPeriodoAndActivo(Persona profesor, Periodo periodo, Boolean activo);
 
 	@Query(value = "SELECT * FROM cargas_horarias ch "
-			+ "	INNER JOIN materias m ON ch.id_materia = m.id "
-			+ "	WHERE ch.id_profesor = :profesor AND id_periodo = :periodo "
-			+ "	AND m.curricular = TRUE AND m.extracurricular = FALSE AND m.calificacion = TRUE AND m.activo = TRUE ", nativeQuery = true)
+			+ "INNER JOIN materias m ON ch.id_materia = m.id "
+			+ "INNER JOIN grupos g ON ch.id_grupo = g.id "
+			+ "WHERE ch.id_profesor = :profesor AND ch.id_periodo = :periodo "
+			+ "AND m.curricular = TRUE AND m.calificacion = TRUE AND m.activo = TRUE "
+			+ "ORDER BY g.id_cuatrimestre,g.nombre, m.nombre ", nativeQuery = true)
 	List<CargaHoraria> findByProfesorAndPeriodo(@Param("profesor") Persona profesor,@Param("periodo") Periodo periodo);
 
 	@Query(value = "SELECT ch.* " + "FROM dosificaciones d "

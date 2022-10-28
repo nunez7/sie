@@ -26,9 +26,9 @@ public interface IProrrogaService {
 	
 	List<Prorroga> buscarPorPersonaCarrerraAndAceptadas(Integer idPersona, Integer idPeriodo);
 	
-	Prorroga buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(CargaHoraria cargaHoraria, CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, boolean activo);
+	Prorroga buscarPorCargaHorariaYCorteEvaluativoYTipoProrrga(CargaHoraria cargaHoraria, CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, Date fecha);
 	
-	Prorroga buscarPorCargaHorariaYTipoProrrogaYFechaLimiteMayorQueYActivoYAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, Date fechaLimite, Boolean activo, Boolean aceptada);
+	Prorroga buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(CargaHoraria cargaHoraria, CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, boolean activo);
 	
 	Prorroga buscarPorCargaHorariaYTipoProrrogaYFecha(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, Date fecha, CorteEvaluativo corte);
 	

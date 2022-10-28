@@ -273,8 +273,17 @@ public class DosificacionController {
 		CorteEvaluativo corteActual = new CorteEvaluativo(corte);
 		List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHorariaYCorteEvaluativo(cargaActual,
 				corteActual);
+		
+		if (corteService.buscarPorCorteYFechaDosificacion(corteActual, new Date())==null) {
+			model.addAttribute("fecha", false);
+		}
+		
 		if (!calendarios.isEmpty()) {
 
+			if (mecanismoService.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(carga, corte, true).size()==0) {
+				model.addAttribute("instrumento", false);
+			}
+			
 			List<DosificacionTema> temas = new ArrayList<>();
 
 			Dosificacion dosificacion;
@@ -312,12 +321,16 @@ public class DosificacionController {
 					}
 				}
 			}
+			
+			
 			model.addAttribute("temasDto", temasDto);
 			model.addAttribute("calendarios", calendarios);
+			
 		} else {
 			model.addAttribute("activo", false);
 		}
-
+		
+		
 		model.addAttribute("unidades", cargaActual);
 		model.addAttribute("corteActual", corteActual);
 		model.addAttribute("cargaActual", cargaActual);

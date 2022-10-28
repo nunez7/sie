@@ -77,23 +77,20 @@ public class CorteEvaluativoServiceJpa implements ICorteEvaluativoService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public CorteEvaluativo buscarPorFechaInicioMenorQueYFinEvaluacionesMayorQueYPeriodoYCarrera(Date fechaInicio, Date fechaFin,
-			Periodo periodo, Carrera carrera) {
-		return corteEvaluativoRepository.findByFechaInicioLessThanEqualAndFinEvaluacionesGreaterThanEqualAndPeriodoAndCarrera(fechaInicio, fechaFin, periodo, carrera);
+	public CorteEvaluativo buscarPorCorteYFechaRemedial(CorteEvaluativo corte, Date fecha) {
+		return corteEvaluativoRepository.findByCorteEvaluativoAndFechaRemedial(corte, fecha);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public CorteEvaluativo buscarPorInicioRemedialMenorQueYFinRemedialMayorQueYPeriodoYCarrera(Date fechaInicio, Date fechaFin,
-			Periodo periodo, Carrera carrera) {
-		return corteEvaluativoRepository.findByInicioRemedialLessThanEqualAndFinRemedialGreaterThanEqualAndPeriodoAndCarrera(fechaInicio, fechaFin, periodo, carrera);
+	public CorteEvaluativo buscarPorCorteYFechaExtraordinario(CorteEvaluativo corte, Date fecha) {
+		return corteEvaluativoRepository.findByCorteAndFechaExtraordinario(corte, fecha);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public CorteEvaluativo buscarPorInicioExtraordinarioMenorQueYFinExtraordinarioMayorQueYPeriodoYCarrera(Date fechaInicio,
-			Date fechaFin, Periodo periodo, Carrera carrera) {
-		return corteEvaluativoRepository.findByInicioExtraordinarioLessThanEqualAndFinExtraordinarioGreaterThanEqualAndPeriodoAndCarrera(fechaInicio, fechaFin, periodo, carrera);
+	public CorteEvaluativo buscarPorCorteYFechaDosificacion(CorteEvaluativo corte, Date fecha) {
+		return corteEvaluativoRepository.findByCorteAndFechaDosificacion(corte, fecha);
 	}
 
 	@Override

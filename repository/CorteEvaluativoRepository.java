@@ -39,11 +39,17 @@ List<CorteEvaluativo> findByPeriodoAndCarreraOrderByFechaInicioAsc(Periodo perio
 	
 	Optional<CorteEvaluativo> findById(Integer id);
 	
-	CorteEvaluativo findByFechaInicioLessThanEqualAndFinEvaluacionesGreaterThanEqualAndPeriodoAndCarrera(Date fechaInicio, Date fechaFin, Periodo periodo, Carrera carrera);
+	@Query(value = "SELECT ce.* from cortes_evaluativos ce "
+				 + "WHERE ce.id = :corte AND ce.limite_remedial >= :fecha", nativeQuery = true)
+	CorteEvaluativo findByCorteEvaluativoAndFechaRemedial(@Param("corte")CorteEvaluativo corte,@Param("fecha") Date fecha);
 	
-	CorteEvaluativo findByInicioRemedialLessThanEqualAndFinRemedialGreaterThanEqualAndPeriodoAndCarrera(Date fechaInicio, Date fechaFin, Periodo periodo, Carrera carrera);
+	@Query(value = "SELECT ce.* from cortes_evaluativos ce "
+			 + "WHERE ce.id = :corte AND ce.limite_extraordinario >= :fecha", nativeQuery = true)
+	CorteEvaluativo findByCorteAndFechaExtraordinario(@Param("corte")CorteEvaluativo corte,@Param("fecha") Date fecha);
 	
-	CorteEvaluativo findByInicioExtraordinarioLessThanEqualAndFinExtraordinarioGreaterThanEqualAndPeriodoAndCarrera(Date fechaInicio, Date fechaFin, Periodo periodo, Carrera carrera);
+	@Query(value = "SELECT ce.* from cortes_evaluativos ce "
+			 + "WHERE ce.id = :corte AND ce.fecha_dosificacion >= :fecha", nativeQuery = true)
+	CorteEvaluativo findByCorteAndFechaDosificacion(@Param("corte")CorteEvaluativo corte,@Param("fecha") Date fecha);
 
 	@Query(value = "SELECT COUNT(*) FROM cortes_evaluativos "
 			+ "WHERE fecha_dosificacion >= :fechaDosificacion AND id_periodo = :idPeriodo "
