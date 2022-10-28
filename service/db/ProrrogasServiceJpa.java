@@ -66,12 +66,6 @@ public class ProrrogasServiceJpa implements IProrrogaService{
 	
 	@Transactional(readOnly = true)
 	@Override
-	public Prorroga buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(CargaHoraria cargaHoraria, CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, boolean activo) {
-		return prorrogaRepository.findByCargaHorariaAndCorteEvaluativoAndTipoProrrogaAndActivo(cargaHoraria, corteEvaluativo, tipoProrroga, activo);
-	}
-	
-	@Transactional(readOnly = true)
-	@Override
 	public List<Prorroga> buscarPorCargaHoraria(CargaHoraria cargaHoraria) {
 		return prorrogaRepository.findByCargaHoraria(cargaHoraria);
 	}

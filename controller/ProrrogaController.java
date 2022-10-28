@@ -1,11 +1,9 @@
 package edu.mx.utdelacosta.controller;
 
-import java.io.IOException;
 import java.sql.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,8 +150,8 @@ public class ProrrogaController {
 		CargaHoraria carga = cargaService.buscarPorIdCarga(prorrogaDto.getIdCargaHoraria());
 		CorteEvaluativo corte = corteService.buscarPorId(prorrogaDto.getIdCorteEvaluativo());
 
-		Prorroga existente = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrgaYActivo(carga, corte,
-				new TipoProrroga(prorrogaDto.getIdTipoProrroga()), true);
+		Prorroga existente = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrga(carga, corte,
+				new TipoProrroga(prorrogaDto.getIdTipoProrroga()), new java.util.Date());
 		if (existente == null) {
 			
 			// se guarda la prorroga.
