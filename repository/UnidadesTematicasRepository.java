@@ -17,7 +17,8 @@ public interface UnidadesTematicasRepository extends JpaRepository<UnidadTematic
 			+ "INNER JOIN calendario_evaluacion ce ON ce.id_unidad_tematica = ut.id "
 			+ "INNER JOIN temas_unidad tu on tu.id_unidad_tematica=ut.id "
 			+ "INNER JOIN dosificacion_tema dt on dt.id_tema = tu.id "
-			+ "WHERE dt.id_dosificacion=:dosificacion AND ce.id_corte_evaluativo = :corte" , nativeQuery = true)
+			+ "WHERE dt.id_dosificacion=:dosificacion AND ce.id_corte_evaluativo = :corte "
+			+ "ORDER BY ut.consecutivo ASC" , nativeQuery = true)
 	List<UnidadTematica> findByDosificacion(@Param("dosificacion") Integer idDosificacion, @Param("corte") Integer idCorteEvaluativo);
 	
 	//busca las unidades tematicas por materia y activas
