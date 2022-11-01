@@ -403,9 +403,9 @@ public class AlumnoController {
 				List<RemedialAlumno> remedialesCor = serviceRemAlum.buscarPorAlumnoCargaYCorte(alumno, cargaHoraria, corte);
 				if(remedialesCor.size() == 0) {
 					if (corte.getConsecutivo() == 1) {
-						nivel1 = "ordinario";
+						nivel1 = "Ordinario";
 					}else{
-						nivel2 = "ordinario";
+						nivel2 = "Ordinario";
 					}				
 				}else{
 					RemedialAlumno remedial = remedialesCor.get(0);
