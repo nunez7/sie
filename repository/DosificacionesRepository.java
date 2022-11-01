@@ -21,10 +21,12 @@ public interface DosificacionesRepository extends CrudRepository<Dosificacion, I
 			+ " AND d.activo = TRUE AND d.id_corte_evaluativo=:idCorteEvaluativo ", nativeQuery = true)
 	Dosificacion findByIdCargaHorariaAndIdCorteEvaluativo(@Param("idCargaHoraria") Integer icCargaHoraria, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
 	
-	@Query(value="SELECT df.* FROM dosificaciones df "
-			+ "INNER JOIN dosificaciones_cargas dfc on dfc.id_dosificacion=df.id "
-			+ "WHERE dfc.id_carga_horaria = :idCargaHoraria "
-			+ "ORDER BY df.id_corte_evaluativo ", nativeQuery = true)
+	@Query(value="SELECT DISTINCT(d.*) "
+			+ "FROM dosificaciones d "
+			+ "LEFT JOIN dosificaciones_cargas dc ON d.id=dc.id_dosificacion "
+			+ "LEFT JOIN dosificacion_importada di ON di.id_dosificacion = d.id "
+			+ "WHERE (dc.id_carga_horaria=:idCargaHoraria OR di.id_carga_horaria=:idCargaHoraria) "
+			+ "AND d.activo = 'True' ORDER BY d.id_corte_evaluativo", nativeQuery = true)
 	List<Dosificacion> findByIdCargaHoraria(@Param("idCargaHoraria") Integer cargaHoraria);
 	
 	@Query(value="SELECT ds.id as idDosificacion, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as profesor, "
