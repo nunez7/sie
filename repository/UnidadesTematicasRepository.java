@@ -12,13 +12,13 @@ import edu.mx.utdelacosta.model.UnidadTematica;
 public interface UnidadesTematicasRepository extends JpaRepository<UnidadTematica, Integer>{
 	Optional<UnidadTematica> findById(Integer id);
 	
-	@Query(value = "SELECT distinct(ut.*)  "
+	@Query(value = "SELECT distinct(ut.*) "
 			+ "FROM unidades_tematicas ut "
+			+ "INNER JOIN calendario_evaluacion ce ON ce.id_unidad_tematica = ut.id "
 			+ "INNER JOIN temas_unidad tu on tu.id_unidad_tematica=ut.id "
 			+ "INNER JOIN dosificacion_tema dt on dt.id_tema = tu.id "
-			+ "WHERE dt.id_dosificacion=:dosificacion" , nativeQuery = true)
-
-	List<UnidadTematica> findByDosificacion(@Param("dosificacion") Integer idDosificacion);
+			+ "WHERE dt.id_dosificacion=:dosificacion AND ce.id_corte_evaluativo = :corte" , nativeQuery = true)
+	List<UnidadTematica> findByDosificacion(@Param("dosificacion") Integer idDosificacion, @Param("corte") Integer idCorteEvaluativo);
 	
 	//busca las unidades tematicas por materia y activas
 	@Query(value = "SELECT * FROM unidades_tematicas WHERE id_materia = :idMateria "

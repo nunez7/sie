@@ -10,7 +10,7 @@ public interface IUnidadTematicaService {
 	
 	void guardar(UnidadTematica unidadTematica);
 
-	List<UnidadTematica> buscarPorDosificacion(Integer idDosificacion);
+	List<UnidadTematica> buscarPorDosificacion(Integer idDosificacion, Integer idCorteEvaluativo);
 	
 	List<UnidadTematica> buscarPorIdMateriaYActivas(Integer idMateria);
 

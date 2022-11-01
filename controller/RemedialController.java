@@ -201,6 +201,7 @@ public class RemedialController {
 		Integer idAlumno = Integer.parseInt(obj.get("alumno"));
 		Alumno alumno = new Alumno(idAlumno);
 		Integer idCorte = Integer.parseInt(obj.get("corte"));
+		String respuesta = null;
 
 		if (obj.get("testimonio") == null) {
 			return "inv";
@@ -219,11 +220,11 @@ public class RemedialController {
 
 			if (tipoRemedial == 1) {
 				if (contarRemediales.size() >= 4) {
-					return "baja";
+					respuesta = "baja";
 				}
 			} else {
 				if (contarRemediales.size() >= 1) {
-					return "baja";
+					respuesta = "baja";
 				}
 			}
 
@@ -309,7 +310,8 @@ public class RemedialController {
 		} else {
 
 		}
-		return "ok";
+		
+		return respuesta!=null ? respuesta : "ok";
 	}
 	
 	@PostMapping(path = "/eliminar-escolares", consumes = MediaType.APPLICATION_JSON_VALUE)

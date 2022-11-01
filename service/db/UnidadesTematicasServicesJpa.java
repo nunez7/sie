@@ -34,8 +34,8 @@ public class UnidadesTematicasServicesJpa implements IUnidadTematicaService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<UnidadTematica> buscarPorDosificacion(Integer idDosificacion) {
-		return unidadesTematicasRepository.findByDosificacion(idDosificacion);
+	public List<UnidadTematica> buscarPorDosificacion(Integer idDosificacion, Integer idCorteEvaluativo) {
+		return unidadesTematicasRepository.findByDosificacion(idDosificacion, idCorteEvaluativo);
 	}
 
 	@Override

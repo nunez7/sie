@@ -297,7 +297,7 @@ public class DosificacionController {
 			}
 
 			List<DosificacionTemaDto> temasDto = new ArrayList<>();
-			for (UnidadTematica unidad : cargaActual.getMateria().getUnidadesTematicas()) {
+			for (UnidadTematica unidad : unidadTematicaService.buscarPorIdMateriaYActivas(cargaActual.getMateria().getId())) {
 				for (TemaUnidad temaU : unidad.getTemasUnidad()) {
 					
 					if (temaU.getActivo()==true) {
@@ -455,7 +455,7 @@ public class DosificacionController {
 		List<DosificacionUnidadDTO> unidadesDTO = new ArrayList<>();
 		
 		//se obtienen las unidades en base a la dosificacion
-		List<UnidadTematica> unidades = unidadTematicaService.buscarPorDosificacion(idDosificacion);
+		List<UnidadTematica> unidades = unidadTematicaService.buscarPorDosificacion(idDosificacion, dosificacion.getIdCorteEvaluativo());
 	
 		//se iteran las unidades
 		for (UnidadTematica unidad : unidades) {
@@ -563,10 +563,15 @@ public class DosificacionController {
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		
 		//se construye la carga actual
-		CargaHoraria cActual = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cveCarga"));
+		CargaHoraria cActual = null;
+		List<CargaHoraria> cargaFinal = new ArrayList<>();
+		if ((Integer) session.getAttribute("cveCarga")!= null) {
+			cActual = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cveCarga"));			
+			cargaFinal = cargaService.buscarPorProfesorYPeriodoYCalendarioEvaluacion(persona.getId(), periodo.getId(), cActual.getId());
+		}
 		
 		// se buscan las cargas apatas para el copiado de instrumentos
-		List<CargaHoraria> cargaFinal = cargaService.buscarPorProfesorYPeriodoYCalendarioEvaluacion(persona.getId(), periodo.getId(), cActual.getId());
+		
 		model.addAttribute("cActual", cActual);
 		model.addAttribute("cargasFinal", cargaFinal);
 		return "fragments/modal-dosificacion:: verCopiarInstrumentos";
@@ -628,7 +633,6 @@ public class DosificacionController {
 			DosificacionDTO dosiDTO = new DosificacionDTO();
 			//se agrega el objeto de dosificacion
 			dosiDTO.setDosificacion(d);
-			
 			//se crea la lista de instrumentos
 			List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCarga, true);
 			//se agregan los mecanismos a la dosificacion
@@ -636,7 +640,7 @@ public class DosificacionController {
 
 			//se crea la lista de unidades temáticas
 			List<DosificacionUnidadDTO> unidadesDTO = new ArrayList<>();
-			List<UnidadTematica> unidades = unidadTematicaService.buscarPorDosificacion(d.getId());
+			List<UnidadTematica> unidades = unidadTematicaService.buscarPorDosificacion(d.getId(), d.getIdCorteEvaluativo());
 			for (UnidadTematica unidad : unidades) {
 				//se agregan las unidades y temas 
 				DosificacionUnidadDTO unidadDTO = new DosificacionUnidadDTO();
