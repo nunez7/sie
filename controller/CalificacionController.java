@@ -302,9 +302,6 @@ public class CalificacionController {
 							}
 							
 							calificacion.setMecanismos(mecanismos);
-							calificacion.setCalificacionOrdinaria(calificacionCorteService
-									.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(),
-											cargaActual.getId(), parcialActual).floatValue());
 							RemedialAlumno rem = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 									alumno, cargaActual, new Remedial(1),
 									new CorteEvaluativo(parcialActual));
@@ -320,6 +317,18 @@ public class CalificacionController {
 								calificacion.setCalificacionExtraordinario(ex.getTestimonio().getNumero());
 							} else {
 								calificacion.setCalificacionExtraordinario(null);
+							}
+							if (rem!=null || ex!=null) {
+								Float sum = 0f;
+								for (CalificacionInstrumentoDTO m : mecanismos) {
+									sum = sum + m.getPonderacion();
+								}
+								sum = sum / mecanismos.size();
+								calificacion.setCalificacionOrdinaria(sum);
+							}else {								
+							calificacion.setCalificacionOrdinaria(calificacionCorteService
+									.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(),
+											cargaActual.getId(), parcialActual).floatValue());
 							}
 							calificaciones.add(calificacion);
 
