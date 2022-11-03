@@ -32,7 +32,6 @@ public interface ICalificacionService {
 	List<CalificacionInstrumentoDTO> findByCargaHorariaAndCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria,
 			Integer idCorteEvaluativo);
 
-	CalificacionInstrumentoDTO buscarPorCargaHorariaYCorteEvaluativoEInstrumento(Integer idAlumno, Integer idCargaHoraria,
-			Integer idCorteEvaluativo, Integer idInstrumento);
+	CalificacionInstrumentoDTO buscarPorAlumnoYMecanismoInstrumentoActivo(Alumno alumno, MecanismoInstrumento mecanismo);
 
 }

@@ -74,9 +74,8 @@ public class CalificacionServiceJpa implements ICalificacionService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public CalificacionInstrumentoDTO buscarPorCargaHorariaYCorteEvaluativoEInstrumento(Integer idAlumno,
-			Integer idCargaHoraria, Integer idCorteEvaluativo, Integer idInstrumento) {
-		return calificacionRepository.findByCargaHorariaAndCorteEvaluativoAndInstrumento(idCargaHoraria, idCorteEvaluativo, idAlumno, idInstrumento);
+	public CalificacionInstrumentoDTO buscarPorAlumnoYMecanismoInstrumentoActivo(Alumno alumno, MecanismoInstrumento mecanismo) {
+		return calificacionRepository.findByAlumnoAndMecanismoInstrumentoActivo(alumno, mecanismo);
 	}
 
 	@Override

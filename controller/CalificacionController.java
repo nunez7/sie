@@ -297,7 +297,7 @@ public class CalificacionController {
 							
 							List<CalificacionInstrumentoDTO> mecanismos = new ArrayList<>();
 							for (MecanismoInstrumento meca : mecanismoInstrumento) {
-								CalificacionInstrumentoDTO cali = calificacionService.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual.getId(), parcialActual, meca.getInstrumento().getId());
+								CalificacionInstrumentoDTO cali = calificacionService.buscarPorAlumnoYMecanismoInstrumentoActivo(alumno, meca);
 								mecanismos.add(cali);
 							}
 							

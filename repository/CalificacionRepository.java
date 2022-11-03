@@ -35,12 +35,10 @@ public interface CalificacionRepository extends CrudRepository<Calificacion, Int
     @Query(value = "SELECT COALESCE(SUM(c.valor),0) as ponderacion "
     		+ "FROM mecanismo_instrumento mi "
     		+ "LEFT JOIN calificacion c on mi.id=c.id_mecanismo_instrumento "
-    		+ "WHERE mi.id_carga_horaria=:idCargaHoraria and mi.id_corte_evaluativo=:idCorteEvaluativo and mi.activo='True' and c.id_alumno=:idAlumno and mi.id_instrumento = :idInstrumento ",
-    		//+ "GROUP BY mi.id, mi.id_instrumento, ponderacion", 
+    		+ "WHERE mi.activo='True' AND c.id_alumno=:alumno AND mi.id = :mecanismo",
     		nativeQuery = true)
-    CalificacionInstrumentoDTO findByCargaHorariaAndCorteEvaluativoAndInstrumento(@Param("idCargaHoraria") Integer idCargaHoraria, @Param("idCorteEvaluativo") Integer idCorteEvaluativo, @Param("idAlumno") Integer idAlumno, @Param("idInstrumento") Integer idMecanismo);
+    CalificacionInstrumentoDTO findByAlumnoAndMecanismoInstrumentoActivo(@Param("alumno") Alumno alumno, @Param("mecanismo") MecanismoInstrumento mecanismo);
    
-    
     @Query(value = "SELECT mi.id as mecanismo, mi.id_instrumento as instrumento, COALESCE(SUM(c.valor),0) as ponderacion "
     		+ "FROM mecanismo_instrumento mi "
     		+ "LEFT JOIN calificacion c on mi.id=c.id_mecanismo_instrumento "

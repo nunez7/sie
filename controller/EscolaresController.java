@@ -727,8 +727,7 @@ public class EscolaresController {
 							List<CalificacionInstrumentoDTO> mecanismos = new ArrayList<>();
 							for (MecanismoInstrumento meca : mecanismoInstrumento) {
 								CalificacionInstrumentoDTO cali = calificacionService
-										.buscarPorCargaHorariaYCorteEvaluativoEInstrumento(alumno.getId(), cargaActual,
-												parcialActual, meca.getInstrumento().getId());
+										.buscarPorAlumnoYMecanismoInstrumentoActivo(alumno, meca);
 								mecanismos.add(cali);
 							}
 							calificacion.setMecanismos(mecanismos);
