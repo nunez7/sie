@@ -25,4 +25,6 @@ public interface ICalificacionCorteService {
 			Integer idCorteEvaluativo);
 
 	Integer buscarRevalidadaPorAlumnoYCargaHorariaYCorteEvaluativo(Integer alumno, Integer cargaHoraria, Integer corteEvaluativo);
+	
+	Float buscarPromedioCortePorMecanismoIntrumentoYCarga(Integer cargaHoraria, Integer corteEvaluativo, Integer alumno);
 }

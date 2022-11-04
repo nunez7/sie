@@ -37,4 +37,10 @@ public interface CalificacionCorteRepository extends CrudRepository<Calificacion
 			+ "FROM calificacion_corte cc "
 			+ "WHERE cc.id_alumno = :alumno AND cc.id_corte_evaluativo = :corte AND cc.id_carga_horaria = :carga", nativeQuery = true)
 	Integer findRevalidadaByAlumnoAndCargaHorariaAndCorteEvaluativo(@Param("alumno")Integer alumno, @Param("carga") Integer cargaHoraria, @Param("corte") Integer corteEvaluativo);
+	
+	@Query(value = "SELECT COALESCE(SUM(c.valor) / (SELECT count(mi2.id) FROM mecanismo_instrumento mi2 WHERE mi2.id_carga_horaria = :carga AND mi2.id_corte_evaluativo = :corte),0)  AS ponderacion "
+			+ "FROM mecanismo_instrumento mi "
+			+ "INNER JOIN calificacion c ON c.id_mecanismo_instrumento = mi.id "
+			+ "WHERE mi.id_carga_horaria = :carga AND id_corte_evaluativo = :corte AND c.id_alumno = :alumno", nativeQuery = true)
+	Float findPromedioCorteByMecanismoIntrumentoAndCarga(@Param("carga")Integer cargaHoraria,@Param("corte") Integer corteEvaluativo,@Param("alumno") Integer alumno);
 }

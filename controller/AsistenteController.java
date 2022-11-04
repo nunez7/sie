@@ -531,7 +531,7 @@ public class AsistenteController {
 	//fechas de entrega
 	@GetMapping("/fechas")
 	public String fechas(Model model, HttpSession session) {
-		//creamos el usuario de acuerdo a la authenticación 
+		//creamos el usuario de acuerdo a la authenticaciï¿½n 
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona")); 
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
 		// buscamos las carreras de acuerdo a las preferencias y permisos del usuario
@@ -720,19 +720,30 @@ public class AsistenteController {
 							// variables para guardar promedios y remediales de la materia
 							double promedioFinal = 0;
 							double promedioparciales = 0;
+							
+							//se agrega el estatus de la materia
+							im.setEstatus(calificacionMateriaService.buscarPorAlumnoYCarga(alumno.getId(), ch.getId()));
+							
 							List<IndicadorParcialDTO> indicaroresParcial = new ArrayList<IndicadorParcialDTO>();
 							for (CorteEvaluativo c : corte) {
 								IndicadorParcialDTO ip = new IndicadorParcialDTO();
-								// para sacar el promedio de la materia y sus indicadores
-								double calificacionTotal = calificacionCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(), ch.getId(), c.getId());
-								// para guardar el promedio de los dos parciales
-								promedioparciales = promedioparciales + calificacionTotal;
 								ip.setIdMateria(ch.getMateria().getId());
 								ip.setParcial(c.getId());
-								ip.setPromedio(calificacionTotal);
 								// para guardar si tiene remediales o extraordinarios
 								ip.setRemediales(remedialAlumnoService.buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(alumno.getId(), ch.getId(), c.getId(), 1));
 								ip.setExtraordinarios(remedialAlumnoService.buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(alumno.getId(), ch.getId(), c.getId(), 2));
+								
+								double calificacionTotal = 0f;
+								if(im.getEstatus().equals("R") || im.getEstatus().equals("E")) {
+									calificacionTotal = calificacionCorteService.buscarPromedioCortePorMecanismoIntrumentoYCarga(ch.getId(), c.getId(), alumno.getId());
+								}else {
+									// para sacar el promedio de la materia y sus indicadores
+									calificacionTotal = calificacionCorteService.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(), ch.getId(), c.getId());
+									promedioparciales = promedioparciales + calificacionTotal;									
+								}
+								// para guardar el promedio de los dos parciales
+								ip.setPromedio(calificacionTotal);
+								
 								// se agrega el objeto a la lista de indicador parcial
 								indicaroresParcial.add(ip);
 							}
@@ -741,8 +752,7 @@ public class AsistenteController {
 							im.setPromedio(promedioFinal);
 							//se egraga la lista de indicacires materia
 							im.setParciales(indicaroresParcial);
-							//se agrega el estatus de la materia
-							im.setEstatus(calificacionMateriaService.buscarPorAlumnoYCarga(alumno.getId(), ch.getId()));
+							
 							// se agrega el objeto de indficador materia
 							indicadoresMaterias.add(im);
 						}
