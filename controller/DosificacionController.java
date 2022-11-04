@@ -348,6 +348,10 @@ public class DosificacionController {
 			CargaHoraria cargaHoraria = new CargaHoraria(idCargaHoraria);
 			CargaHoraria cargaCompartida = new CargaHoraria(idCargaCompartida);
 
+			if(dosiCargaService.buscarPorCargaHoraria(cargaHoraria).size()>0) {
+				return "notEmp";
+			}
+			
 			// SE COMPARA QUE TANTO LAS UNIDADES COMO LOS INSTRUMENTOS ESTÉN VACÍOS
 			List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHoraria(cargaHoraria);
 			
