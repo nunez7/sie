@@ -139,7 +139,7 @@ public class UsuariosController {
 		}
 	}
 
-	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Rector')")
+	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Rector', 'Academia', 'Director')")
     @GetMapping("/vercomo/{dato}")
    	public String vercomo(@PathVariable(name = "dato", required = false) String dato,  Model model) { 
     	List<Usuario> usuarios = new ArrayList<>();
