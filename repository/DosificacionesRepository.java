@@ -29,18 +29,20 @@ public interface DosificacionesRepository extends CrudRepository<Dosificacion, I
 			+ "AND d.activo = 'True' ORDER BY d.id_corte_evaluativo", nativeQuery = true)
 	List<Dosificacion> findByIdCargaHoraria(@Param("idCargaHoraria") Integer cargaHoraria);
 	
-	@Query(value="SELECT ds.id as idDosificacion, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as profesor, "
+	@Query(value="SELECT DISTINCT(ds.id) as idDosificacion, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as profesor, "
 			+ "ct.consecutivo as parcial, m.nombre as materia, g.nombre as grupo, c.nombre as carrera "
 			+ "FROM dosificaciones ds "
-			+ "INNER JOIN dosificaciones_cargas dc ON dc.id_dosificacion = ds.id "
+			+ "LEFT JOIN dosificaciones_cargas dc ON ds.id=dc.id_dosificacion "
+			+ "LEFT JOIN dosificacion_importada di ON di.id_dosificacion = ds.id "
 			+ "INNER JOIN cargas_horarias ch ON ch.id = dc.id_carga_horaria "
 			+ "INNER JOIN materias m ON m.id = ch.id_materia "
 			+ "INNER JOIN grupos g ON g.id = ch.id_grupo "
 			+ "INNER JOIN carreras c ON c.id = g.id_carrera "
 			+ "INNER JOIN personas p ON ds.id_persona = p.id "
 			+ "INNER JOIN cortes_evaluativos ct ON ct.id = ds.id_corte_evaluativo "
-			+ "AND c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :persona) "
-			+ "AND ds.valida_director = 'False' AND g.id_periodo = :periodo", nativeQuery = true)
+			+ "WHERE c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :persona) "
+			+ "AND ds.valida_director = 'False' AND g.id_periodo = :periodo "
+			+ "ORDER BY g.nombre, m.nombre, ct.consecutivo", nativeQuery = true)
 	List<DosificacionPendienteDTO> getAllPendientesAndPersonaCarreraAndPeriodo(@Param("persona") Integer idPersona, @Param("periodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT d.* "
