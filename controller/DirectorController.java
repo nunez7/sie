@@ -823,7 +823,7 @@ public class DirectorController {
 				if(cveCarrera==null || cveCarrera==0) {
 					bajas = bajaService.buscarPorTipoStatusPersonaEntreFechas(1, cvePersona, fechaInicio, fechaFin);
 				}else{
-					bajas = bajaService.buscarPorTipoStatusCarreraEntreFechas(1, cveCarrera, fechaInicio, fechaFin);
+					bajas = bajaService.buscarPorTipoStatusCarreraEntreFechas(1, cveCarrera, usuario.getPreferencias().getIdPeriodo(), fechaInicio, fechaFin);
 				}
 				model.addAttribute("fechaFin", fechaFin);
 			}

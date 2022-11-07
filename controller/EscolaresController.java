@@ -1088,9 +1088,9 @@ public class EscolaresController {
 			if((String) session.getAttribute("reb-fechaFin")!=null) {						
 				Date fechaFin = java.sql.Date.valueOf((String) session.getAttribute("reb-fechaFin"));
 				if(cveCarrera==null || cveCarrera==0) {
-					bajas = bajaService.buscarPorTipoStatusEntreFechas(1, 1, fechaInicio, fechaFin);
+					bajas = bajaService.buscarPorTipoStatusEntreFechas( 1, fechaInicio, fechaFin);
 				}else{
-					bajas = bajaService.buscarPorTipoStatusCarreraEntreFechas(1, cveCarrera, fechaInicio, fechaFin);
+					bajas = bajaService.buscarPorTipoStatusCarreraEntreFechas(1, cveCarrera,usuario.getPreferencias().getIdPeriodo() , fechaInicio, fechaFin);
 				}
 				model.addAttribute("fechaFin", fechaFin);
 			}

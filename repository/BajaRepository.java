@@ -58,13 +58,13 @@ public interface BajaRepository extends CrudRepository<Baja, Integer>{
 			+ "INNER JOIN carreras c ON  c.id=g.id_carrera "
 			+ "INNER JOIN alumnos a ON a.id=ag.id_alumno "
 			+ "INNER JOIN baja_autoriza bg ON b.id=bg.id_baja "
-			+ "WHERE b.estatus=:estatus AND c.id=:idCarrera "
+			+ "WHERE b.estatus=:estatus AND c.id=:idCarrera AND g.id_periodo=:idPeriodo "
 			+ "AND b.fecha_registro BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true)
-	List<Baja> findByTipoAndStatusAndCarreraAndFechas(@Param("estatus") Integer estatus, @Param("idCarrera") Integer idCarrera, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
+	List<Baja> findByTipoAndStatusAndCarreraAndFechas(@Param("estatus") Integer estatus, @Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
 	//todas las bajas por persona carrera 
 	@Query(value = "SELECT DISTINCT b.* FROM bajas b "
 			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno=b.id_alumno "
-			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
+			+ "INNER JOIN grupos g ON g.id=ag.id_grupo AND b.id_periodo = g.id_periodo "
 			+ "INNER JOIN carreras c ON c.id=g.id_carrera "
 			+ "INNER JOIN persona_carrera pc ON c.id=pc.id_carrera "
 			+ "INNER JOIN alumnos a ON a.id=ag.id_alumno "
@@ -75,9 +75,9 @@ public interface BajaRepository extends CrudRepository<Baja, Integer>{
 	//todas las bajas general
 	@Query(value = "SELECT b.* FROM bajas b "
 			+ "INNER JOIN baja_autoriza bg ON b.id=bg.id_baja "
-			+ "WHERE bg.tipo=:tipo AND b.estatus=:estatus "
+			+ "WHERE b.estatus=:estatus "
 			+ "AND b.fecha_registro >=:fechaInicio AND b.fecha_registro <=:fechaFin", nativeQuery = true)
-	List<Baja> findByTipoAndStatusAndFechas(@Param("tipo") Integer tipo, @Param("estatus") Integer estatus, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
+	List<Baja> findByTipoAndStatusAndFechas(@Param("estatus") Integer estatus, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
 	
 	List<Baja> findByAlumnoOrderByFechaRegistroDesc(Alumno alumno);
 	
