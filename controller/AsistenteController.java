@@ -3,6 +3,7 @@ package edu.mx.utdelacosta.controller;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.mx.utdelacosta.model.Actividad;
 import edu.mx.utdelacosta.model.Alumno;
@@ -79,6 +81,7 @@ import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.IRespuestaCargaEvaluacionService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionTutorService;
 import edu.mx.utdelacosta.service.IUsuariosService;
+import edu.mx.utdelacosta.util.ReporteXlsxView;
 
 @Controller
 @PreAuthorize("hasRole('Administrador') and hasRole('Rector') and hasRole('Informatica') and hasRole('Director') and hasRole('Asistente')")
@@ -172,6 +175,9 @@ public class AsistenteController {
   
 	@Autowired
 	private IRemedialAlumnoService remedialAlumnoService;
+	
+	@Autowired
+	private ReporteXlsxView reporte;
 	
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
 	
@@ -589,6 +595,44 @@ public class AsistenteController {
 		model.addAttribute("carreras", carrerasServices.buscarCarrerasPorIdPersona(persona.getId()));
 		model.addAttribute("nombreUT", NOMBRE_UT);
 		return "asistente/reporteDatosPersonales";
+	}
+	
+	@GetMapping("/datos-personalespdf")
+	@ResponseBody
+	public String reporteDatosPersonalesPdf(HttpSession session) {
+		int cvePersona = (Integer) session.getAttribute("cvePersona");
+		Persona persona = personaService.buscarPorId(cvePersona);
+		Usuario usuario = usuariosService.buscarPorPersona(persona);
+		List<Object> datos = new ArrayList<Object>();
+		String reporteGenerar = null;
+		if(session.getAttribute("cveCarrera") != null) {
+			int cveCarrera = (Integer) session.getAttribute("cveCarrera");
+			List<Alumno> alumnos = new ArrayList<>();
+			if(cveCarrera == 0) {
+				alumnos = alumnoService.buscarPorPersonaCarreraAndActivo(usuario.getPersona().getId(), usuario.getPreferencias().getIdPeriodo());
+			}
+			else {
+				alumnos = alumnoService.buscarPorCarreraAndPeriodoAndActivo(cveCarrera, usuario.getPreferencias().getIdPeriodo());
+			}
+			String[] headers = new String[]{
+	                "No",
+	                "Matrícula",
+	                "Nombre",
+	                "Sexo",
+	                "Correo electrónico",
+	                "Teléfono"
+	        };
+			int n = 0;
+			//acomodamos los datos en el reporte
+			for (Alumno alumno : alumnos) {
+				n++;
+				Arrays.asList(datos.add(new Object[] {n+"", alumno.getMatricula(), alumno.getPersona().getNombreCompletoPorApellido(), 
+					(alumno.getPersona().getSexo().equals("H") ? "Masculino" : "Femenino"), alumno.getPersona().getEmail(), alumno.getPersona().getDatosPersonales().getTelefono()}));
+			}
+			Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+			reporteGenerar = reporte.generarExcelGenerico("Datos personales", NOMBRE_UT, "REPORTE DE DATOS PERSONALES ", "Cuatrimestre: "+periodo.getNombre(), headers, datos);
+		}
+		return reporteGenerar;
 	}
 	
 	@GetMapping("/reporte-horario")
