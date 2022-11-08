@@ -1274,7 +1274,7 @@ public class TutorController {
 			model.addAttribute("alumnos", alumnos);	
 			model.addAttribute("tutorias", tutorias);	
 			model.addAttribute("NOMBRE_UT", NOMBRE_UT);
-		 return "reportes/reporteTutoriaIndividual"; 
+		 return "tutorias/reporteTutoriaIndividual"; 
 	 } 
 	  
 	 @GetMapping("/reporte-informacion-estudiante/{cveAlumno}") 
@@ -1335,7 +1335,7 @@ public class TutorController {
 			model.addAttribute("grupos", grupos);
 			model.addAttribute("cveGrupo", cveGrupo);
 			model.addAttribute("NOMBRE_UT", NOMBRE_UT);
-	  return "reportes/reporteDatosContacto"; 
+		return "reportes/reporteDatosContacto"; 
 	 } 
 	 	 
 	 @GetMapping("/reporte-horario-clases") 
@@ -1443,7 +1443,7 @@ public class TutorController {
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
-		return "reportes/reporteBajas"; 
+		return "tutorias/reporteBajas"; 
 	 } 
 	 
 	 @GetMapping("/reporte-canalizaciones") 
@@ -1492,7 +1492,7 @@ public class TutorController {
 		model.addAttribute("canalizaciones", canalizaciones);
 		model.addAttribute("cveServicio", cveServicio);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
-		return "reportes/reporteCanalizaciones"; 
+		return "tutorias/reporteCanalizaciones"; 
 	 }
 	 
 	 @GetMapping("/reporte-cal-grupo") 
@@ -1586,7 +1586,7 @@ public class TutorController {
 		model.addAttribute("periodo", periodo);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
-		return "reportes/reporteCalificacionesPorGrupo"; 
+		return "tutorias/reporteCalificacionesPorGrupo"; 
 	}
 	 
 	 @GetMapping("/reporte-entrevista-inicial") 
@@ -1762,10 +1762,10 @@ public class TutorController {
 			Integer cveAlumno = Integer.parseInt(idAlumno);
 			List<TutoriaIndividual> tutorias = tutoriaIndiService.buscarPorAlumno(new Alumno(cveAlumno));
 			model.addAttribute("tutorias", tutorias);
-			model.addAttribute("alumno", tutorias.get(0).getAlumno().getPersona().getNombreCompleto());
+			model.addAttribute("alumno", tutorias.get(0).getAlumno().getPersona().getNombreCompletoPorApellido());
 		}
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
-		return "reportes/reporteTutoriasAlumno";
+		return "tutorias/reporteTutoriasAlumno";
 	}
 	
 	@GetMapping("/asesoria-grupal")

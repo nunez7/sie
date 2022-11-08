@@ -28,7 +28,7 @@ public interface TutoriaIndividualRepository extends CrudRepository<TutoriaIndiv
 	List<TutoriaIndividual> findByGrupoAndPersonaAndFechaTutoria(@Param("idGrupo") Integer idGrupo, @Param("idAlumno") Integer idAlumno, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
 	
 	@Query(value = "SELECT * FROM tutoria_individual where id_grupo =:idGrupo "
-			+ "AND fecha_registro >=:fechaInicio AND fecha_registro <=:fechaFin", nativeQuery = true)
+			+ "AND fecha_registro >=:fechaInicio AND fecha_registro <=:fechaFin ORDER BY fecha_tutoria", nativeQuery = true)
 	List<TutoriaIndividual> findByGrupoAndFechaTutoria(@Param("idGrupo") Integer idGrupo, @Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
 	
 	@Query(value = "SELECT t.* FROM tutoria_individual t "
@@ -48,24 +48,5 @@ public interface TutoriaIndividualRepository extends CrudRepository<TutoriaIndiv
 			+ "INNER JOIN carreras ca ON ca.id=g.id_carrera "
 			+ "WHERE ca.id=:idCarrera AND g.id_periodo=:idPeriodo AND g.id_turno=:idTurno", nativeQuery = true)
 	Integer findTotalDistinctAlumnoByCarreraAndPeriodoAndTurno(@Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo, @Param("idTurno") Integer idTurno);
-	
-	//importaciones
-	/*@Query(value = "SELECT * FROM tutorias_ut_nay ORDER BY id", nativeQuery = true)
-	List<TutoriasUtNay> findAllUtNay();
-	
-	@Query(value = "SELECT * FROM canalizaciones_ut_nay ORDER BY id", nativeQuery = true)
-	List<CanalizacionesUtNay> findCanalizacionesByUtNay();
-	
-	@Query(value = "SELECT * FROM temas_grupos_ut_nay ORDER BY id", nativeQuery = true)
-	List<TemasGruposUtNay> findTemasGrupalesByUtNay();
-	
-	@Query(value = "SELECT * FROM focos_atencion_ut_nay ORDER BY id", nativeQuery = true)
-	List<FocosAtencionUtNay> findFocosAtencionByUtNay();
-	
-	@Query(value = "SELECT * FROM fortalezas_grupo_ut_nay ORDER BY id", nativeQuery = true)
-	List<FortalezasGrupoUtNay> findFortalezasGrupoByUtNay();
-	
-	@Query(value = "SELECT * FROM bajas_ut_nay ORDER BY id", nativeQuery = true)
-	List<BajasUtNay> findBajasByUtNay();*/
 	
 }

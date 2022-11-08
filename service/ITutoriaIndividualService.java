@@ -31,18 +31,5 @@ public interface ITutoriaIndividualService {
 	
 	Integer totalPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
 	Integer totalDistinctAlumnoPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno);
-	
-	//importaciones
-	/*List<TutoriasUtNay> buscarTodoTutoriasUtNay();
-	
-	List<CanalizacionesUtNay> buscarCanalizacionesUtNay();
-	
-	List<TemasGruposUtNay> buscarTemasGrupalesByUtNay();
-	
-	List<FocosAtencionUtNay> buscarFocosAtencionByUtNay();
-	
-	List<FortalezasGrupoUtNay> buscarFortalezasGrupoByUtNay();
-	
-	List<BajasUtNay> buscarBajasByUtNay();*/
-	
+		
 }
