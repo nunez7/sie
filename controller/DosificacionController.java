@@ -1,13 +1,11 @@
 package edu.mx.utdelacosta.controller;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,15 +159,14 @@ public class DosificacionController {
 		String resultadoMail = null;
 
 		if (existeCorte == 0) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrga(
+					carga, new CorteEvaluativo(Integer.parseInt(obj.get("idCorteEvaluativo"))), new TipoProrroga(3), new Date());
+			/*buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(
 					carga, new TipoProrroga(3), new CorteEvaluativo(Integer.parseInt(obj.get("idCorteEvaluativo"))),
 					true, true);
-			if (prorroga != null) {
-				if (prorroga.getFechaLimite().before(new Date())) {
+					*/
+			if (prorroga == null) {
 					return "limit";
-				}
-			} else {
-				return "limit";
 			}
 		}
 
@@ -275,7 +272,14 @@ public class DosificacionController {
 				corteActual);
 		
 		if (corteService.buscarPorCorteYFechaDosificacion(corteActual, new Date())==null) {
-			model.addAttribute("fecha", false);
+			
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrga(cargaActual, corteActual, new TipoProrroga(3), new Date());
+				
+				if (prorroga == null) {
+					model.addAttribute("fecha", false);					
+				}
+			
+	
 		}
 		
 		if (!calendarios.isEmpty()) {
@@ -707,7 +711,7 @@ public class DosificacionController {
 		mail.setVariables(variables);
 		try {
 			emailService.sendEmail(mail);
-		} catch (MessagingException | IOException e) {
+		} catch (Exception e) {
 		}
 
 		return "ok";
@@ -753,7 +757,7 @@ public class DosificacionController {
 		mail.setVariables(variables);
 		try {
 			emailService.sendEmail(mail);
-		} catch (MessagingException | IOException e) {
+		} catch (Exception e) {
 		}
 
 		return "ok";
