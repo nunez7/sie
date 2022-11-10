@@ -8,5 +8,5 @@ import edu.mx.utdelacosta.model.Fortaleza;
 import edu.mx.utdelacosta.model.Grupo;
 
 public interface FortalezaRepository extends CrudRepository<Fortaleza, Integer>{
-	List<Fortaleza> findByGrupo(Grupo grupo);
+	List<Fortaleza> findByGrupoOrderByFortaleza(Grupo grupo);
 }

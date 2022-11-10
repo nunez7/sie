@@ -33,7 +33,7 @@ public class TemaGrupalServiceJpa implements ITemaGrupalService{
 	@Override
 	@Transactional(readOnly = true)
 	public List<TemaGrupal> buscarPorGrupo(Grupo grupo) {
-		return temaGrupalRepo.findByGrupo(grupo);
+		return temaGrupalRepo.findByGrupoOrderByFechaProgramada(grupo);
 	}
 
 	@Override

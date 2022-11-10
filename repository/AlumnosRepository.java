@@ -317,15 +317,15 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre ", nativeQuery = true)
 	List<Alumno> findByNombreOrMatricula(@Param("nombre") String nombre);
 	
-	@Query(value = "select a.*,CONCAT(per.nombre,' ',per.primer_apellido,' ',per.segundo_apellido) AS nombreCompleto "
+	@Query(value = "select a.*,CONCAT(per.primer_apellido,' ',per.segundo_apellido,' ', per.nombre) AS nombreCompleto "
 			+ "FROM alumnos a "
 			+ "INNER JOIN alumnos_grupos ag ON a.id=ag.id_alumno "
-			+ "INNER JOIN grupos g ON g.id=ag.id_grupo AND g.id_profesor=:idProfesor AND g.id_periodo=:idPeriodo "
+			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
 			+ "INNER JOIN personas per ON per.id=a.id_persona "
-			+ "WHERE CONCAT(per.nombre,' ',per.primer_apellido) iLIKE %:nombre% "
+			+ "WHERE g.id_profesor=:idProfesor AND g.id_periodo=:idPeriodo AND ag.activo='True' AND (CONCAT(per.nombre,' ',per.primer_apellido) iLIKE %:nombre% "
 			+ "OR CONCAT(per.primer_apellido,' ',per.segundo_apellido) iLIKE %:nombre% "
 			+ "OR CONCAT(per.segundo_apellido, ' ',per.nombre) iLIKE %:nombre% "
-			+ "OR a.matricula iLIKE %:nombre% "
+			+ "OR a.matricula iLIKE %:nombre%)  "
 			+ "ORDER BY per.primer_apellido, per.segundo_apellido, per.nombre", nativeQuery = true)
 	List<AlumnoInfoDTO> findByProfesorAndPeriodoAndNombreOrMatricula(@Param("idProfesor") Integer idProfesor, @Param("idPeriodo") Integer idPeriodo,@Param("nombre") String nombre);
 	

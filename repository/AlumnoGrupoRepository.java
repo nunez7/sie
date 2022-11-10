@@ -28,7 +28,7 @@ public interface AlumnoGrupoRepository extends CrudRepository<AlumnoGrupo, Integ
 			   + "INNER JOIN grupos g on ag.id_grupo=g.id "
 			   + "WHERE id_alumno =:alumno AND g.id_periodo =:periodo "
 			   + "AND ag.activo = 'True'", nativeQuery = true)
-			 List<AlumnoGrupo> findByIdAlumnoAndIdPeriodo(@Param("alumno") Integer idAlumno, @Param("periodo") Integer idPeriodo);
+	List<AlumnoGrupo> findByIdAlumnoAndIdPeriodo(@Param("alumno") Integer idAlumno, @Param("periodo") Integer idPeriodo);
 
 	@Query(value = "SELECT COUNT(ag.*) FROM alumnos_grupos ag "
 				+ "WHERE ag.id_grupo  = :idGrupo AND ag.activo = 'True' ",nativeQuery = true)

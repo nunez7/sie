@@ -72,28 +72,41 @@ public class TutoriaIndividualServiceJpa implements ITutoriaIndividualService{
 		return tutoriaIndRepo.findByAlumnoOrderByFechaRegistroDesc(alumno);
 	}
 
-	@Transactional(readOnly = true)
+	
 	@Override
+	@Transactional(readOnly = true)
 	public List<TutoriaIndividual> buscarEntreFechasPorGrupo(Integer idGrupo, Date fechaInicio, Date fechaFin) {
 		return tutoriaIndRepo.findByGrupoAndFechaTutoria(idGrupo, fechaInicio, fechaFin);
 	}
 
-	@Transactional(readOnly = true)
 	@Override
+	@Transactional(readOnly = true)
 	public List<TutoriaIndividual> buscarEntreFechasPorCarrera(Integer idCarrera, Integer idPeriodo, Date fechaInicio, Date fechaFin) {
 		return tutoriaIndRepo.findByCarreraAndFechaTutoria(idCarrera, idPeriodo, fechaInicio, fechaFin);
 	}
 
-	@Transactional(readOnly = true)
 	@Override
+	@Transactional(readOnly = true)
 	public Integer totalPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
 		return tutoriaIndRepo.findTotalByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
 	}
 
-	@Transactional(readOnly = true)
 	@Override
+	@Transactional(readOnly = true)
 	public Integer totalDistinctAlumnoPorCarreraPeriodoYTurno(Integer idCarrera, Integer idPeriodo, Integer idTurno) {
 		return tutoriaIndRepo.findTotalDistinctAlumnoByCarreraAndPeriodoAndTurno(idCarrera, idPeriodo, idTurno);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<TutoriaIndividual> buscarPorGrupo(Grupo grupo) {
+		return tutoriaIndRepo.findByGrupoOrderByFechaRegistroDesc(grupo);
+	}
+
+	@Override
+	@Transactional
+	public void eliminar(Integer id) {
+		tutoriaIndRepo.deleteById(id);
 	}
 
 }
