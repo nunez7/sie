@@ -593,7 +593,7 @@ public class EncuestasController {
 					new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		}
 
-		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");
+		Integer cveGrupo = (Integer) session.getAttribute("cveGrupoTutor");
 		Evaluacion evaluacion = null;
 		if (cveGrupo != null) {
 			// se valida si el cuatrimestre al que pertenece el grupo seleccionado
@@ -683,7 +683,7 @@ public class EncuestasController {
 		}
 
 		Date fechaActual = new Date();
-		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");
+		Integer cveGrupo = (Integer) session.getAttribute("cveGrupoTutor");
 		List<PreguntaDTO> preguntas = new ArrayList<>();
 
 		Evaluacion evaluacion = null;
@@ -954,7 +954,7 @@ public class EncuestasController {
 		}
 
 		Evaluacion evaluacion = null;
-		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");
+		Integer cveGrupo = (Integer) session.getAttribute("cveGrupoTutor");
 		if (cvePersona != 0) {
 			if (cveGrupo != null) {
 
@@ -1175,7 +1175,7 @@ public class EncuestasController {
 		Date fechaHoy = new Date();
 		String idPregunta = obj.get("idPregunta");
 		String Respuesta = obj.get("idRespuesta");
-		Integer cveGrupo = (Integer) session.getAttribute("t-cveGrupo");
+		Integer cveGrupo = (Integer) session.getAttribute("cveGrupoTutor");
 
 		if (idPregunta != null) {
 			if (Respuesta != null && !Respuesta.isEmpty()) {
