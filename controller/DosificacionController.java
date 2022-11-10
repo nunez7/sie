@@ -130,7 +130,7 @@ public class DosificacionController {
 		UnidadTematica unidadT = new UnidadTematica(unidad);
 		CargaHoraria cargaH = new CargaHoraria(carga);
 		CorteEvaluativo corteE = new CorteEvaluativo(corte);
-		boolean dosificacionValida = comprobarDosificacionValida(carga);
+		boolean dosificacionValida = comprobarDosificacionValida(carga,corte);
 		if (dosificacionValida == true) {
 			return "val";
 		}
@@ -159,8 +159,8 @@ public class DosificacionController {
 		String resultadoMail = null;
 
 		if (existeCorte == 0) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrga(
-					carga, new CorteEvaluativo(Integer.parseInt(obj.get("idCorteEvaluativo"))), new TipoProrroga(3), new Date());
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYAceptada(
+					carga, new TipoProrroga(3), new Date(),new CorteEvaluativo(Integer.parseInt(obj.get("idCorteEvaluativo"))));
 			/*buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(
 					carga, new TipoProrroga(3), new CorteEvaluativo(Integer.parseInt(obj.get("idCorteEvaluativo"))),
 					true, true);
@@ -273,7 +273,7 @@ public class DosificacionController {
 		
 		if (corteService.buscarPorCorteYFechaDosificacion(corteActual, new Date())==null) {
 			
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrga(cargaActual, corteActual, new TipoProrroga(3), new Date());
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYAceptada(cargaActual, new TipoProrroga(3),new Date(),corteActual);
 				
 				if (prorroga == null) {
 					model.addAttribute("fecha", false);					
@@ -618,10 +618,10 @@ public class DosificacionController {
 	}
 
 	// metodos genericos
-	public boolean comprobarDosificacionValida(Integer idCarga) {
-		List<Dosificacion> dosificaciones = dosificacionService.buscarPorIdCargaHoraria(idCarga);
-		for (Dosificacion dosificacion : dosificaciones) {
-			if (dosificacion.getValidaDirector() == true) {
+	public boolean comprobarDosificacionValida(Integer idCarga, Integer idCorte) {
+		Dosificacion dosificacion = dosificacionService.buscarPorIdCargaHorariaEIdCorteEvaluativo(idCarga, idCorte);
+		if(dosificacion!=null) {
+			if (dosificacion.getValidaDirector()==true) {
 				return true;
 			}
 		}

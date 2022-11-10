@@ -49,7 +49,7 @@ public interface ProrrogaRepository extends CrudRepository<Prorroga, Integer> {
 			+ "WHERE activo = TRUE AND aceptada = TRUE "
 			+ "AND id_tipo_prorroga = :tipo AND id_corte_evaluativo = :corte "
 			+ "AND fecha_limite >= :fecha AND id_carga_horaria = :carga", nativeQuery = true)
-	Prorroga findByCargaHorariaAndTipoProrrogaAndFechaAndCorte(@Param("carga")CargaHoraria cargaHoraria, 
+	Prorroga findByCargaHorariaAndCorteEvaluativoAndTipoProrrogaAndAceptada(@Param("carga")CargaHoraria cargaHoraria, 
 			@Param("tipo")TipoProrroga tipoProrroga, @Param("fecha")Date fecha,@Param("corte") CorteEvaluativo corte);
 	
 	Prorroga findByCargaHorariaAndTipoProrrogaAndCorteEvaluativoAndActivoAndAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga,

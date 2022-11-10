@@ -28,7 +28,7 @@ public interface IProrrogaService {
 	
 	Prorroga buscarPorCargaHorariaYCorteEvaluativoYTipoProrrga(CargaHoraria cargaHoraria, CorteEvaluativo corteEvaluativo, TipoProrroga tipoProrroga, Date fecha);
 	
-	Prorroga buscarPorCargaHorariaYTipoProrrogaYFecha(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, Date fecha, CorteEvaluativo corte);
+	Prorroga buscarPorCargaHorariaYTipoProrrogaYAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, Date fecha, CorteEvaluativo corte);
 	
 	Prorroga buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(CargaHoraria cargaHoraria, TipoProrroga tipoProrroga, CorteEvaluativo corteEvaluativo, boolean activo, boolean aceptada);
 	

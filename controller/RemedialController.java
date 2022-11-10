@@ -100,8 +100,8 @@ public class RemedialController {
 			
 			// se busca si el periodo de remediales esta activo
 			if (corteEvaluativoService.buscarPorCorteYFechaRemedial(corte, fechaHoy)==null) {
-				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrga(
-						new CargaHoraria(idCarga),corte,new TipoProrroga(1), new Date());
+				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYAceptada(
+						new CargaHoraria(idCarga),new TipoProrroga(1), new Date(),corte);
 				if (prorroga == null) {
 						model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de remediales");
 						return "fragments/modal-calificar:: verRemedialExtra";
@@ -146,8 +146,8 @@ public class RemedialController {
 
 		if (tipo.equals("extraordinario")) {
 			if (corteEvaluativoService.buscarPorCorteYFechaExtraordinario(corte, fechaHoy)==null) {
-				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYCorteEvaluativoYTipoProrrga(
-						new CargaHoraria(idCarga),corte,new TipoProrroga(1), new Date());
+				Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYAceptada(
+						new CargaHoraria(idCarga),new TipoProrroga(1), new Date(), corte);
 				if (prorroga == null) {
 					model.addAttribute("respuesta", "Actualmente no se encuentra en periodo de remediales");
 						return "fragments/modal-calificar:: verRemedialExtra";

@@ -143,7 +143,7 @@ public class AsistenciaController {
 		
 		//se busca una prorroga, en caso de nulo, se envia el mensaje de que el periodo de asistencias ya termino
 		if (corte == null) {
-			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYFecha(carga, new TipoProrroga(2), fechaHoy, new CorteEvaluativo(idCorte));
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYAceptada(carga, new TipoProrroga(2), fechaHoy, new CorteEvaluativo(idCorte));
 			if (prorroga != null) {
 					corte = prorroga.getCorteEvaluativo();
 			} else {
