@@ -13,7 +13,7 @@ import edu.mx.utdelacosta.model.Baja;
 public interface BajaRepository extends CrudRepository<Baja, Integer>{
 	//busca si hay una baja solicitda por el alumno
 	@Query(value = "SELECT * FROM bajas WHERE id_alumno= :idAlumno "
-			+ "AND estatus = :estatus AND fecha_autorizacion IS NULL ORDER BY b.fecha_solicitud DESC", nativeQuery = true)
+			+ "AND estatus = :estatus AND fecha_autorizacion IS NULL ORDER BY fecha_solicitud DESC", nativeQuery = true)
 	Baja findByEstatusAndAlumnoAndFechaAutorizacion(@Param("estatus") Integer estatus, @Param("idAlumno") Integer idAlumno);
 	//Extrae todas las solicitudes de baja de los alumnos pertenecientes
 	//a los grupos de las carreras que tiene asociada el usuario.

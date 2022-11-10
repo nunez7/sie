@@ -11,9 +11,13 @@ public interface ITutoriaIndividualService {
 	
 	void guardar(TutoriaIndividual tutoriaIndividual);
 	
+	void eliminar(Integer id);
+	
 	TutoriaIndividual buscarPorId(Integer id);
 	
 	List<TutoriaIndividual> buscarPorAlumnoYGrupo(Alumno alumno, Grupo grupo);
+	
+	List<TutoriaIndividual> buscarPorGrupo(Grupo grupo);
 	
 	List<TutoriaIndividual> buscarUltimas5PorAlumno(Alumno alumno);
 	

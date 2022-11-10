@@ -26,7 +26,7 @@ public class FocosAtencionServiceJpa implements IFocosAtencionService{
 	@Override
 	@Transactional(readOnly = true)
 	public List<FocosAtencion> buscarPorGrupo(Grupo grupo) {
-		return focosRepo.findByGrupo(grupo);
+		return focosRepo.findByGrupoOrderByDescripcion(grupo);
 	}
 
 	@Override

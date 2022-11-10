@@ -19,6 +19,8 @@ public interface TutoriaIndividualRepository extends CrudRepository<TutoriaIndiv
 	
 	List<TutoriaIndividual> findByAlumnoOrderByFechaRegistroDesc(Alumno alumno);
 	
+	List<TutoriaIndividual> findByGrupoOrderByFechaRegistroDesc(Grupo grupo);
+	
 	List<TutoriaIndividual> findByAlumnoAndValidadaOrderByFechaRegistroDesc(Alumno alumno, Boolean validada);
 	
 	TutoriaIndividual findTopByOrderByIdDesc();

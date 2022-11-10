@@ -26,7 +26,7 @@ public class FortalezaServiceJpa implements IFortalezaService{
 	@Override
 	@Transactional(readOnly = true)
 	public List<Fortaleza> buscarPorGrupo(Grupo grupo) {
-		return fortalezaRepo.findByGrupo(grupo);
+		return fortalezaRepo.findByGrupoOrderByFortaleza(grupo);
 	}
 
 	@Override
