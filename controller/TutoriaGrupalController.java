@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.mx.utdelacosta.model.Alumno;
+import edu.mx.utdelacosta.model.AsesoriaSolicitud;
 import edu.mx.utdelacosta.model.AsistenciaTemaGrupal;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.Foco;
@@ -38,6 +39,7 @@ import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.AlumnoAsistenciaDTO;
 import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IAlumnoService;
+import edu.mx.utdelacosta.service.IAsesoriaService;
 import edu.mx.utdelacosta.service.IAsistenciaTemaGrupalService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
 import edu.mx.utdelacosta.service.IFocosAtencionService;
@@ -80,6 +82,9 @@ public class TutoriaGrupalController {
 	
 	@Autowired
 	private ICargaHorariaService cargaHorariaService;
+
+	@Autowired
+	private IAsesoriaService asesoriaService;
 
 	@PostMapping(path = "/actualizar-tema", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
@@ -345,11 +350,8 @@ public class TutoriaGrupalController {
 	
 	@PostMapping(path = "/solicitar-asesoria", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String solistaAsesoriaGrupal(@RequestBody Map<String, String> obj, HttpSession session)
+	public String solistaAsesoriaGrupal(@RequestBody AsesoriaSolicitud asesoria, HttpSession session)
 			throws ParseException {
-		// SimpleDateFormat dFHora = new SimpleDateFormat("hh:mm");
-		// SimpleDateFormat dFDia = new SimpleDateFormat("dd/MM/yyyy");
-		// extrae el usuario a partir del usuario cargado en sesión.
 		Usuario usuario = (Usuario) session.getAttribute("usuario");
 		int cvePersona;
 		try {
@@ -358,28 +360,29 @@ public class TutoriaGrupalController {
 			cvePersona = usuario.getPersona().getId();
 		}
 		Persona persona = personaService.buscarPorId(cvePersona);
-		String cveGrupo = obj.get("grupo");
-		String razon = obj.get("razon");
-		String comentario = obj.get("comentario");
+		Integer cveGrupo = asesoria.getIdGrupo();
+		String razon = asesoria.getRazon();
+		String comentario = asesoria.getComentarios();
 		if (cveGrupo != null) {
-			Grupo grupo = grupoService.buscarPorId(Integer.parseInt(cveGrupo));
-			if (obj.get("materias") != null) {
+			Grupo grupo = grupoService.buscarPorId(cveGrupo);
+			if (asesoria.getMaterias() != null) {
 				// Recibo los motivos de la tutoría como un string y los convierto a una
 				// ArrayList<Integer>
-				String ma = obj.get("materias");
-				String s = ",";
-				String[] mat = ma.split(s);
+				String ma = asesoria.getMaterias();
+				String[] mat = ma.split(",");
 				List<String> mater = Arrays.asList(mat);
 				ArrayList<Integer> materias = new ArrayList<Integer>();// lista de motivos seleccionados
 				for (int i = 0; i < mater.size(); i++) {
 					materias.add(Integer.parseInt(mater.get(i)));
 				}
-
+				String materiasGuardar = "";
+				boolean enviado = false;
 				for (Integer cveMateria : materias) {
 					CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(cveMateria);
 					Mail mail = new Mail();
 					String de = correo;
 					String para = cargaHoraria.getProfesor().getEmail();
+					materiasGuardar+= cargaHoraria.getMateria().getNombre()+", ";
 					mail.setDe(de);
 					mail.setPara(new String[] { para });
 					// Email title
@@ -396,9 +399,20 @@ public class TutoriaGrupalController {
 					mail.setVariables(variables);
 					try {
 						emailService.sendEmail(mail);
+						enviado = true;
 					} catch (Exception e) {
 						return "errorCorre";
 					}
+				}
+				if(enviado) {
+					AsesoriaSolicitud asesoriaS = new AsesoriaSolicitud();
+					asesoriaS.setIdGrupo(cveGrupo);
+					asesoriaS.setComentarios(comentario);
+					asesoriaS.setFecha(asesoria.getFecha());
+					asesoriaS.setHora(asesoria.getHora());
+					asesoriaS.setMaterias(materiasGuardar);
+					asesoriaS.setRazon(razon);
+					asesoriaService.guardarAsesoriaSolicitud(asesoriaS);
 				}
 				return "ok";
 			}

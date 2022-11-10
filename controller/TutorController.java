@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
+import edu.mx.utdelacosta.model.AsesoriaSolicitud;
 import edu.mx.utdelacosta.model.Baja;
 import edu.mx.utdelacosta.model.BajaAutoriza;
 import edu.mx.utdelacosta.model.Canalizacion;
@@ -59,6 +60,7 @@ import edu.mx.utdelacosta.model.dtoreport.IndicadorParcialDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
+import edu.mx.utdelacosta.service.IAsesoriaService;
 import edu.mx.utdelacosta.service.IBajaAutorizaService;
 import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
@@ -183,6 +185,9 @@ public class TutorController {
 
 	@Autowired
 	private ICausaBajaService causaBajaService;
+	
+	@Autowired
+	private IAsesoriaService asesoriaService;
 
 	@GetMapping("/cargar-alumno/{dato}")
 	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato, Model model,
@@ -1206,13 +1211,20 @@ public class TutorController {
 		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona),
 				new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		List<CargaHoraria> materias = new ArrayList<>();
+		List<AsesoriaSolicitud> asesorias = new ArrayList<>();
 		if (cveGrupo != null) {
 			materias = cargaHorariaService.buscarPorGrupo(new Grupo(cveGrupo));
+			asesorias = asesoriaService.buscarAsesoriasSolicitudPorGrupo(cveGrupo);
 		}
-
+		SimpleDateFormat objSDF = new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat objHora = new SimpleDateFormat("HH:mm");
+		
 		model.addAttribute("cveGrupo", cveGrupo);
 		model.addAttribute("grupos", grupos);
 		model.addAttribute("materias", materias);
+		model.addAttribute("asesorias", asesorias);
+		model.addAttribute("fecha", objSDF.format(new Date()));
+		model.addAttribute("hora", objHora.format(new Date()));
 		return "tutorias/solicitarAsesoriaGrupal";
 	}
 
