@@ -259,13 +259,10 @@ public class RemedialController {
 		// se busca si ya esxiste un adeudo
 		PagoGeneral pago = new PagoGeneral();
 		Concepto concepto = new Concepto();
-		String tipoConcepto;
 		if (tipoRemedial == 1) {
 			concepto = conceptoService.buscarPorId(22);
-			tipoConcepto = "REMEDIAL";
 		} else {
 			concepto = conceptoService.buscarPorId(13);
-			tipoConcepto = "EXTRAORDINARIO";
 		}
 		pago = pagoGeneralService.buscarPorAlumnoYConceptoYCargaHorariaYCorte(idAlumno, concepto.getId(),
 				carga.getId(), idCorte);
@@ -275,7 +272,7 @@ public class RemedialController {
 			pago.setCantidad(1);
 			pago.setCliente(0);
 			pago.setActivo(true);
-			pago.setDescripcion(tipoConcepto +" "+ carga.getMateria().getNombre().toUpperCase());
+			pago.setDescripcion(concepto.getConcepto() +" "+ carga.getMateria().getNombre().toUpperCase()+" - PARCIAL "+corteEvaluativoService.buscarPorId(idCorte).getConsecutivo());
 			pago.setConcepto(concepto);
 			pago.setDescuento(0.0);
 			pago.setFechaAlta(new Date());
