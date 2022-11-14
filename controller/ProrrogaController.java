@@ -180,7 +180,7 @@ public class ProrrogaController {
 			Map<String, Object> variables = new HashMap<>();
 			variables.put("titulo", "Nueva Solicitud de Prórroga");
 			variables.put("cuerpoCorreo",
-					"El Profesor(a) "+carga.getProfesor().getNombreCompleto()+" ha solicitado una prorroga para la materia "+carga.getMateria().getNombre()+", <br> "
+					"El Profesor(a) "+carga.getProfesor().getNombreCompleto()+" ha solicitado una prorroga para la materia "+carga.getMateria().getNombre()+" del grupo: "+carga.getGrupo().getNombre()+", <br> "
 							+ "es necesario acceder al panel de director.");
 			mail.setVariables(variables);
 			
