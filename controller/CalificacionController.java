@@ -41,6 +41,7 @@ import edu.mx.utdelacosta.model.dtoreport.CalificacionInstrumentoDTO;
 import edu.mx.utdelacosta.model.dtoreport.CalificacionParcialDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.IAlumnoService;
+import edu.mx.utdelacosta.service.IAsistenciaService;
 import edu.mx.utdelacosta.service.ICalendarioEvaluacionService;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
@@ -119,6 +120,9 @@ public class CalificacionController {
 	
 	@Autowired
 	private IPeriodosService periodoService;
+	
+	@Autowired
+	private IAsistenciaService asistenciaService;
 		
 	@Autowired
 	private ActualizarCalificacion actualizarCalificacion;
@@ -218,6 +222,9 @@ public class CalificacionController {
 		Integer idAlumno = Integer.parseInt(obj.get("idAlumno"));
 		Integer idMecanismo = Integer.parseInt(obj.get("idInstrumento"));
 
+		if (asistenciaService.contarAsistenciasPorCargaYCorte(new CargaHoraria(idCargaHoraria), new CorteEvaluativo(idCorteEvaluativo))==0) {
+			return "noAsistencia";
+		}
 		// se compara que el alumno no tenga un remedial pagado para eviatar editar la
 		// calificacion
 		RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
