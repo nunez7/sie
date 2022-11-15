@@ -24,4 +24,11 @@ public interface ModulosRepository extends CrudRepository<Modulo, Integer> {
 			+ "INNER JOIN usuario_rol ur ON ur.id_rol = r.id "
 			+ "WHERE ur.activo=true AND ur.id_usuario = :usuario AND mr.id_modulo = :modulo ", nativeQuery = true)
 	Modulo hasAccess (@Param("usuario") Integer idUsuario, @Param("modulo") Integer idModulo);
+	
+	@Query(value = "SELECT * FROM modulos m "
+			+ "WHERE activo='True' AND cve_modulo IN ( "
+			+ "SELECT id_modulo FROM preguntas_frecuentes pf "
+			+ "WHERE pf.id_modulo=m.cve_modulo) "
+			+ "ORDER BY cve_modulo", nativeQuery = true)
+	List<Modulo> buscarModulosConPreguntasFrecuentes();
 }

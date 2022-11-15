@@ -14,4 +14,6 @@ public interface IModuloService {
 	List<Modulo> buscarModulosPorRol(Integer idRol);
 	
 	boolean hasAccess (Integer idUsuario, Integer idModulo);
+	
+	List<Modulo> buscarModulosConPreguntasFrecuentes();
 }

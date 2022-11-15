@@ -62,4 +62,10 @@ public class ModulosServiceJpa implements IModuloService{
 		return false;
 	}
 
+	@Override
+	public List<Modulo> buscarModulosConPreguntasFrecuentes() {
+		// TODO Auto-generated method stub
+		return modulosRepo.buscarModulosConPreguntasFrecuentes();
+	}
+
 }

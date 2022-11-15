@@ -31,10 +31,12 @@ import edu.mx.utdelacosta.model.Evaluacion;
 import edu.mx.utdelacosta.model.EvaluacionComentario;
 import edu.mx.utdelacosta.model.EvaluacionTutor;
 import edu.mx.utdelacosta.model.Grupo;
+import edu.mx.utdelacosta.model.Modulo;
 import edu.mx.utdelacosta.model.OpcionRespuesta;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.Pregunta;
+import edu.mx.utdelacosta.model.PreguntaFrecuente;
 import edu.mx.utdelacosta.model.Respuesta;
 import edu.mx.utdelacosta.model.RespuestaCargaEvaluacion;
 import edu.mx.utdelacosta.model.RespuestaComentario;
@@ -43,6 +45,7 @@ import edu.mx.utdelacosta.model.RespuestaEvaluacionTutor;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.OpcionRespuestaDTO;
 import edu.mx.utdelacosta.model.dto.PreguntaDTO;
+import edu.mx.utdelacosta.model.dto.PreguntaFrecuenteDTO;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.ICargaEvaluacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
@@ -52,6 +55,7 @@ import edu.mx.utdelacosta.service.IEvaluacionComentarioService;
 import edu.mx.utdelacosta.service.IEvaluacionTutorService;
 import edu.mx.utdelacosta.service.IEvaluacionesService;
 import edu.mx.utdelacosta.service.IGrupoService;
+import edu.mx.utdelacosta.service.IModuloService;
 import edu.mx.utdelacosta.service.IOpcionesRepuestaService;
 import edu.mx.utdelacosta.service.IPreguntaService;
 import edu.mx.utdelacosta.service.IRespuestaCargaEvaluacionService;
@@ -59,7 +63,6 @@ import edu.mx.utdelacosta.service.IRespuestaEvaluacionInicialService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionTutorService;
 
 @Controller
-@PreAuthorize("hasRole('Administrador') and hasRole('Alumno')")
 @RequestMapping("/encuestas")
 public class EncuestasController {
 
@@ -104,6 +107,9 @@ public class EncuestasController {
 
 	@Autowired
 	private IOpcionesRepuestaService opcionesRepuestaService;
+	
+	@Autowired
+	private IModuloService moduloService;
 
 	@GetMapping("/evaluacionDocente")
 	public String evaluacionDocente(Model model, HttpSession session, Authentication authentication) {
@@ -1356,6 +1362,22 @@ public class EncuestasController {
 			return "noRe";
 		}
 		return "noPre";
+	}
+
+	@GetMapping("/preguntas-frecuentes")
+	public String preguntasFrecuentes(Model model) {
+        List<Modulo> modulos = moduloService.buscarModulosConPreguntasFrecuentes();
+        List<PreguntaFrecuenteDTO> modulosNew = new ArrayList<PreguntaFrecuenteDTO>();
+        
+        for (Modulo modulo : modulos) {
+			List<PreguntaFrecuente> preguntas = preguntaService.preguntasFrecuentesPorModulo(modulo.getCveModulo());
+			PreguntaFrecuenteDTO moduloNew = new PreguntaFrecuenteDTO();
+			moduloNew.setModulo(modulo);
+			moduloNew.setPreguntas(preguntas);
+			modulosNew.add(moduloNew);
+		}
+		model.addAttribute("modulos", modulosNew);
+		return "encuestas/preguntasFrecuentes";
 	}
 
 }
