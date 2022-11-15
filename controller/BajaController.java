@@ -3,6 +3,7 @@ package edu.mx.utdelacosta.controller;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpSession;
@@ -12,6 +13,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Baja;
+import edu.mx.utdelacosta.model.BajaAutoriza;
 import edu.mx.utdelacosta.model.BajaEstatus;
 import edu.mx.utdelacosta.model.CausaBaja;
 import edu.mx.utdelacosta.model.Grupo;
@@ -29,8 +34,11 @@ import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.model.dto.BajaDto;
 import edu.mx.utdelacosta.service.EmailSenderService;
 import edu.mx.utdelacosta.service.IAlumnoService;
+import edu.mx.utdelacosta.service.IBajaAutorizaService;
 import edu.mx.utdelacosta.service.IBajaService;
+import edu.mx.utdelacosta.service.ICausaBajaService;
 import edu.mx.utdelacosta.service.IPersonaService;
+import edu.mx.utdelacosta.util.CodificarTexto;
 
 @Controller
 @PreAuthorize("hasRole('Administrador') and hasRole('Profesor') and hasRole('Rector') and hasRole('Informatica') and hasRole('Academia') and hasRole('Director')")
@@ -51,6 +59,12 @@ public class BajaController {
 
 	@Autowired
 	private IPersonaService personaService;
+	
+	@Autowired
+	private ICausaBajaService causaBajaService;
+	
+	@Autowired
+	private IBajaAutorizaService bajaAutorizaService;
 
 	@PreAuthorize("hasAnyAuthority('Administrador', 'Informatica', 'Profesor')")
 	@PostMapping(path = "/guardar-baja", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -138,4 +152,49 @@ public class BajaController {
 		return "ok";
 	}
 
+	@GetMapping("/cargar-baja/{idBaja}")
+	public String cargaBaja(@PathVariable(name = "idBaja", required = false) String idBaja, Model model) {
+		if (idBaja != null) {
+			Integer cveBaja = Integer.parseInt(idBaja);
+			BajaAutoriza bajaAutoriza = bajaAutorizaService.buscarPorBaja(new Baja(cveBaja));
+			// Codifica el ususario
+			String firmaTutor = null;
+			String firmaDirector = null;
+			String firmaAlumno = null;
+			try {
+				String firma1 = bajaAutoriza.getBaja().getPersona().getUsuarios().get(0).getUsuario();
+				firmaTutor = CodificarTexto.encriptAES(firma1);
+
+				String firma2 = bajaAutoriza.getPersona().getUsuarios().get(0).getUsuario();
+				firmaDirector = CodificarTexto.encriptAES(firma2);
+
+				String firma3 = bajaAutoriza.getBaja().getAlumno().getPersona().getUsuarios().get(0).getUsuario();
+				firmaAlumno = CodificarTexto.encriptAES(firma3);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			model.addAttribute("baja", bajaAutoriza.getBaja());
+			model.addAttribute("autoriza", bajaAutoriza.getPersona().getNombreCompletoConNivelEstudio());
+			model.addAttribute("grupo",
+					bajaAutoriza.getBaja().getGrupo() != null ? bajaAutoriza.getBaja().getGrupo() : null);
+			model.addAttribute("firmaTutor", firmaTutor);
+			model.addAttribute("firmaDirector", firmaDirector);
+			model.addAttribute("firmaAlumno", firmaAlumno);
+		}
+		return "tutorias/solicitudBaja";
+	}
+
+	// para editar la baja
+	@GetMapping("/baja-get/{id}")
+	public String getBajaAlumno(@PathVariable(name = "id", required = true) Integer idBaja, Model model) {
+		// busca el objeto de la baja
+		Baja baja = bajaService.buscarPorId(idBaja);
+		// lista causas de baja
+		List<CausaBaja> causas = causaBajaService.buscarActivas();
+		model.addAttribute("causas", causas);
+		model.addAttribute("baja", baja);
+		return "tutorias/editarBajaAlumno";
+	}
 }

@@ -23,7 +23,6 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.AsesoriaSolicitud;
 import edu.mx.utdelacosta.model.Baja;
-import edu.mx.utdelacosta.model.BajaAutoriza;
 import edu.mx.utdelacosta.model.Canalizacion;
 import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.CausaBaja;
@@ -61,7 +60,6 @@ import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAsesoriaService;
-import edu.mx.utdelacosta.service.IBajaAutorizaService;
 import edu.mx.utdelacosta.service.IBajaService;
 import edu.mx.utdelacosta.service.ICalificacionCorteService;
 import edu.mx.utdelacosta.service.ICalificacionMateriaService;
@@ -87,7 +85,6 @@ import edu.mx.utdelacosta.service.IRespuestaEvaluacionTutorService;
 import edu.mx.utdelacosta.service.IServicioService;
 import edu.mx.utdelacosta.service.ITemaGrupalService;
 import edu.mx.utdelacosta.service.ITutoriaIndividualService;
-import edu.mx.utdelacosta.util.CodificarTexto;
 
 @Controller
 @PreAuthorize("hasRole('Administrador') and hasRole('Profesor') and hasRole('Director')")
@@ -173,9 +170,6 @@ public class TutorController {
 	
 	@Autowired
 	private IMotivoService motivoService;
-
-	@Autowired
-	private IBajaAutorizaService bajaAutorizaService;
 
 	@Autowired
 	private IServicioService servicioService;
@@ -322,17 +316,6 @@ public class TutorController {
 		return "tutorias/bajaAlumno";
 	}
 
-	// para editar la baja
-	@GetMapping("/baja-get/{id}")
-	public String getBajaAlumno(@PathVariable(name = "id", required = true) Integer idBaja, Model model) {
-		// busca el objeto de la baja
-		Baja baja = bajaService.buscarPorId(idBaja);
-		// lista causas de baja
-		List<CausaBaja> causas = causaBajaService.buscarActivas();
-		model.addAttribute("causas", causas);
-		model.addAttribute("baja", baja);
-		return "tutorias/editarBajaAlumno";
-	}
 
 	@GetMapping("/tutoriaGrupal")
 	public String tutoriaGrupal(Model model, HttpSession session) {
@@ -1161,40 +1144,6 @@ public class TutorController {
 	@GetMapping("/reportes")
 	public String reportesTutoria() {
 		return "tutorias/reportes";
-	}
-
-	@GetMapping("/cargar-baja/{idBaja}")
-	public String cargaBaja(@PathVariable(name = "idBaja", required = false) String idBaja, Model model) {
-		if (idBaja != null) {
-			Integer cveBaja = Integer.parseInt(idBaja);
-			BajaAutoriza bajaAutoriza = bajaAutorizaService.buscarPorBaja(new Baja(cveBaja));
-			// Codifica el ususario
-			String firmaTutor = null;
-			String firmaDirector = null;
-			String firmaAlumno = null;
-			try {
-				String firma1 = bajaAutoriza.getBaja().getPersona().getUsuarios().get(0).getUsuario();
-				firmaTutor = CodificarTexto.encriptAES(firma1);
-
-				String firma2 = bajaAutoriza.getPersona().getUsuarios().get(0).getUsuario();
-				firmaDirector = CodificarTexto.encriptAES(firma2);
-
-				String firma3 = bajaAutoriza.getBaja().getAlumno().getPersona().getUsuarios().get(0).getUsuario();
-				firmaAlumno = CodificarTexto.encriptAES(firma3);
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			model.addAttribute("baja", bajaAutoriza.getBaja());
-			model.addAttribute("autoriza", bajaAutoriza.getPersona().getNombreCompletoConNivelEstudio());
-			model.addAttribute("grupo",
-					bajaAutoriza.getBaja().getGrupo() != null ? bajaAutoriza.getBaja().getGrupo() : null);
-			model.addAttribute("firmaTutor", firmaTutor);
-			model.addAttribute("firmaDirector", firmaDirector);
-			model.addAttribute("firmaAlumno", firmaAlumno);
-		}
-		return "tutorias/solicitudBaja";
 	}
 
 	@GetMapping("/asesoria-grupal")
