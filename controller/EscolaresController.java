@@ -999,14 +999,13 @@ public class EscolaresController {
 
 				List<CalificacionesMateriasParcialesDTO> calMaterias = new ArrayList<>();
 				for (CargaHoraria carga : cargasHorarias) {
-					// List<CalificacionDTO> cal = new ArrayList<>();
 
 					CalificacionesMateriasParcialesDTO calificaciones = new CalificacionesMateriasParcialesDTO();
 					calificaciones.setNombreMateria(carga.getMateria().getNombre());
 
 					// lista de calificaciones por corte y por materia
 					List<CalificacionDTO> calificacion = new ArrayList<>();
-
+					cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(carga.getGrupo().getCarrera(), carga.getPeriodo());
 					// se iteran los cortes evaluativos
 					for (CorteEvaluativo corte : cortes) {
 
