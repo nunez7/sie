@@ -66,7 +66,12 @@ public class AsesoriaServiceJpa implements IAsesoriaService{
 	}
 
 	@Override
-	public List<AsesoriaDTO> buscarPorGrupoYTipoAsesoria(Grupo grupo, Integer tipo) {
-		return asesoriaRepository.findByGrupoAndTipoAsesoria(grupo, tipo);
+	public List<AsesoriaDTO> buscarIndividualesPorGrupo(Grupo grupo) {
+		return asesoriaRepository.findIndividualesByGrupo(grupo);
+	}
+
+	@Override
+	public List<AsesoriaDTO> buscarGrupalesPorGrupo(Grupo grupo) {
+		return asesoriaRepository.findByGrupalesByGrupo(grupo);
 	}
 }

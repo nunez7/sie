@@ -15,5 +15,6 @@ public interface IAsesoriaService {
 	List<Asesoria> buscarPorGrupoPeriodoCargaYTipo(Integer idGrupo, Integer idPeriodo, Integer idCarga, Integer tipo);
 	void guardarAsesoriaSolicitud (AsesoriaSolicitud asesoria);
 	List<AsesoriaSolicitud> buscarAsesoriasSolicitudPorGrupo(Integer idGrupo);
-	List<AsesoriaDTO> buscarPorGrupoYTipoAsesoria(Grupo grupo, Integer tipo);
+	List<AsesoriaDTO> buscarIndividualesPorGrupo(Grupo grupo);
+	List<AsesoriaDTO> buscarGrupalesPorGrupo(Grupo grupo);
 }
