@@ -161,10 +161,6 @@ public class DosificacionController {
 		if (existeCorte == 0) {
 			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYAceptada(
 					carga, new TipoProrroga(3), new Date(),new CorteEvaluativo(Integer.parseInt(obj.get("idCorteEvaluativo"))));
-			/*buscarPorCargaHorariaYTipoProrrogaYCorteEvaluativoYActivoYAceptada(
-					carga, new TipoProrroga(3), new CorteEvaluativo(Integer.parseInt(obj.get("idCorteEvaluativo"))),
-					true, true);
-					*/
 			if (prorroga == null) {
 					return "limit";
 			}
@@ -272,14 +268,10 @@ public class DosificacionController {
 				corteActual);
 		
 		if (corteService.buscarPorCorteYFechaDosificacion(corteActual, new Date())==null) {
-			
 			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYAceptada(cargaActual, new TipoProrroga(3),new Date(),corteActual);
-				
 				if (prorroga == null) {
 					model.addAttribute("fecha", false);					
 				}
-			
-	
 		}
 		
 		if (!calendarios.isEmpty()) {
@@ -356,33 +348,17 @@ public class DosificacionController {
 				return "notEmp";
 			}
 			
-			// SE COMPARA QUE TANTO LAS UNIDADES COMO LOS INSTRUMENTOS ESTÉN VACÍOS
+			// se obtienen la laista de calendarios y mecanismos
 			List<CalendarioEvaluacion> calendarios = calendarioService.buscarPorCargaHoraria(cargaHoraria);
-			
-			/*
-			se retira restriccion de fechas de entrega en importacion de dosificacion
-			if (calendarios.size()>0) { 
-				return "calInv";
-			}
-			*/
 			
 			List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(cargaHoraria.getId(),
 					true);
 			
-			/* se retira la restriccion de mecanismos en dosificacion, en caso de que ya haya 
-			 * instrumentos registrados, se omite el copia de instrumentos, dejandolos como estan sin
-			 * afectar calificaciones en caso de existir
-			
-			if (mecanismos.size()>0) { 
-				return "mecInv";
-			}
-			*/
-			
-			// SE OBTIENEN LAS DOSIFICACIONES Y SE GUARDAN COMO NUEVAS USANDO LA CARGA
-			// COMPARTIDA
+			// se obtienen la dosificacion de la carga de donde vamos a importar (la carga ajena)
 			List<DosificacionCarga> dosificacionesCargas = dosiCargaService.buscarPorCargaHoraria(cargaCompartida);
+			
+			// se itera la dosificacion_carga y se agrega el nuevo registro en dosificacion_importada 
 			for (DosificacionCarga dosificacionCarga : dosificacionesCargas) {
-		
 				DosificacionImportada dImportada = new DosificacionImportada();
 				dImportada.setFecha(new Date());
 				dImportada.setCargaHoraria(cargaHoraria);
@@ -390,29 +366,32 @@ public class DosificacionController {
 				dosificacionImportadaService.guardar(dImportada);
 			}
 			
+			/* se compara si existen calendarios, de no existir, se copian los de la carga a importar, 
+			 * caso contrario, se omite el copiado */
 			if (calendarios.size()==0) {				
-			calendarios = calendarioService.buscarPorCargaHoraria(cargaCompartida);
-			for (CalendarioEvaluacion calendario : calendarios) {
-				CalendarioEvaluacion calen = new CalendarioEvaluacion();
-				calen.setCargaHoraria(cargaHoraria);
-				calen.setCorteEvaluativo(calendario.getCorteEvaluativo());
-				calen.setUnidadTematica(calendario.getUnidadTematica());
-				calendarioService.guarda(calen);
-			}
+				calendarios = calendarioService.buscarPorCargaHoraria(cargaCompartida);
+				for (CalendarioEvaluacion calendario : calendarios) {
+					CalendarioEvaluacion calen = new CalendarioEvaluacion();
+					calen.setCargaHoraria(cargaHoraria);
+					calen.setCorteEvaluativo(calendario.getCorteEvaluativo());
+					calen.setUnidadTematica(calendario.getUnidadTematica());
+					calendarioService.guarda(calen);
+				}
 			}
 
+			/* se compara si existen instrumentos, de no existir, se copian los de la carga a importar, 
+			 * caso contrario, se omite el copiado */
 			if (mecanismos.size()==0) {	
-			mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCargaCompartida,
-					true);
-			for (MecanismoInstrumento mecanismo : mecanismos) {
-				MecanismoInstrumento meca = new MecanismoInstrumento();
-				meca.setActivo(true);
-				meca.setArchivo(mecanismo.getArchivo());
-				meca.setIdCargaHoraria(idCargaHoraria);
-				meca.setIdCorteEvaluativo(mecanismo.getIdCorteEvaluativo());
-				meca.setInstrumento(mecanismo.getInstrumento());
-				meca.setPonderacion(mecanismo.getPonderacion());
-				mecanismoService.guardar(meca);
+				mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCargaCompartida, true);
+				for (MecanismoInstrumento mecanismo : mecanismos) {
+					MecanismoInstrumento meca = new MecanismoInstrumento();
+					meca.setActivo(true);
+					meca.setArchivo(mecanismo.getArchivo());
+					meca.setIdCargaHoraria(idCargaHoraria);
+					meca.setIdCorteEvaluativo(mecanismo.getIdCorteEvaluativo());
+					meca.setInstrumento(mecanismo.getInstrumento());
+					meca.setPonderacion(mecanismo.getPonderacion());
+					mecanismoService.guardar(meca);
 				}
 			}
 		}
