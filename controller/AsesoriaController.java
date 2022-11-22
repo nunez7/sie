@@ -257,4 +257,27 @@ public class AsesoriaController {
 		model.addAttribute("cveCarga", cveCarga);
 		return "reportes/reporteAsesoriaGrupal";
 	}
+	
+	@GetMapping("/reporte-profesor-detallado")
+	 public String verReporteProfesorIndividual(Model model, HttpSession session) {
+		Persona persona = personaService.buscarPorId((Integer)session.getAttribute("cvePersona"));
+		Usuario usuario = usuarioService.buscarPorPersona(persona);
+		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodo(persona.getId(), usuario.getPreferencias().getIdPeriodo());
+		int cveGrupo;
+		  try {
+		   cveGrupo = (Integer) session.getAttribute("cveGrupo");
+		  } catch (Exception e) {
+		   cveGrupo = 0;
+		  }
+		  if (cveGrupo>0) {
+			  List<AsesoriaDTO> asesorias = asesoriaService.buscarPorGrupoYTipoAsesoria(new Grupo(cveGrupo), 1);			
+			  model.addAttribute("asesorias", asesorias);
+			  model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
+		}
+		model.addAttribute("utName", NOMBRE_UT);
+		model.addAttribute("grupos", grupos);
+		model.addAttribute("cveGrupo", cveGrupo);
+		model.addAttribute("persona", persona);
+	  return "profesor/reporteAsesoriasIndividuales";
+	 }
 }
