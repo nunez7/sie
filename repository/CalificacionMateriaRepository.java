@@ -35,7 +35,7 @@ public interface CalificacionMateriaRepository extends CrudRepository<Calificaci
 
 	@Query(value = "SELECT COALESCE(estatus, 'NA') as estatus "
 			+ "FROM calificacion_materia WHERE id_carga_horaria = :cargaHoraria "
-			+ "AND id_alumno = :alumno", nativeQuery = true)
+			+ "AND id_alumno = :alumno ORDER BY id DESC LIMIT 1", nativeQuery = true)
 	String findEstatusByAlumnoAndCargaHoraria(@Param("alumno") Integer idAlumno,
 			@Param("cargaHoraria") Integer idCargaHoraria);
 
