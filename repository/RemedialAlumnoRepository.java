@@ -90,4 +90,10 @@ public interface RemedialAlumnoRepository extends CrudRepository<RemedialAlumno,
 			+ "	WHERE id_carga_horaria = :carga AND tipo_remedial = :tipo_remedial "
 			+ "	AND id_corte = :corte AND ra.id_alumno = :alumno AND ra.tipo_testimonio IS NOT NULL) " ,  nativeQuery = true)
 	Boolean existsRemedialAlumno(@Param("alumno")Integer idAlumno, @Param("carga") Integer idCargaHoraria,@Param("corte") Integer idCorteEvaluativo, @Param("tipo_remedial") Integer tipoRemedial);
+	
+	@Query(value = "SELECT COUNT(*) FROM remedial_alumno "
+			+ "WHERE id_alumno = :idAlumno AND tipo_remedial = :tipo "
+			+ "AND id_corte = :idCorte ", nativeQuery = true)
+	Integer countByAlumnoAndCorteEvaluativoAndTipoRemedial(@Param("idAlumno") Integer idAlumno, @Param("idCorte") Integer idCorteEvaluativo,
+				@Param("tipo") Integer tipo);
 }

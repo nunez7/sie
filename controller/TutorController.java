@@ -944,7 +944,6 @@ public class TutorController {
 
 						// se agrega el estatus de la materia
 						im.setEstatus(calificacionMateriaService.buscarPorAlumnoYCarga(alumno.getId(), ch.getId()));
-
 						List<IndicadorParcialDTO> indicaroresParcial = new ArrayList<IndicadorParcialDTO>();
 						for (CorteEvaluativo c : corte) {
 							IndicadorParcialDTO ip = new IndicadorParcialDTO();
@@ -987,6 +986,16 @@ public class TutorController {
 					}
 					// se agrega la lista de indicadores materia al alumno
 					alumnoDTO.setMaterias(indicadoresMaterias);
+					// se cuentan los remediales por alumno y corte
+					Boolean excedeRemediales = false;
+					for(CorteEvaluativo c: corte) {
+						Integer remediales = remedialAlumnoService.contarRemedialesPorAlumnoYCorteEvaluativoYTipoIntegerRemedial(alumno.getId(), c.getId(), 1);
+						if(remediales > 4 ) {
+							excedeRemediales = true;
+							break;
+						}
+					}
+					alumnoDTO.setExcedeRemediales(excedeRemediales);
 					// se agregan los alumnos al arreglo
 					alumnosCalificaciones.add(alumnoDTO);
 				}
