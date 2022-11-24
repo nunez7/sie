@@ -667,6 +667,7 @@ public class DosificacionController {
 			// se agrega la dosificación a la lista de dosificaciones
 			dosificacionesDTO.add(dosiDTO);
 		}
+		model.addAttribute("profesor", carga.getProfesor().getNombreCompleto());
 		model.addAttribute("dosificaciones", dosificacionesDTO);
 		model.addAttribute("cargaHoraria", carga);
 		model.addAttribute("idCarga", idCarga);
@@ -742,7 +743,6 @@ public class DosificacionController {
 		dosificacionValida.setFechaAlta(new Date());
 		dosificacionValidaService.guardar(dosificacionValida);
 		// se envia correo al profesor
-
 		Mail mail = new Mail();
 		String de = correo; // se deberá enviar el correo al profesor
 		String para = profesor.getEmail();
@@ -759,7 +759,54 @@ public class DosificacionController {
 			emailService.sendEmail(mail);
 		} catch (Exception e) {
 		}
+		return "ok";
+	}
+	
+	//método para eliminar validación de programación de asignatura
+	@PostMapping(path = "/eliminar-validacion", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String eliminarValidacion(@RequestBody Map<String, Integer> obj, HttpSession session) {
+		// objetos de la persona en sesión
+		//Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona"));
+		Integer idCargaHoraria = obj.get("idCargaHoraria");
+		Integer idDosificacion = obj.get("idDosificacion");
+		CargaHoraria cargaHoraria = cargaHorariaService.buscarPorIdCarga(idCargaHoraria);
+		// para enviar el correo al director
+		Persona profesor = personaService.buscarPorId(cargaHoraria.getProfesor().getId());
+		//se busca la dosificacion valida 
+		DosificacionValida dosificacionValida = dosificacionValidaService.buscarPorIdDosificacion(idDosificacion);
+		//se verifica si ya hay un objeto de dosificacion
+		if(dosificacionValida != null) {
+			Dosificacion dosificacion = dosificacionService.buscarPorId(idDosificacion);
+			dosificacion.setValidaDirector(false);
+			dosificacionService.guardar(dosificacion);
+		}
+		else {
+			// se edita el objeto de la dosificacion 
+			Dosificacion dosificacion = dosificacionService.buscarPorId(idDosificacion);
+			dosificacion.setValidaDirector(false);
+			dosificacionService.guardar(dosificacion);
+		}
 
+		// se envia correo al profesor
+		Mail mail = new Mail();
+		String de = correo; // se deberá enviar el correo al profesor
+		//String para = profesor.getEmail();
+		String para = "raul.hernandez@utnay.edu.mx";
+		mail.setDe(de);
+		mail.setPara(new String[] { para }); // Email title
+		mail.setTitulo("¡Se elimino validación de programación de asignatura!");
+		// Variables a plantilla
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("titulo", "Validación de programación de asignatura eliminada");
+		variables.put("cuerpoCorreo", "Ha tu programación de asignatura de la materia: "
+				+ cargaHoraria.getMateria().getNombre() + " del grupo: "+ cargaHoraria.getGrupo().getNombre() + " se le ha cancelado la validación, si estas en periodo de captura podrás realizar tus cambios.");
+		mail.setVariables(variables);
+		try {
+			emailService.sendEmail(mail);
+		} catch (Exception e) {
+			return "mail";
+		}
 		return "ok";
 	}
 
