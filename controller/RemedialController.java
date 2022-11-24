@@ -219,11 +219,11 @@ public class RemedialController {
 					usuario.getPreferencias().getIdPeriodo(), tipoRemedial);
 
 			if (tipoRemedial == 1) {
-				if (contarRemediales.size() >= 4) {
+				if (contarRemediales.size() >= 5) {
 					respuesta = "baja";
 				}
 			} else {
-				if (contarRemediales.size() >= 1) {
+				if (contarRemediales.size() >= 3) {
 					respuesta = "baja";
 				}
 			}

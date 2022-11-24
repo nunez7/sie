@@ -44,4 +44,8 @@ public interface IRemedialAlumnoService {
 	Integer contarPorCarreraYCorteEvaluativoYTurno(Integer idCarrera, Integer tipoRemedial, Integer idCorteEvaluativo, Integer turno);
 	
 	Boolean exsisteRemedialAlumno(Integer idAlumno, Integer idCargaHoraria, Integer idCorteEvaluativo, Integer tipoRemedial);
+	
+	Integer contarPorCarreraYTipoRemedial(Integer carrera, Integer tipo);
+	
+	Integer contarPorAlumnoYPeriodoYTipo(Integer alumno, Integer periodo, Integer tipo);
 }

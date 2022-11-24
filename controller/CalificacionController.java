@@ -143,11 +143,20 @@ public class CalificacionController {
 		CorteEvaluativo corteActual = new CorteEvaluativo(idCorte);
 		CargaHoraria cargaActual = cargaService.buscarPorIdCarga(idCarga);
 
+		// se valida que haya calendarios (fechas de entrega) registradas de parte del profesor
 		Integer calendarios = calendarioService.contarPorCargaHorariaYCorteEvaluativo(idCarga, idCorte);
 		if (calendarios > 0) {
 
-			List<Alumno> alumnos = alumnoService
-					.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cargaActual.getGrupo().getId());
+			//se obtiene la lista de alumnos del grupo
+			List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cargaActual.getGrupo().getId());
+			
+			// se consulta si ya hay al menos 1 calificacion 
+			if(calificacionCorteService.contarCalificacionesPorCargaHorariaYCorteEvaluativo(cargaActual, corteActual)==0){
+			
+				// en caso de que no haya calificaciones, se procede a crear las calificaciones de los instrumentos para todo el parcial
+					actualizarCalificacion.crearCalificacionesParcial(alumnos, cargaActual, corteActual);
+			}
+			
 			List<MecanismoInstrumento> mecanismos = mecanismoService
 					.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(cargaActual.getId(), corteActual.getId(), true);
 			List<CalificacionCorte> calificacionesCortes = calificacionCorteService
@@ -200,19 +209,6 @@ public class CalificacionController {
 		return "fragments/modal-calificar:: listaCalificacion";
 	}
 
-	// metodo que devuelve la el titulo de las tablas de calificaciones de una
-	// materia y corte.
-	@GetMapping("/cargar-titulos/{idCarga}/{idCorte}")
-	public String cargarTitulos(@PathVariable(name = "idCarga", required = true) Integer idCarga,
-			@PathVariable(name = "idCorte", required = true) Integer idCorte, Model model) {
-		CorteEvaluativo corteActual = new CorteEvaluativo(idCorte);
-		CargaHoraria cargaActual = cargaService.buscarPorIdCarga(idCarga);
-		List<MecanismoInstrumento> mecanismos = mecanismoService
-				.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(cargaActual.getId(), corteActual.getId(), true);
-		model.addAttribute("mecanismos", mecanismos);
-		return "fragments/modal-calificar:: titulosCalificacion";
-	}
-
 	@PostMapping(path = "/guardar", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String guardarCalificacion(@RequestBody Map<String, String> obj, HttpSession session) {
@@ -222,11 +218,12 @@ public class CalificacionController {
 		Integer idAlumno = Integer.parseInt(obj.get("idAlumno"));
 		Integer idMecanismo = Integer.parseInt(obj.get("idInstrumento"));
 
+		// se valida que el profesor haya capturado al menos una asistencia del parcial
 		if (asistenciaService.contarAsistenciasPorCargaYCorte(new CargaHoraria(idCargaHoraria), new CorteEvaluativo(idCorteEvaluativo))==0) {
 			return "noAsistencia";
 		}
-		// se compara que el alumno no tenga un remedial pagado para eviatar editar la
-		// calificacion
+		
+		// se compara que el alumno no tenga un remedial pagado para eviatar editar la calificacion
 		RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(
 				new Alumno(idAlumno), new CargaHoraria(idCargaHoraria), new Remedial(1),
 				new CorteEvaluativo(idCorteEvaluativo));
@@ -235,9 +232,8 @@ public class CalificacionController {
 			return "forbidden";
 		}
 
-		// se comprueba que la ponderacion este dentro del limite establecido
+		// se comprueba que la ponderacion sea un numero valido 
 		Float ponderacion;
-		
 		try {
 			 ponderacion = Float.parseFloat(obj.get("valor"));
 		} catch (Exception e) {
@@ -250,12 +246,11 @@ public class CalificacionController {
 		actualizarCalificacion.actualizaCalificacionInstrumento(idAlumno, mecanismo, ponderacion, idCargaHoraria, idCorteEvaluativo);
 
 
-		// se actualiza la calificacion del corte y se obtiene la calificacion total del
-		// corte
+		// se actualiza la calificacion del corte y se obtiene la calificacion total del corte
 		float calificacionTotal = actualizarCalificacion.actualizaCalificacionCorte(idAlumno, idCargaHoraria,
 				idCorteEvaluativo);
 		
-		if (calificacionTotal <8) {
+		if (calificacionTotal <7.5) {
 			actualizarRemedial.generarPorCalificacionOrdinariaRemedial(idAlumno, idCargaHoraria, idCorteEvaluativo);
 		}else {
 			actualizarRemedial.eliminarPorCalificacionOrdinariaRemedial(idAlumno, idCargaHoraria, idCorteEvaluativo);
@@ -337,8 +332,16 @@ public class CalificacionController {
 									.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(),
 											cargaActual.getId(), parcialActual).floatValue());
 							}
+							
+							boolean baja = false;
+							if (remedialAlumnoService.contarPorAlumnoYPeriodoYTipo(alumno.getId(), cargaActual.getPeriodo().getId(), 1)>=5) {
+								baja = true;
+							}
+							if (remedialAlumnoService.contarPorAlumnoYPeriodoYTipo(alumno.getId(), cargaActual.getPeriodo().getId(), 2)>=3) {
+								baja = true;
+							}
+							calificacion.setBaja(baja);
 							calificaciones.add(calificacion);
-
 						}
 						model.addAttribute("alumnos", calificaciones);
 						model.addAttribute("instrumentos", mecanismoInstrumento);
@@ -416,7 +419,7 @@ public class CalificacionController {
 
 				model.addAttribute("alumnos", calificaciones);
 
-				model.addAttribute("cargaActual", cargaActual.getId());
+				model.addAttribute("cargaActual", cargaActual);
 				model.addAttribute("cortes", cortes);
 			}
 			model.addAttribute("grupoActual", grupoService.buscarPorId(grupoActual));
