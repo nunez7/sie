@@ -3,6 +3,7 @@ package edu.mx.utdelacosta.controller;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -137,8 +138,15 @@ public class CajaController {
 	public String pagosCuatrimestre(Model model) {
 		List<Periodo> periodos = periodosService.buscarUltimosCaja();
 		List<Cuatrimestre> cuatrimestres = cuatrimestreService.buscarTodos();
+		Date date = new Date();
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		List<Integer> anios = new ArrayList<>();
+		anios.add(calendar.get(Calendar.YEAR));
+		anios.add(calendar.get(Calendar.YEAR)+1);
 		model.addAttribute("periodos", periodos);
 		model.addAttribute("cuatrimestres", cuatrimestres);
+		model.addAttribute("annios", anios);
 		return "caja/pagosCuatrimestre";
 	}
 	

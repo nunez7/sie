@@ -222,27 +222,32 @@ public class EscolaresController {
 		
 		List<Integer> carreras = new ArrayList<>();
 		
-		if (grupo != null ) {
+		if (grupo != null && grupo.getConsecutivo()==7 ) {
 			carreras = carreraService.buscarCarreraAnterior(grupo.getCarrera().getId());
 		}
 		
+		//se obtienen las variables
 		List<AlumnoRegularDTO> alumnos = new ArrayList<>();
 		
-		if (cveGrupo > 0 && grupo.getCuatrimestre().getId()== 7) {
-			for (Integer carrera  : carreras) {				
-			alumnos.addAll( alumnoService.obtenerRegularesReinscribir(carrera,
-					usuario.getPreferencias().getIdPeriodo() - 1,
-					cveGrupo > 0 ? (grupo.getCuatrimestre().getConsecutivo() - 1) : 2, grupo.getCarrera().getId()));
-			}
-		}else if(cveGrupo > 0 && grupo.getCuatrimestre().getId()== 1) {
+		// se buscan los alumnos en base al periodo y numero de cuatri anterior
+		if (cveGrupo>0) {
+		Cuatrimestre cuatri = grupo.getCuatrimestre();
+		Integer periodo = usuario.getPreferencias().getIdPeriodo();
+	
+		if (cuatri.getConsecutivo() == 1) {
 			alumnos = alumnoService.buscarTodosProspectoReinscripcion(grupos.size() > 0 ? usuario.getPreferencias().getIdCarrera() : 0,
 					usuario.getPreferencias().getIdPeriodo());
+		}else{
+			if (carreras.isEmpty()) {
+				alumnos.addAll(alumnoService.obtenerRegulares(grupo.getCarrera().getId(),
+						periodo - 1, cuatri.getConsecutivo()== 7 ?  cuatri.getConsecutivo() : cuatri.getConsecutivo()-1));
+			}else{
+			for (Integer carrera  : carreras) {		
+				alumnos.addAll(alumnoService.obtenerRegulares(carrera,
+						periodo - 1, cuatri.getConsecutivo()== 7 ?  cuatri.getConsecutivo() : cuatri.getConsecutivo()-1));
+				}
+			}
 		}
-		else {
-			alumnos = alumnoService.obtenerRegulares(			
-				(grupos.size() > 0 ? usuario.getPreferencias().getIdCarrera() : 0),
-				usuario.getPreferencias().getIdPeriodo() - 1,
-				cveGrupo > 0 ? (grupo.getCuatrimestre().getConsecutivo() - 1) : 2);
 		}
 		
 		model.addAttribute("cveGrupo", cveGrupo);
@@ -782,9 +787,6 @@ public class EscolaresController {
 		List<IndicadorProfesorDTO> indicadoresSD = new ArrayList<>();
 		List<IndicadorProfesorDTO> indicadoresRemedial = new ArrayList<>();
 		List<IndicadorProfesorDTO> indicadoresExtra = new ArrayList<>();
-		Integer totalSD = 0;
-		Integer totalRemedial = 0;
-		Integer totalExtra = 0;
 		Integer numSD = 0;
 		Integer numRem = 0;
 		Integer numExt = 0;
@@ -795,22 +797,19 @@ public class EscolaresController {
 			IndicadorProfesorDTO indicadorSD = new IndicadorProfesorDTO();
 			IndicadorProfesorDTO indicadorRem = new IndicadorProfesorDTO();
 
-			numSD = testimonioCorteService.countAlumnosSDByCarrera(cveCarrera, corte.getId());
+			numSD = testimonioCorteService.contarAlumnoSDPorCarreraYCorteEvaluativo(cveCarrera, corte.getId());
 			indicadorSD.setNumero(numSD); // se busca el numero de alumnos en SD y se agrega al indicador
 			indicadorSD.setPromedio((numSD * 100) / alumnos); // se promedia en base al alumno
-			totalSD = totalSD + numSD; // se suma el numero de SD para la variable general
 			indicadoresSD.add(indicadorSD); // se agrega el indicador a la lista correspondiente
 
 			numRem = remedialAlumnoService.countByCarreraAndCorteEvaluativo(cveCarrera, 1, corte.getId());
 			indicadorRem.setNumero(numRem); // se obtiene el numero de remediales
 			indicadorRem.setPromedio((numRem * 100) / alumnos); // se promedia
-			totalRemedial = totalRemedial + numRem; // se suma a la lista general
 			indicadoresRemedial.add(indicadorRem); // se agrega a la lista
 
 			numExt = remedialAlumnoService.countByCarreraAndCorteEvaluativo(cveCarrera, 2, corte.getId());
 			indicadorExt.setNumero(numExt); // se obtiene el numero de remediales
 			indicadorExt.setPromedio((numExt * 100) / alumnos); // se promedia
-			totalExtra = totalExtra + numExt; // se suma a la lista general
 			indicadoresExtra.add(indicadorExt); // se agrega a la lista
 
 		}
@@ -841,25 +840,28 @@ public class EscolaresController {
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeRegulares(0);
 		}
-		indicadores.setNumeroSD(totalSD);
+		Integer alumnosSD = testimonioCorteService.contarAlumnoSDPorCarrera(cveCarrera);
+		indicadores.setNumeroSD(alumnosSD);
 		try {
-			indicadores.setPorcentajeSD((totalSD * 100) / alumnos);
+			indicadores.setPorcentajeSD((alumnosSD * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeSD(0);
 		}
 		indicadores.setIndicadoresSD(indicadoresSD);
 
-		indicadores.setNumeroRemediales(totalRemedial);
+		Integer alumnosRemedial = remedialAlumnoService.contarPorCarreraYTipoRemedial(cveCarrera,1);
+		indicadores.setNumeroRemediales(alumnosRemedial);
 		try {
-			indicadores.setPorcentajeRemediales((totalRemedial * 100) / alumnos);
+			indicadores.setPorcentajeRemediales((alumnosRemedial * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeRemediales(0);
 		}
 		indicadores.setIndicadoresRemediales(indicadoresRemedial);
 
-		indicadores.setNumeroExtra(totalExtra);
+		Integer alumnosExtra = remedialAlumnoService.contarPorCarreraYTipoRemedial(cveCarrera,1);
+		indicadores.setNumeroExtra(alumnosExtra);
 		try {
-			indicadores.setPorcentajeExtra((totalExtra * 100) / alumnos);
+			indicadores.setPorcentajeExtra((alumnosExtra * 100) / alumnos);
 		} catch (ArithmeticException e) {
 			indicadores.setPorcentajeExtra(0);
 		}

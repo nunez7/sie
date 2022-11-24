@@ -60,7 +60,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "FROM alumnos_grupos ag "
 			+ "INNER JOIN alumnos a ON a.id=ag.id_alumno "
 			+ "INNER JOIN personas p ON p.id=a.id_persona "
-			+ "WHERE ag.id_grupo= :idGrupo AND ag.activo = 'True' "
+			+ "WHERE ag.id_grupo= :idGrupo "
 			+ "ORDER BY TRANSLATE (p.primer_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, TRANSLATE (p.segundo_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, "
 			+ "TRANSLATE (p.nombre,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC ", nativeQuery = true)
 	List<Alumno> findAllAlumnosByGrupoOrderByNombreAsc(@Param("idGrupo") Integer idGrupo);
@@ -110,7 +110,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "(SELECT COALESCE(gg.nombre, '') "
 			+ "FROM alumnos_grupos agg "
 			+ "INNER JOIN grupos gg ON gg.id=agg.id_grupo "
-			+ "WHERE gg.id_periodo=:periodo+1 AND gg.id_carrera=:carrera AND agg.id_alumno=a.id)AS grupoActual "
+			+ "WHERE gg.id_periodo=:periodo+1 AND gg.id_carrera=:carrera AND agg.id_alumno=a.id LIMIT 1)AS grupoActual "
 			+ "FROM alumnos a "
 			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno=a.id "
 			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
