@@ -159,7 +159,6 @@ public class AsistenciaController {
 			valor = obj.get(alumno.getId().toString());
 			if (valor != null) {
 				Integer asistenciasTotales = noAsistencias;
-				String valor_antiguo="";
 				Asistencia asistencia = asistenciaService.buscarPorFechaYAlumnoYHorario(fecha, alumno, horario);
 
 				if (asistencia == null) {
@@ -172,13 +171,10 @@ public class AsistenciaController {
 					asistenciaService.guardar(asistencia); // guarda el nuevo valor de la asistencia
 					asistenciasTotales++;
 				} else {
-					valor_antiguo = asistencia.getValor();
 					asistencia.setFechaAlta(fechaHoy);
 					asistencia.setValor(valor);
 					asistenciaService.guardar(asistencia); // actualiza el valor de la asistencia
 				}
-				
-				if (!valor_antiguo.equals(valor)) {
 
 				// *************** PROCESO DE CALCULO DEL ESTADO DEL ALUMNO ***************
 				List<Asistencia> faltas = asistenciaService.buscarFaltasPorIdAlumnoYIdCargaHoraria(alumno.getId(),
@@ -218,7 +214,6 @@ public class AsistenciaController {
 				
 				actualizaCalificacion.actualizaTestimonioCalificacion(alumno.getId(), carga.getId(), corte.getId(), SD);
 				
-				}
 			}
 
 		}
@@ -388,7 +383,7 @@ public class AsistenciaController {
 				}
 				model.addAttribute("cortes", cortesEvaluativos);
 				
-				model.addAttribute("cargaActual",cveCarga.getId());
+				model.addAttribute("cargaActual",cveCarga);
 			}
 			
 			model.addAttribute("cargasHorarias", cargasHorarias);
