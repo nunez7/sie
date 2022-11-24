@@ -515,7 +515,7 @@ public class ProfesorController {
 				
 				
 				model.addAttribute("indicadores", indicadores);
-				model.addAttribute("cargaActual", cargaActual.getId());
+				model.addAttribute("cargaActual", cargaActual);
 				model.addAttribute("cortes", cortes);	
 				model.addAttribute("noAlumnos", alumnos);
 			}

@@ -157,7 +157,7 @@ public class AsistenciaController {
 		// --------------- PROCESO DE GUARDADO DE ASISTENCIAS ---------------
 		for (Alumno alumno : alumnos) {
 			valor = obj.get(alumno.getId().toString());
-			if (valor != null) {
+			if (valor != null && alumno.getEstatusGeneral()==1) {
 				Integer asistenciasTotales = noAsistencias;
 				Asistencia asistencia = asistenciaService.buscarPorFechaYAlumnoYHorario(fecha, alumno, horario);
 
@@ -272,6 +272,7 @@ public class AsistenciaController {
 					AlumnoResultadoDTO infoAlumno = new AlumnoResultadoDTO();
 					infoAlumno.setId(alumno.getId());
 					infoAlumno.setNombreCompleto(alumno.getPersona().getNombreCompletoPorApellido());
+					infoAlumno.setActivo(alumno.getEstatusGeneral()== 1 ? true : false);
 					for (Asistencia asistencia : Asistencias) {
 						if (asistencia.getAlumno().getId().equals(alumno.getId())) {
 							infoAlumno.setValor(asistencia.getValor());

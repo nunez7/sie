@@ -167,6 +167,7 @@ public class CalificacionController {
 				AlumnoCalificacionDTO al = new AlumnoCalificacionDTO();
 				al.setId(alumno.getId());
 				al.setNombre(alumno.getPersona().getNombreCompletoPorApellido());
+				al.setActivo(alumno.getEstatusGeneral()==1 ? true : false);
 
 				List<CalificacionDTO> calificaciones = new ArrayList<>();
 				for (MecanismoInstrumento mecanismo : mecanismos) {
