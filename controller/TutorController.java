@@ -52,7 +52,9 @@ import edu.mx.utdelacosta.model.dto.OpcionRespuestaDTO;
 import edu.mx.utdelacosta.model.dto.PreguntaDTO;
 import edu.mx.utdelacosta.model.dto.PromedioPreguntaDTO;
 import edu.mx.utdelacosta.model.dto.TutoriasProgramadasDTO;
+import edu.mx.utdelacosta.model.dtoreport.AlumnoEvaluacionesDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioDTO;
+import edu.mx.utdelacosta.model.dtoreport.EvaluacionMateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.GruposEvaluacionTutorDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorParcialDTO;
@@ -69,6 +71,7 @@ import edu.mx.utdelacosta.service.ICausaBajaService;
 import edu.mx.utdelacosta.service.IComentarioEvaluacionTutorService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IDiaService;
+import edu.mx.utdelacosta.service.IEvaluacionComentarioService;
 import edu.mx.utdelacosta.service.IEvaluacionesService;
 import edu.mx.utdelacosta.service.IFocosAtencionService;
 import edu.mx.utdelacosta.service.IFortalezaService;
@@ -80,11 +83,13 @@ import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPreguntaService;
 import edu.mx.utdelacosta.service.IProgramacionTutoriaService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
+import edu.mx.utdelacosta.service.IRespuestaCargaEvaluacionService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionInicialService;
 import edu.mx.utdelacosta.service.IRespuestaEvaluacionTutorService;
 import edu.mx.utdelacosta.service.IServicioService;
 import edu.mx.utdelacosta.service.ITemaGrupalService;
 import edu.mx.utdelacosta.service.ITutoriaIndividualService;
+import edu.mx.utdelacosta.service.IUsuariosService;
 
 @Controller
 @PreAuthorize("hasRole('Administrador') and hasRole('Profesor') and hasRole('Director')")
@@ -182,6 +187,15 @@ public class TutorController {
 	
 	@Autowired
 	private IAsesoriaService asesoriaService;
+	
+	@Autowired
+	private IUsuariosService usuarioService;
+	
+	@Autowired
+	private IRespuestaCargaEvaluacionService serviceResCarEva;
+	
+	@Autowired
+	private IRespuestaEvaluacionTutorService serviceResEvaTutor;
 
 	@GetMapping("/cargar-alumno/{dato}")
 	public String cargarAlumnos(@PathVariable(name = "dato", required = false) String dato, Model model,
@@ -939,48 +953,31 @@ public class TutorController {
 						im.setIdMateria(ch.getId());
 						im.setNombre(ch.getMateria().getNombre());
 						// variables para guardar promedios y remediales de la materia
-						double promedioFinal = 0;
-						double promedioparciales = 0;
-
-						// se agrega el estatus de la materia
+						//se agrega el estatus de la materia
 						im.setEstatus(calificacionMateriaService.buscarPorAlumnoYCarga(alumno.getId(), ch.getId()));
+						
 						List<IndicadorParcialDTO> indicaroresParcial = new ArrayList<IndicadorParcialDTO>();
 						for (CorteEvaluativo c : corte) {
 							IndicadorParcialDTO ip = new IndicadorParcialDTO();
 							ip.setIdMateria(ch.getMateria().getId());
 							ip.setParcial(c.getId());
 							// para guardar si tiene remediales o extraordinarios
-							ip.setRemediales(
-									remedialAlumnoService.buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(
-											alumno.getId(), ch.getId(), c.getId(), 1));
-							ip.setExtraordinarios(
-									remedialAlumnoService.buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(
-											alumno.getId(), ch.getId(), c.getId(), 2));
-
+							ip.setRemediales(remedialAlumnoService.buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(alumno.getId(), ch.getId(), c.getId(), 1));
+							ip.setExtraordinarios(remedialAlumnoService.buscarCalificacionPorAlumnoYCargaHorariaYCorteEvaluativoYTipo(alumno.getId(), ch.getId(), c.getId(), 2));
+							
 							double calificacionTotal = 0f;
-							if (im.getEstatus().equals("R") || im.getEstatus().equals("E")) {
-								calificacionTotal = calificacionCorteService
-										.buscarPromedioCortePorMecanismoIntrumentoYCarga(ch.getId(), c.getId(),
-												alumno.getId());
-							} else {
-								// para sacar el promedio de la materia y sus indicadores
-								calificacionTotal = calificacionCorteService
-										.buscarPorAlumnoCargaHorariaYCorteEvaluativo(alumno.getId(), ch.getId(),
-												c.getId());
-								promedioparciales = promedioparciales + calificacionTotal;
-							}
+								calificacionTotal = calificacionCorteService.buscarPromedioCortePorMecanismoIntrumentoYCarga(ch.getId(), c.getId(), alumno.getId());									
 							// para guardar el promedio de los dos parciales
 							ip.setPromedio(calificacionTotal);
-
+							
 							// se agrega el objeto a la lista de indicador parcial
 							indicaroresParcial.add(ip);
 						}
-						// promedio final de la materia
-						promedioFinal = Math.round(promedioparciales / corte.size());
-						im.setPromedio(promedioFinal);
-						// se egraga la lista de indicacires materia
+						//promedio final de la materia
+						im.setPromedio(calificacionMateriaService.buscarCalificacionPorAlumnoYCargaHoraria(alumno.getId(), ch.getId()));
+						//se egraga la lista de indicacires materia
 						im.setParciales(indicaroresParcial);
-
+						
 						// se agrega el objeto de indficador materia
 						indicadoresMaterias.add(im);
 					}
@@ -1184,6 +1181,74 @@ public class TutorController {
 		model.addAttribute("fecha", objSDF.format(new Date()));
 		model.addAttribute("hora", objHora.format(new Date()));
 		return "tutorias/solicitarAsesoriaGrupal";
+	}
+	
+	@GetMapping("/reporte-alumnos-encuestas")
+	public String reporteAlumnosEncuentas(HttpSession session, Model model) {
+		Persona persona = new Persona((Integer) session.getAttribute("cvePersona"));
+		Usuario usuario = usuarioService.buscarPorPersona(persona);
+		List<Alumno> alumnos = new ArrayList<>();
+		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(persona,
+				new Periodo(usuario.getPreferencias().getIdPeriodo()));
+		model.addAttribute("grupos", grupos);
+		if (session.getAttribute("cveGrupo") != null) {
+			int cveGrupo = (Integer) session.getAttribute("cveGrupo");
+			model.addAttribute("cveGrupo", cveGrupo);
+			// se buscan los alumnos del grupo
+			alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cveGrupo);
+			// se iteran los alumnos para saber si ya contestaron las evaluaciones.
+			List<AlumnoEvaluacionesDTO> alumnosEvalua = new ArrayList<>();
+			// se crea el objeto de evaluacion docente
+			Evaluacion evaluacionDocente = evaluacionService.buscar(3);
+			for (Alumno alumno : alumnos) {
+				// se rrelena el dto de alumnoEvaluacion
+				AlumnoEvaluacionesDTO alum = new AlumnoEvaluacionesDTO();
+				alum.setIdAlumno(alumno.getId());
+				alum.setMatricula(alumno.getMatricula());
+				alum.setNombre(alumno.getPersona().getNombreCompletoPorApellido());
+				// se construye el grupo del alumno
+				Grupo grupo = grupoService.buscarUltimoDeAlumno(alumno.getId());
+				// se inserta el grupo al objet de alumno
+				alum.setGrupo(grupo.getNombre());
+				// lista de evaluacionMateria
+				List<EvaluacionMateriaDTO> evaluaciones = new ArrayList<>();
+				// se buscan las cargas horarias del grupo con configuracion calificacion si y
+				// activas por periodo
+				List<CargaHoraria> cargas = cargaHorariaService.buscarPorGrupoYPeriodoYCalificacionSi(grupo.getId(),
+						usuario.getPreferencias().getIdPeriodo());
+				// se envian a la vista las cargas horarias
+				model.addAttribute("cargasHorarias", cargas);
+				// se iteran las cargas horarias paa buscar las respuesta de la evaluacion
+				for (CargaHoraria ch : cargas) {
+					Integer respuestas = serviceResCarEva
+							.contarPorIdPersonaYEvaluacionYIdCargaHoraria(alumno.getPersona().getId(), 3, ch.getId());
+					// se crea el objeto de evaluacion materia
+					EvaluacionMateriaDTO evaluacion = new EvaluacionMateriaDTO();
+					evaluacion.setIdMateria(ch.getMateria().getId());
+					evaluacion.setRespuestas(respuestas);
+					evaluacion.setTerminada((respuestas == evaluacionDocente.getPreguntas().size()) ? true : false);
+					// se añade el objeto a la lista de evaluaciones
+					evaluaciones.add(evaluacion);
+				}
+				// se guardan los objetos de las evaluacionMateria en el objeto de
+				// alumnoEvaluaciones
+				alum.setMaterias(evaluaciones);
+				// se verifica que la evaluacion tutor este completada
+				Evaluacion evaluacionTutor = evaluacionService.buscar(4);
+				alum.setEvaluacionTutor(
+						(serviceResEvaTutor.contarPorIdPersonaYIdGrupoYActivo(alumno.getPersona().getId(),
+								grupo.getId()) == evaluacionTutor.getPreguntas().size() ? true : false));
+				// se agrega el objeto alumno a la lista de alumnosEvaluaciones
+				alumnosEvalua.add(alum);
+			}
+			// se envia a la vista la lista de alumnos
+			model.addAttribute("alumnos", alumnosEvalua);
+		}
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+
+		model.addAttribute("periodo", periodo);
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		return "tutorias/reporteAlumnosEncuestas";
 	}
 
 }
