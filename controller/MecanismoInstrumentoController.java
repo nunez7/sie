@@ -237,7 +237,7 @@ public class MecanismoInstrumentoController {
 		Integer idMeca = Integer.parseInt(obj.get("idMecanismo")); // se recibe el dato
 		
 		MecanismoInstrumento mecanismo = mecanismoService.buscarPorIdYActivo(idMeca, true);
-		if(comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"), mecanismo.getIdCorteEvaluativo())==false) {
+		if(comprobarPeriodoActivo(new CargaHoraria((Integer) session.getAttribute("cveCarga")), new CorteEvaluativo(mecanismo.getIdCorteEvaluativo()))==false) {
 			return "fecha";
 		}
 		
