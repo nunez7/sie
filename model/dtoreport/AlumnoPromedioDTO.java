@@ -7,6 +7,7 @@ public class AlumnoPromedioDTO {
 	private String nombre;
 	private String matricula;
 	private List<IndicadorMateriaDTO> materias;
+	private Boolean activo;
 	//si excede remediales permitidos
 	private Boolean excedeRemediales;
 	
@@ -40,5 +41,10 @@ public class AlumnoPromedioDTO {
 	public void setExcedeRemediales(Boolean excedeRemediales) {
 		this.excedeRemediales = excedeRemediales;
 	}
-	
+	public Boolean getActivo() {
+		return activo;
+	}
+	public void setActivo(Boolean activo) {
+		this.activo = activo;
+	}
 }

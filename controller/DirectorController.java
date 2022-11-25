@@ -298,6 +298,7 @@ public class DirectorController {
 				alumno.setIdAlumno(al.getId());
 				alumno.setNombre(al.getPersona().getNombreCompletoPorApellido());
 				alumno.setMatricula(al.getMatricula());
+				alumno.setActivo(al.getEstatusGeneral() == 0 ? false:true);
 				//Construimos las materias
 				materiasDT = new ArrayList<MateriaDTO>();
 				for(MateriaPromedioDTO cm : calificacionMateriaService.buscarPorGrupoAlumno(cveGrupo, al.getId())) {

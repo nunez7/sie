@@ -13,4 +13,6 @@ public interface AsesoriaDTO {
 	String getGrupo();
 	
 	Integer getAsesoriasGrupales();
+	
+	Integer getEstatus();
 }

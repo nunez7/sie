@@ -947,6 +947,7 @@ public class TutorController {
 					alumnoDTO.setIdAlumno(alumno.getId());
 					alumnoDTO.setNombre(alumno.getPersona().getNombreCompletoPorApellido());
 					alumnoDTO.setMatricula(alumno.getMatricula());
+					alumnoDTO.setActivo(alumno.getEstatusGeneral() == 0 ? false:true);
 					List<IndicadorMateriaDTO> indicadoresMaterias = new ArrayList<IndicadorMateriaDTO>();
 					for (CargaHoraria ch : cargaHorarias) {
 						IndicadorMateriaDTO im = new IndicadorMateriaDTO();
