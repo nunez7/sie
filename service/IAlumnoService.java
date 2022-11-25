@@ -120,5 +120,7 @@ public interface IAlumnoService {
 	List<RemedialAlumnoDTO> buscarTodosRemedial();
 	
 	List<AlumnoRegularDTO> buscarTodosPorCarreraYCuatrimestreYPeriodo(Integer idCarrera, Integer idCuatrimestre, Integer idPeriodo);
+	
+	Integer contarAlumnosPorGrupoYActivos(Integer idCargaHoraria);
 
 }

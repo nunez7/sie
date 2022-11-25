@@ -378,4 +378,11 @@ public class AlumnosServiceJpa implements IAlumnoService{
 		// TODO Auto-generated method stub
 		return alumnosRepo.findAllByCarreraAndCuatrimestreAndPeriodo(idCarrera, idCuatrimestre, idPeriodo);
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Integer contarAlumnosPorGrupoYActivos(Integer idGrupo) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.countAlumnosByGrupoAndActivo(idGrupo);
+	}
 }

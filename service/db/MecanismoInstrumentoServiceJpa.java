@@ -82,5 +82,12 @@ public class MecanismoInstrumentoServiceJpa implements IMecanismoInstrumentoServ
 	public MecanismoInstrumentoDTO contarMecanismosPorCargahorariaYCorteEvaluativo(Integer cargaHoraria, Integer corteEvaluativo, Integer alumno) {
 		return mecanismoRepository.countMecanismoIntrumentoByCargaHorariaAndCorteEvaluativo(cargaHoraria, corteEvaluativo, alumno);
 	}	
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Integer contarPorIdCargaHorariaYIdCorteEvaluativo(Integer idCargaHoraria, Integer idCorteEvaluativo) {
+		// TODO Auto-generated method stub
+		return mecanismoRepository.countByIdCargaHorariaAndIdCorteEvaluativo(idCargaHoraria, idCorteEvaluativo);
+	}
 
 }

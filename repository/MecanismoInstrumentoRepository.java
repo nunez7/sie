@@ -34,4 +34,8 @@ public interface MecanismoInstrumentoRepository extends CrudRepository<Mecanismo
 			+ "WHERE id_carga_horaria = :carga  AND id_corte_evaluativo = :corte AND c.id_alumno = :alumno) AS calificacionInstrumentos ",nativeQuery = true)
 	MecanismoInstrumentoDTO countMecanismoIntrumentoByCargaHorariaAndCorteEvaluativo(@Param("carga") Integer cargaHoraria, @Param("corte") Integer CorteEvaluativo, @Param("alumno") Integer alumno);
 	
+	//cuenta si hay mecanimos en una carga horaria de un parcial
+	@Query(value = "SELECT COUNT(*) FROM mecanismo_instrumento WHERE id_carga_horaria = :idCargaHoraria "
+			+ "AND id_corte_evaluativo = :idCorte AND activo = 'True'", nativeQuery = true)
+	Integer countByIdCargaHorariaAndIdCorteEvaluativo(@Param("idCargaHoraria") Integer idCargaHoraria, @Param("idCorte") Integer idCorteEvaluativo);
 }

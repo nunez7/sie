@@ -584,4 +584,11 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 	List<AlumnoRegularDTO> findAllByCarreraAndCuatrimestreAndPeriodo(@Param("idCarrera") Integer idCarrera, @Param("idCuatrimestre") Integer idCuatrimestre,
 			@Param("idPeriodo") Integer idPeriodo);
 	
+	//cuenta alumnos inscritos por grupo y activos 
+	@Query(value = "SELECT COUNT(*) as inscritos "
+			+ "FROM alumnos_grupos ag "
+			+ "INNER JOIN alumnos a on a.id=ag.id_alumno "
+			+ "WHERE ag.id_grupo=:idGrupo AND ag.activo='True' AND a.estatus=1", nativeQuery = true)
+	Integer countAlumnosByGrupoAndActivo(@Param("idGrupo") Integer idGrupo);
+	
 }

@@ -25,4 +25,8 @@ public interface IMecanismoInstrumentoService {
 	Integer sumaPonderacionPorIdCargaHorariaEIdCorteEvaluativo(Integer idCargaHoraria, Integer idCorteEvaluativo);
 	
 	MecanismoInstrumentoDTO contarMecanismosPorCargahorariaYCorteEvaluativo(Integer cargaHoraria, Integer corteEvaluativo , Integer alumno);
+	
+	//cuenta los instrumentos por carga y corte
+	Integer contarPorIdCargaHorariaYIdCorteEvaluativo(Integer idCargaHoraria, Integer idCorteEvaluatico);
+
 }

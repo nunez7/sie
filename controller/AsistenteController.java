@@ -56,6 +56,7 @@ import edu.mx.utdelacosta.model.dtoreport.GruposEvaluacionTutorDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorParcialDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
+import edu.mx.utdelacosta.model.dtoreport.ProfesorCalificacionesDTO;
 import edu.mx.utdelacosta.service.IActividadService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAreaConocimientoService;
@@ -74,6 +75,7 @@ import edu.mx.utdelacosta.service.IEvaluacionesService;
 import edu.mx.utdelacosta.service.IGrupoService;
 import edu.mx.utdelacosta.service.IHorarioService;
 import edu.mx.utdelacosta.service.IMateriasService;
+import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IPersonalService;
@@ -177,6 +179,9 @@ public class AsistenteController {
   
 	@Autowired
 	private IRemedialAlumnoService remedialAlumnoService;
+	
+	@Autowired
+	private IMecanismoInstrumentoService mecanismoInstrumentoService;
 	
 	@Autowired
 	private ReporteXlsxView reporte;
@@ -1148,6 +1153,86 @@ public class AsistenteController {
 		model.addAttribute("carreras", carrerasServices.buscarCarrerasPorIdPersona(persona.getId()));
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "asistente/reporteAlumnosEncuestas";
+	}
+	
+	@GetMapping("/reporte-profesores-faltantes")
+	public String reporteProfesoresFaltantes(Model model, HttpSession session) {
+		Persona persona = new Persona((Integer)session.getAttribute("cvePersona"));
+		Usuario usuario = usuariosService.buscarPorPersona(persona);
+		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
+		//se buscan las carreras por usuario
+		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(persona.getId());
+		model.addAttribute("carreras", carreras);
+		if(session.getAttribute("cveCarrera") != null) {
+			int cveCarrera = (Integer) session.getAttribute("cveCarrera");
+			model.addAttribute("cveCarrera", cveCarrera);
+			int cve = 0;
+			try {
+				cve = (int) session.getAttribute("cveParcial");
+			} catch (Exception e) {
+
+			}
+			//buscan los cortes para las carreras
+			List<CorteEvaluativo> cortes = corteEvaluativoService.buscarPorCarreraYPeriodo(cveCarrera, periodo.getId());
+			model.addAttribute("cortes", cortes);
+			//se compara si hay corte seleccionado
+			if(session.getAttribute("cveParcial") != null && cve > 0) {
+				int cveParcial = (Integer) session.getAttribute("cveParcial");
+				model.addAttribute("cveParcial", cveParcial);
+				//se sacan los profesores por carrera
+				List<Persona> profesores = personaService.buscarProfesoresPorCarreraYPeriodo(cveCarrera, periodo.getId());
+				//lista de profesorescalificacionesDTO
+				List<ProfesorCalificacionesDTO> profesCali = new ArrayList<>();
+				//se iteran los profesores para sacar sus cargas horarias
+				for (Persona p : profesores) {
+					//se crea bjeta de profesorCalificacion
+					ProfesorCalificacionesDTO profesor = new ProfesorCalificacionesDTO();
+					profesor.setIdPersona(p.getId());
+					profesor.setNombre(p.getNombreCompletoPorApellido());
+					//booleano para progreso de captura
+					Boolean instrumento = false;
+					Boolean calificacion = false;
+					//se buscan las cargas horarias por profesor
+					List<CargaHoraria> cargas = cargaHorariaService.buscarPorProfesorYCarreraYPeriodo(p.getId(), cveCarrera, periodo.getId());
+					///se iteran las cargas horarias para sacar los instrmentos
+					for (CargaHoraria ch : cargas) {
+						Integer instrumentos = mecanismoInstrumentoService.contarPorIdCargaHorariaYIdCorteEvaluativo(ch.getId(), cveParcial);
+						//se compara que haya instrumentos 
+						if(instrumentos > 0) {
+							instrumento = true;
+						} else {
+							instrumento = false;
+							break;
+						}
+					}
+					//iteración para sacar las calificaciones del grupo
+					for (CargaHoraria ch : cargas) {
+						Integer alumnos = alumnoService.contarAlumnosPorGrupoYActivos(ch.getGrupo().getId());
+						//se consutarán cuantas calificaciones corte por grupo hay y se compará por el numero de alumnos
+						Integer calificaciones = calificacionCorteService.contarPorIdCargaHorariaYidCorte(ch.getId(), cveParcial);
+						if(calificaciones >= alumnos) {
+							calificacion = true;
+						}
+						else {
+							calificacion = false;
+							break;
+						}
+					}
+					//se garda si hay instrmentos
+					profesor.setInstrumentos(instrumento);
+					//se guarda si hay calificaciones
+					profesor.setCalificaciones(calificacion);
+					//se añande el objeto a la lista de profeCali
+					profesCali.add(profesor);
+				}
+				//se envia a la vista los profes cali
+				model.addAttribute("profesores", profesCali);
+			}
+		}
+		
+		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
+		model.addAttribute("periodo", periodo);
+		return "asistente/reporteProfesoresFaltantes";
 	}
 	
 	
