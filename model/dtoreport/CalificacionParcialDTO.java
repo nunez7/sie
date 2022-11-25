@@ -19,6 +19,8 @@ public class CalificacionParcialDTO {
 	private Integer calificacionExtraordinario;
 	
 	private Boolean baja;
+	
+	private Boolean bajaRem;
 
 	public String getMatricula() {
 		return matricula;
@@ -83,5 +85,12 @@ public class CalificacionParcialDTO {
 	public void setBaja(Boolean baja) {
 		this.baja = baja;
 	}
-	
+
+	public Boolean getBajaRem() {
+		return bajaRem;
+	}
+
+	public void setBajaRem(Boolean bajaRem) {
+		this.bajaRem = bajaRem;
+	}
 }

@@ -3,6 +3,7 @@ import java.util.List;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.AlumnoActivoDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoAdeudoDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoMatriculaInicialDTO;
@@ -121,4 +122,5 @@ public interface IAlumnoService {
 	
 	List<AlumnoRegularDTO> buscarTodosPorCarreraYCuatrimestreYPeriodo(Integer idCarrera, Integer idCuatrimestre, Integer idPeriodo);
 
+	List<AlumnoActivoDTO> buscarAlumnoYEstatusPorGrupo (Integer grupo);
 }

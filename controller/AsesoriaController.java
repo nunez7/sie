@@ -270,7 +270,7 @@ public class AsesoriaController {
 		   cveGrupo = 0;
 		  }
 		  if (cveGrupo>0) {
-			  List<AsesoriaDTO> asesorias = asesoriaService.buscarIndividualesPorGrupo(new Grupo(cveGrupo));			
+			  List<AsesoriaDTO> asesorias = asesoriaService.buscarIndividualesPorGrupo(new Grupo(cveGrupo), persona);			
 			  model.addAttribute("asesorias", asesorias);
 			  model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
 		}
@@ -293,7 +293,7 @@ public class AsesoriaController {
 		   cveGrupo = 0;
 		  }
 		  if (cveGrupo>0) {
-			  List<AsesoriaDTO> asesorias = asesoriaService.buscarGrupalesPorGrupo(new Grupo(cveGrupo));			
+			  List<AsesoriaDTO> asesorias = asesoriaService.buscarGrupalesPorGrupo(new Grupo(cveGrupo), persona);			
 			  model.addAttribute("asesorias", asesorias);
 			  model.addAttribute("grupoActual", grupoService.buscarPorId(cveGrupo));
 		}

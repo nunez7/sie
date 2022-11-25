@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import edu.mx.utdelacosta.model.Asesoria;
 import edu.mx.utdelacosta.model.AsesoriaSolicitud;
 import edu.mx.utdelacosta.model.Grupo;
+import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.dtoreport.AsesoriaDTO;
 import edu.mx.utdelacosta.repository.AsesoriaRepository;
 import edu.mx.utdelacosta.repository.AsesoriaSolicitudRepository;
@@ -66,12 +67,12 @@ public class AsesoriaServiceJpa implements IAsesoriaService{
 	}
 
 	@Override
-	public List<AsesoriaDTO> buscarIndividualesPorGrupo(Grupo grupo) {
-		return asesoriaRepository.findIndividualesByGrupo(grupo);
+	public List<AsesoriaDTO> buscarIndividualesPorGrupo(Grupo grupo, Persona persona) {
+		return asesoriaRepository.findIndividualesByGrupo(grupo, persona);
 	}
 
 	@Override
-	public List<AsesoriaDTO> buscarGrupalesPorGrupo(Grupo grupo) {
-		return asesoriaRepository.findByGrupalesByGrupo(grupo);
+	public List<AsesoriaDTO> buscarGrupalesPorGrupo(Grupo grupo, Persona persona) {
+		return asesoriaRepository.findByGrupalesByGrupo(grupo, persona);
 	}
 }

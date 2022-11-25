@@ -34,6 +34,7 @@ import edu.mx.utdelacosta.model.Pregunta;
 import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.model.dto.AlumnoActivoDTO;
 import edu.mx.utdelacosta.model.dto.DosificacionImportarDTO;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
 import edu.mx.utdelacosta.model.dto.HorarioDTO;
@@ -363,10 +364,10 @@ public class ProfesorController {
 		Persona persona = personaService.buscarPorId((Integer)session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		List<CargaHoraria> cargas = cargaService.buscarPorProfesorYPeriodo(usuario.getPersona(), new Periodo(usuario.getPreferencias().getIdPeriodo())); 
-		List<Alumno> alumnos = new ArrayList<>();
+		List<AlumnoActivoDTO> alumnos = new ArrayList<>();
 		if (cveCarga != null) {
 			CargaHoraria cargaActual = cargaService.buscarPorIdCarga(cveCarga);
-			alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cargaActual.getGrupo().getId());
+			alumnos = alumnoService.buscarAlumnoYEstatusPorGrupo(cargaActual.getGrupo().getId());
 			model.addAttribute("cActual", cargaActual);
 			model.addAttribute("cveCarga", cargaActual.getId());
 		}
@@ -412,10 +413,10 @@ public class ProfesorController {
 		Persona persona = personaService.buscarPorId((Integer)session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
 		List<CargaHoraria> cargas = cargaService.buscarPorProfesorYPeriodo(usuario.getPersona(), new Periodo(usuario.getPreferencias().getIdPeriodo()));
-		List<Alumno> alumnos = new ArrayList<>();
+		List<AlumnoActivoDTO> alumnos = new ArrayList<>();
 		if (cveCarga != null) {
 			CargaHoraria cargaActual = cargaService.buscarPorIdCarga(cveCarga);
-			alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cargaActual.getGrupo().getId());
+			alumnos = alumnoService.buscarAlumnoYEstatusPorGrupo(cargaActual.getGrupo().getId());
 			model.addAttribute("cveCarga", cveCarga);
 		}
 		model.addAttribute("alumnos", alumnos);

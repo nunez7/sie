@@ -19,4 +19,6 @@ public interface AsesoriaDTO {
 	String getComentario(); 
 	
 	String getMateria();
+	
+	Boolean getActivo();
 }

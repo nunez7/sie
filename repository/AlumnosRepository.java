@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.AlumnoActivoDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.model.dto.RemedialAlumnoDTO;
@@ -584,4 +585,14 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 	List<AlumnoRegularDTO> findAllByCarreraAndCuatrimestreAndPeriodo(@Param("idCarrera") Integer idCarrera, @Param("idCuatrimestre") Integer idCuatrimestre,
 			@Param("idPeriodo") Integer idPeriodo);
 	
+	@Query(value = "SELECT a.id AS idAlumno, CONCAT(p.primer_apellido,' ',p.segundo_apellido,' ',p.nombre) AS nombre, "
+			+ "		a.matricula, ag.activo, a.estatus, p.email AS correo, dp.telefono "
+			+ "		FROM alumnos_grupos ag "
+			+ "		INNER JOIN alumnos a ON a.id=ag.id_alumno "
+			+ "		INNER JOIN personas p ON p.id=a.id_persona "
+			+ "		INNER JOIN datos_personales dp ON dp.id_persona = p.id "
+			+ "		WHERE ag.id_grupo= :grupo "
+			+ "		ORDER BY TRANSLATE (p.primer_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, TRANSLATE (p.segundo_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, "
+			+ "		TRANSLATE (p.nombre,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC ", nativeQuery = true)
+	List<AlumnoActivoDTO>  findAlumnoAndStatusByGrupo(@Param("grupo") Integer grupo);
 }

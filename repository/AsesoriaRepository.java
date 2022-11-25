@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Asesoria;
 import edu.mx.utdelacosta.model.Grupo;
+import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.dtoreport.AsesoriaDTO;
 
 public interface AsesoriaRepository extends CrudRepository<Asesoria, Integer>{
@@ -19,12 +20,12 @@ public interface AsesoriaRepository extends CrudRepository<Asesoria, Integer>{
 			+ "  WHERE aa.id_alumno = a.id and ase.id_tipo_asesoria = 1) as asesorias, "
 			+ " (SELECT COUNT(distinct(aa.*)) FROM asesoria_alumno aa "
 			+ "  INNER JOIN asesorias ase on aa.id_asesoria = ase.id "
-			+ "  WHERE aa.id_alumno = a.id and ase.id_tipo_asesoria = 2) as asesoriasGrupales "
+			+ "  WHERE aa.id_alumno = a.id and ase.id_tipo_asesoria = 2) as asesoriasGrupales, ag.activo as Activo"
 			+ " FROM alumnos a "
 			+ " INNER JOIN alumnos_grupos ag on ag.id_alumno=a.id "
 			+ " INNER JOIN personas p on p.id=a.id_persona "
 			+ " INNER JOIN grupos g on g.id = ag.id_grupo "
-			+ " WHERE ag.id_grupo=:idGrupo AND g.id_periodo = :idPeriodo AND ag.activo = true "
+			+ " WHERE ag.id_grupo=:idGrupo AND g.id_periodo = :idPeriodo "
 			+ " ORDER BY TRANSLATE (p.primer_apellido,'ÁÉÍÓÚÜ','AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'ÁÉÍÓÚÜ','AEIOUU') ASC, TRANSLATE (p.nombre,'ÁÉÍÓÚÜ','AEIOUU') ASC", nativeQuery = true)
 	List<AsesoriaDTO> findByIdGrupo(@Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo);
 	
@@ -63,15 +64,15 @@ public interface AsesoriaRepository extends CrudRepository<Asesoria, Integer>{
 			+ "	INNER JOIN cargas_horarias ch on a.id_carga_horaria = ch.id "
 			+ "	INNER JOIN grupos g on ch.id_grupo = g.id "
 			+ "	INNER JOIN materias m on ch.id_materia = m.id "
-			+ "	WHERE ch.id_grupo = :grupo AND id_tipo_asesoria = 1 "
+			+ "	WHERE ch.id_grupo = :grupo AND id_tipo_asesoria = 1  AND ch.id_profesor = :profesor"
 			+ "	ORDER BY TRANSLATE (p.primer_apellido,'ÁÉÍÓÚÜ','AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'ÁÉÍÓÚÜ','AEIOUU') ASC, TRANSLATE (p.nombre,'ÁÉÍÓÚÜ','AEIOUU') ASC ", nativeQuery = true)
-	List<AsesoriaDTO> findIndividualesByGrupo(@Param("grupo")Grupo grupo);
+	List<AsesoriaDTO> findIndividualesByGrupo(@Param("grupo")Grupo grupo, @Param("profesor") Persona persona);
 	
 	@Query(value = "SELECT g.nombre as grupo, m.nombre as materia, a.fecha_asesoria as fecha, a.tema, a.comentario "
 			+ "	FROM asesorias a "
 			+ "	INNER JOIN cargas_horarias ch on a.id_carga_horaria = ch.id "
 			+ "	INNER JOIN grupos g on ch.id_grupo = g.id "
 			+ "	INNER JOIN materias m on ch.id_materia = m.id "
-			+ "	WHERE ch.id_grupo = :grupo AND id_tipo_asesoria = 2 ", nativeQuery = true)
-	List<AsesoriaDTO> findByGrupalesByGrupo(@Param("grupo") Grupo grupo);
+			+ "	WHERE ch.id_grupo = :grupo AND id_tipo_asesoria = 2  AND ch.id_profesor = :profesor ", nativeQuery = true)
+	List<AsesoriaDTO> findByGrupalesByGrupo(@Param("grupo") Grupo grupo, @Param("profesor") Persona persona);
 }
