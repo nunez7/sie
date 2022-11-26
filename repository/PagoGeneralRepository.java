@@ -3,7 +3,10 @@ package edu.mx.utdelacosta.repository;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.QueryHint;
+
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
@@ -69,6 +72,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 	List<PagoGeneral> findByLast100();	
 	
 	// busca los pagos para reporte detallado con fechas de inicio, fin y un cajero
+	@QueryHints(@QueryHint(name = "org.hibernate.cacheable", value = "true"))
 	@Query(value = "SELECT COALESCE(pg.folio, 'S/F') AS folio, "
 			+ "COALESCE(a.matricula, c.clave, per.no_empleado, 'N/A') as matricula, " + "CASE "
 			+ "	WHEN(ap.nombre IS NOT NULL AND ap.primer_apellido IS NOT NULL AND ap.segundo_apellido IS NOT NULL) "
@@ -89,6 +93,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			@Param("fechaFin") Date fechaFin, @Param("cajero") Integer idCajero);
 
 	// busca los pagos para reporte detallado con fechas de inicio, fin y todos los cajeros
+	@QueryHints(@QueryHint(name = "org.hibernate.cacheable", value = "true"))
 	@Query(value = "SELECT COALESCE(pg.folio, 'S/F') AS folio, "
 			+ "COALESCE(a.matricula, c.clave, per.no_empleado, 'N/A') as matricula, " + "CASE "
 			+ "	WHEN(ap.nombre IS NOT NULL AND ap.primer_apellido IS NOT NULL AND ap.segundo_apellido IS NOT NULL) "
