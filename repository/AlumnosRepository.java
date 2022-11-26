@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.AlumnoActivoDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.model.dto.RemedialAlumnoDTO;
@@ -110,7 +111,7 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "(SELECT COALESCE(gg.nombre, '') "
 			+ "FROM alumnos_grupos agg "
 			+ "INNER JOIN grupos gg ON gg.id=agg.id_grupo "
-			+ "WHERE gg.id_periodo=:periodo+1 AND gg.id_carrera=:carrera AND agg.id_alumno=a.id)AS grupoActual "
+			+ "WHERE gg.id_periodo=:periodo+1 AND gg.id_carrera=:carrera AND agg.id_alumno=a.id LIMIT 1)AS grupoActual "
 			+ "FROM alumnos a "
 			+ "INNER JOIN alumnos_grupos ag ON ag.id_alumno=a.id "
 			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "
@@ -591,4 +592,15 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "WHERE ag.id_grupo=:idGrupo AND ag.activo='True' AND a.estatus=1", nativeQuery = true)
 	Integer countAlumnosByGrupoAndActivo(@Param("idGrupo") Integer idGrupo);
 	
+	@Query(value = "SELECT a.id AS idAlumno, CONCAT(p.primer_apellido,' ',p.segundo_apellido,' ',p.nombre) AS nombre, "
+			+ "		a.matricula, ag.activo, a.estatus, p.email AS correo, dp.telefono "
+			+ "		FROM alumnos_grupos ag "
+			+ "		INNER JOIN alumnos a ON a.id=ag.id_alumno "
+			+ "		INNER JOIN personas p ON p.id=a.id_persona "
+			+ "		INNER JOIN datos_personales dp ON dp.id_persona = p.id "
+			+ "		WHERE ag.id_grupo= :grupo "
+			+ "		ORDER BY TRANSLATE (p.primer_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, TRANSLATE (p.segundo_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, "
+			+ "		TRANSLATE (p.nombre,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC ", nativeQuery = true)
+	List<AlumnoActivoDTO>  findAlumnoAndStatusByGrupo(@Param("grupo") Integer grupo);
+
 }

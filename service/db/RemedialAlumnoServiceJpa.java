@@ -159,6 +159,15 @@ public class RemedialAlumnoServiceJpa implements IRemedialAlumnoService{
 	public Integer contarRemedialesAlumnoPorCargaHorariaYRemedial(Integer idCargaHoraria, Integer idTipoRemedial) {
 		// TODO Auto-generated method stub
 		return remedialAlumnoRepository.countRemedialAlumnoByCargaHorariaAndRemedial(idCargaHoraria, idTipoRemedial);
+}
+	public Integer contarPorCarreraYTipoRemedial(Integer carrera, Integer tipo) {
+		return remedialAlumnoRepository.countByCarreraAndTipoRemedial(carrera, tipo);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Integer contarPorAlumnoYPeriodoYTipo(Integer alumno, Integer periodo, Integer tipo) {
+		return remedialAlumnoRepository.countByAlumnoAndPeriodoAndTipo(alumno, periodo,tipo);
 	}
 	
 }

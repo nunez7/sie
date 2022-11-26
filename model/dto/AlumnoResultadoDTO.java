@@ -7,6 +7,8 @@ public class AlumnoResultadoDTO {
 	private String nombreCompleto;
 	
 	private String valor;
+	
+	private Boolean activo;
 
 	public Integer getId() {
 		return id;
@@ -33,6 +35,14 @@ public class AlumnoResultadoDTO {
 	}
 	
 	public AlumnoResultadoDTO() {
+	}
+
+	public Boolean getActivo() {
+		return activo;
+	}
+
+	public void setActivo(Boolean activo) {
+		this.activo = activo;
 	}
 
 }

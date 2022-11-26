@@ -5,6 +5,8 @@ import java.util.List;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Asistencia;
+import edu.mx.utdelacosta.model.CargaHoraria;
+import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Horario;
 
 public interface IAsistenciaService {	
@@ -31,6 +33,8 @@ public interface IAsistenciaService {
 	List<Asistencia> buscarFaltasPorIdAlumnoYIdCargaHoraria(Integer idAlumno, Integer idCargaHoraria, Date fechaInicio, Date fechaFin);
 
 	List<Asistencia> buscarRetardosPorIdAlumnoYIdCargaHoraria(Integer idAlumno, Integer idCargaHoraria);
+	
+	Integer contarAsistenciasPorCargaYCorte(CargaHoraria carga, CorteEvaluativo corte);
 	
 	Integer contarAsistenciasPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria, Date fechaInicio, Date fechaFin);
 	

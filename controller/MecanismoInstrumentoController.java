@@ -1,6 +1,7 @@
 package edu.mx.utdelacosta.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,8 @@ import edu.mx.utdelacosta.model.Instrumento;
 import edu.mx.utdelacosta.model.MecanismoInstrumento;
 import edu.mx.utdelacosta.model.Periodo;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.Prorroga;
+import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.ICalendarioEvaluacionService;
@@ -42,6 +45,7 @@ import edu.mx.utdelacosta.service.IInstrumentoService;
 import edu.mx.utdelacosta.service.IMecanismoInstrumentoService;
 import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
+import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.IUsuariosService;
 import edu.mx.utdelacosta.util.ActualizarCalificacion;
 import edu.mx.utdelacosta.util.SubirArchivo;
@@ -83,6 +87,9 @@ public class MecanismoInstrumentoController {
 
 	@Autowired
 	private IAlumnoService alumnoService;
+	
+	@Autowired
+	private IProrrogaService prorrogaService;
 
 	@Autowired
 	private ActualizarCalificacion actualizarCalificacion;
@@ -103,7 +110,7 @@ public class MecanismoInstrumentoController {
 			@PathVariable(name = "corte", required = false) Integer idCorte, Model model, HttpSession session) {
 		
 		List<MecanismoInstrumento> mecanismos = mecanismoService.buscarPorIdCargaHorariaYActivo(idCarga, true);
-
+		
 		model.addAttribute("corte", corteService.buscarPorId(idCorte));
 		model.addAttribute("cActual", new CargaHoraria(idCarga));
 		model.addAttribute("mecanismos", mecanismos);
@@ -140,22 +147,21 @@ public class MecanismoInstrumentoController {
 		Integer carga = Integer.parseInt(obj.get("idCargaHoraria"));
 		Integer corte = Integer.parseInt(obj.get("idCorteEvaluativo"));
 		Integer instrumento = Integer.parseInt(obj.get("idInstrumento"));
-		//MecanismoInstrumento mecanismo = mecanismoService.buscarPorIdCargaHorariaEIdCorteEvaluativoEInstrumentoYActivo(
-		//		carga, corte, instrumentoService.buscarPorId(instrumento), true);
-		
+		//se comprueba si existe periodo o prorroga activo
+		if (comprobarPeriodoActivo(new CargaHoraria(carga),new CorteEvaluativo(corte)) == false) {
+			return "fecha";
+		}
 		//comprobamos si la dosificacion esta validada
-		boolean dosificacionValida = comprobarDosificacionValida(carga, corte);
-		if (dosificacionValida == true) {
+		if (comprobarDosificacionValida(carga, corte) == true) {
 			return "val";
 		}
-		
 		//obtenemos el total de instrumentos y comparamos si se alcanzo el limite maximo
 		List<MecanismoInstrumento> total = mecanismoService.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(carga,
 				corte, true);
 		if (total.size() > 2) {
 			return "max";
 		}
-		
+		// en caso de que el instrumetno sea el tercero, se procede a agregar una ponderacion automatica
 		Integer provicional = null;
 		if(total.size()==2) {
 			provicional = 0;
@@ -164,14 +170,12 @@ public class MecanismoInstrumentoController {
 			}
 			provicional = 100 - provicional;
 		}
-
 		// comparamos si el corte tiene asignado una unidad
 		List<CalendarioEvaluacion> calendarios = calendarioService
 				.buscarPorCargaHorariaYCorteEvaluativo(new CargaHoraria(carga), new CorteEvaluativo(corte));
 		if (calendarios.size() == 0) {
 			return "non";
 		}
-
 		// se guarda el istrumento - se retiro la limitacion de 1 instrumento por tipo
 		MecanismoInstrumento mecanismo = new MecanismoInstrumento();
 		mecanismo.setActivo(true);
@@ -192,23 +196,27 @@ public class MecanismoInstrumentoController {
 	@ResponseBody
 	public String eliminaInstrumento(@RequestBody Map<String, String> obj, HttpSession session) {
 		MecanismoInstrumento mecanismo = mecanismoService.buscarPorId(Integer.parseInt(obj.get("idInstrumento")));
+		Integer cveCarga = (Integer) session.getAttribute("cveCarga");
+		// se comprueba si hay periodo o prorroga activa
+		if (comprobarPeriodoActivo(new CargaHoraria(cveCarga), new CorteEvaluativo(mecanismo.getIdCorteEvaluativo())) == false) {
+			return "fecha";
+		}
+		//se comprueba que la dosificacion no se haya validado
 		boolean dosificacionValida = comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"), mecanismo.getIdCorteEvaluativo());
 		if (dosificacionValida == true) {
 			return "val";
 		}
+		//se comprueba si existen las calificaciones
 		List<Calificacion> calificaciones = calificacionService.buscarPorMecanismoInstrumento(mecanismo);
 		if (calificaciones.size()>0) {
-			
+			// en caso de existir calificaciones, se eliminan las mismas
 			for (Calificacion calificacion : calificaciones) {
 				calificacionService.eliminar(calificacion);
 			}
-			
-			
-			
+			//se obtienen las carga actual y los alumnos
 			CargaHoraria carga = cargaService.buscarPorIdCarga(mecanismo.getIdCargaHoraria());
 			List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(carga.getGrupo().getId());
-			
-			
+			// en base a los alumnos, se acutlizan sus calificaciones
 			for (Alumno alumno : alumnos) {
 				float calificacionCorte = actualizarCalificacion.actualizaCalificacionCorte(alumno.getId(),
 						mecanismo.getIdCargaHoraria(), mecanismo.getIdCorteEvaluativo());
@@ -216,10 +224,8 @@ public class MecanismoInstrumentoController {
 						mecanismo.getIdCargaHoraria(), mecanismo.getIdCorteEvaluativo());
 				actualizarCalificacion.actualizaCalificacionMateria(alumno.getId(), mecanismo.getIdCargaHoraria());
 			}
-			
 		}
-		
-
+		// se procede a liminar el instrumento
 		mecanismoService.eliminar(mecanismo);
 		return "ok";
 	}
@@ -229,18 +235,23 @@ public class MecanismoInstrumentoController {
 	public String guardaPonderacion(@RequestBody Map<String, String> obj, Model model, HttpSession session) {
 		Integer ponderacion = Integer.parseInt(obj.get("ponderacion")); // se recibe el dato
 		Integer idMeca = Integer.parseInt(obj.get("idMecanismo")); // se recibe el dato
-	//	if (ponderacion > 0 && ponderacion <= 85) { // se comprueba que su valor sea mayor a 0 y menor o igual a 85
-		if (ponderacion > 0) { // se comprueba que su valor sea mayor a 0
-			MecanismoInstrumento mecanismo = mecanismoService.buscarPorIdYActivo(idMeca, true); // se busca si el
-																								// mecanismo
-			boolean dosificacionValida = comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"), mecanismo.getIdCorteEvaluativo());
-			if (dosificacionValida == true) {
+		
+		MecanismoInstrumento mecanismo = mecanismoService.buscarPorIdYActivo(idMeca, true);
+		if(comprobarPeriodoActivo(new CargaHoraria((Integer) session.getAttribute("cveCarga")), new CorteEvaluativo(mecanismo.getIdCorteEvaluativo()))==false) {
+			return "fecha";
+		}
+		
+		
+		// se comprueba que la ponderacion sea mayor a 0
+		if (ponderacion > 0) {
+			//se obtiene el mecanismo
+			if (comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"), mecanismo.getIdCorteEvaluativo()) == true) {
 				return "val";
 			}
-			
+			// se obtienen los mecanismos para comparar si la ponderacion no se ha sobrepasado
 			List<MecanismoInstrumento> lista = mecanismoService.buscarPorIdCargaHorariaEIdCorteEvaluativoYActivo(
 					Integer.parseInt(obj.get("cargaActual")), Integer.parseInt(obj.get("corteEvaluativo")), true);
-			if (lista != null) { // se compara el tamano de la lista
+			if (lista != null) { // se si la lista no esta vacia
 				Integer ponderacionMaxima = 0;
 				for (MecanismoInstrumento mecanismos : lista) { // se cuenta la ponderacion maxima en base
 					if (mecanismos.getPonderacion() != null && !idMeca.equals(mecanismos.getId())) {
@@ -248,16 +259,15 @@ public class MecanismoInstrumentoController {
 					}
 				}
 				Integer ponderacionTotal = ponderacionMaxima + ponderacion;
+				// se valida que la ponderacion total no haya superado los 100
 				if (ponderacionTotal > 100) {
 					return "limit";
 				}
 				if (mecanismo != null) { // en caso de no exsitir se crea uno nuevo, se agregan sus valores y se guarda
 					mecanismo.setPonderacion(ponderacion);
 					mecanismoService.guardar(mecanismo);
-					
 					boolean existe = actualizarCalificacion.existeCalificacion(mecanismo.getId());
-					if (existe==true) {
-						
+					if (existe==true) {			
 						CargaHoraria carga = cargaService.buscarPorIdCarga(mecanismo.getIdCargaHoraria());
 						List<Alumno> alumnos = alumnoService
 								.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(carga.getGrupo().getId());
@@ -293,9 +303,7 @@ public class MecanismoInstrumentoController {
 					return "ok-" + ponderacion;
 				}
 			}
-
-		} // en caso de que el valor sea difirente se manda error
-
+		}
 		return "err-0";
 	}
 
@@ -343,9 +351,16 @@ public class MecanismoInstrumentoController {
 	public String guardarInstrumentoArchivo(@RequestParam("archivoInstrumento") MultipartFile multiPart,
 			@RequestParam("idInstrumento") Integer idInstrumento, HttpSession session) {
 		MecanismoInstrumento mecanismo = new MecanismoInstrumento();
+		
 		if (idInstrumento != null) {
 			mecanismo = mecanismoService.buscarPorIdYActivo(idInstrumento, true);
 		}
+		
+		if(comprobarPeriodoActivo(new CargaHoraria(mecanismo.getIdCargaHoraria()),
+				new CorteEvaluativo(mecanismo.getIdCorteEvaluativo()))==false) {
+			return "fecha";
+		}
+		
 		if (comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"), mecanismo.getIdCorteEvaluativo()) == true) {
 			return "limit";
 		}
@@ -368,6 +383,10 @@ public class MecanismoInstrumentoController {
 		if (idInstrumento != null) {
 			mecanismo = mecanismoService.buscarPorIdYActivo(idInstrumento, true);
 			
+			if(comprobarPeriodoActivo(new CargaHoraria(mecanismo.getIdCargaHoraria()),
+					new CorteEvaluativo(mecanismo.getIdCorteEvaluativo()))==false) {
+				return "fecha";
+			}
 			
 			if (comprobarDosificacionValida((Integer) session.getAttribute("cveCarga"), mecanismo.getIdCorteEvaluativo()) == true) {
 				return "limit";
@@ -389,5 +408,18 @@ public class MecanismoInstrumentoController {
 			}
 		}
 		return false;
+	}
+	
+	public boolean comprobarPeriodoActivo(CargaHoraria carga, CorteEvaluativo corte) {
+
+		if (corteService.buscarPorCorteYFechaDosificacion(corte, new Date())==null) {
+			Prorroga prorroga = prorrogaService.buscarPorCargaHorariaYTipoProrrogaYAceptada(carga, 
+					new TipoProrroga(3),new Date(),corte);
+				if (prorroga == null) {
+					return false;					
+				}
+		}
+		
+		return true;
 	}
 }

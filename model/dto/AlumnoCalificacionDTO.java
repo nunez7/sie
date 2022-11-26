@@ -13,6 +13,8 @@ public class AlumnoCalificacionDTO {
 	
 	List<CalificacionDTO> calificaciones;
 	
+	private Boolean activo;
+	
 	List<CalificacionesMateriasParcialesDTO> calificacionesMaterias;
 	
 	private float calificacionTotal;
@@ -107,6 +109,14 @@ public class AlumnoCalificacionDTO {
 
 	public void setExtraordinario(Boolean extraordinario) {
 		this.extraordinario = extraordinario;
+	}
+
+	public Boolean getActivo() {
+		return activo;
+	}
+
+	public void setActivo(Boolean activo) {
+		this.activo = activo;
 	}
 	
 }

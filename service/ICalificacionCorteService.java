@@ -29,4 +29,7 @@ public interface ICalificacionCorteService {
 	Float buscarPromedioCortePorMecanismoIntrumentoYCarga(Integer cargaHoraria, Integer corteEvaluativo, Integer alumno);
 	
 	Integer contarPorIdCargaHorariaYidCorte(Integer idCargaHoraria, Integer idCorte);
+
+	Integer contarCalificacionesPorCargaHorariaYCorteEvaluativo(CargaHoraria carga, CorteEvaluativo corte);
+
 }

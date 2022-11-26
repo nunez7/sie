@@ -15,4 +15,13 @@ public interface AsesoriaDTO {
 	Integer getAsesoriasGrupales();
 	
 	Integer getEstatus();
+  
+	String getTema();
+	
+	String getComentario(); 
+	
+	String getMateria();
+	
+	Boolean getActivo();
+  
 }

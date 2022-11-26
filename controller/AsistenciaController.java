@@ -34,10 +34,12 @@ import edu.mx.utdelacosta.model.Prorroga;
 import edu.mx.utdelacosta.model.TestimonioCorte;
 import edu.mx.utdelacosta.model.TipoProrroga;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.model.dto.AlumnoActivoDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoResultadoDTO;
 import edu.mx.utdelacosta.model.dto.CorteEvaluativoDTO;
 import edu.mx.utdelacosta.model.dto.DiaDTO;
 import edu.mx.utdelacosta.model.dto.MesDTO;
+import edu.mx.utdelacosta.service.IAlumnoGrupoService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.IAsistenciaService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
@@ -102,6 +104,9 @@ public class AsistenciaController {
 	private IPeriodosService periodoService;
 	
 	@Autowired
+	private IAlumnoGrupoService agService;
+	
+	@Autowired
 	private ActualizarRemedial actualizarRemedial;
 	
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
@@ -159,7 +164,6 @@ public class AsistenciaController {
 			valor = obj.get(alumno.getId().toString());
 			if (valor != null) {
 				Integer asistenciasTotales = noAsistencias;
-				String valor_antiguo="";
 				Asistencia asistencia = asistenciaService.buscarPorFechaYAlumnoYHorario(fecha, alumno, horario);
 
 				if (asistencia == null) {
@@ -172,13 +176,10 @@ public class AsistenciaController {
 					asistenciaService.guardar(asistencia); // guarda el nuevo valor de la asistencia
 					asistenciasTotales++;
 				} else {
-					valor_antiguo = asistencia.getValor();
 					asistencia.setFechaAlta(fechaHoy);
 					asistencia.setValor(valor);
 					asistenciaService.guardar(asistencia); // actualiza el valor de la asistencia
 				}
-				
-				if (!valor_antiguo.equals(valor)) {
 
 				// *************** PROCESO DE CALCULO DEL ESTADO DEL ALUMNO ***************
 				List<Asistencia> faltas = asistenciaService.buscarFaltasPorIdAlumnoYIdCargaHoraria(alumno.getId(),
@@ -218,7 +219,6 @@ public class AsistenciaController {
 				
 				actualizaCalificacion.actualizaTestimonioCalificacion(alumno.getId(), carga.getId(), corte.getId(), SD);
 				
-				}
 			}
 
 		}
@@ -277,6 +277,7 @@ public class AsistenciaController {
 					AlumnoResultadoDTO infoAlumno = new AlumnoResultadoDTO();
 					infoAlumno.setId(alumno.getId());
 					infoAlumno.setNombreCompleto(alumno.getPersona().getNombreCompletoPorApellido());
+					infoAlumno.setActivo(agService.buscarPorAlumnoYGrupo(alumno, cveCarga.getGrupo()).getActivo());
 					for (Asistencia asistencia : Asistencias) {
 						if (asistencia.getAlumno().getId().equals(alumno.getId())) {
 							infoAlumno.setValor(asistencia.getValor());
@@ -291,6 +292,7 @@ public class AsistenciaController {
 					AlumnoResultadoDTO infoAlumno = new AlumnoResultadoDTO();
 					infoAlumno.setId(alumno.getId());
 					infoAlumno.setNombreCompleto(alumno.getPersona().getNombreCompletoPorApellido());
+					infoAlumno.setActivo(agService.buscarPorAlumnoYGrupo(alumno, cveCarga.getGrupo()).getActivo());
 					paseDeLista.add(infoAlumno);
 				}
 			}
@@ -322,7 +324,7 @@ public class AsistenciaController {
 			//se obtienen las cargas (materias) del maestro
 			List<CargaHoraria> cargasHorarias = null;	
 			cargasHorarias = cargaService.buscarPorGrupoYProfesorYPeriodo(cveGrupo, persona.getId() ,usuario.getPreferencias().getIdPeriodo());
-			List<Alumno> alumnos = alumnoService.buscarTodosAlumnosPorGrupoOrdenPorNombreAsc(cveGrupo);
+			List<AlumnoActivoDTO> alumnos = alumnoService.buscarAlumnoYEstatusPorGrupo(cveGrupo);
 			if (session.getAttribute("cargaActual")!=null && (Integer) session.getAttribute("cargaActual")!=0) {
 				CargaHoraria cveCarga = cargaService.buscarPorIdCarga((Integer) session.getAttribute("cargaActual"));
 				
@@ -388,7 +390,7 @@ public class AsistenciaController {
 				}
 				model.addAttribute("cortes", cortesEvaluativos);
 				
-				model.addAttribute("cargaActual",cveCarga.getId());
+				model.addAttribute("cargaActual",cveCarga);
 			}
 			
 			model.addAttribute("cargasHorarias", cargasHorarias);

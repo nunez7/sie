@@ -48,4 +48,9 @@ public interface IRemedialAlumnoService {
 	Integer contarRemedialesPorAlumnoYCorteEvaluativoYTipoIntegerRemedial(Integer idAlumno, Integer idCorteEvaluativo, Integer tipo);
 	
 	Integer contarRemedialesAlumnoPorCargaHorariaYRemedial(Integer idCargaHoraria, Integer idTipoRemedial);
+
+	Integer contarPorCarreraYTipoRemedial(Integer carrera, Integer tipo);
+	
+	Integer contarPorAlumnoYPeriodoYTipo(Integer alumno, Integer periodo, Integer tipo);
+
 }

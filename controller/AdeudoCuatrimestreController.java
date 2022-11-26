@@ -82,7 +82,6 @@ public class AdeudoCuatrimestreController {
 		
 		// se obtiene la fecha en base a los 3 selectores de datos
 		Date fecha = java.sql.Date.valueOf(obj.get("annioLimite")+"-"+obj.get("mesLimite")+"-"+obj.get("diaLimite"));
-		
 		List<AlumnoGrupo> alumnos = new ArrayList<>();
 		//LISTA DE ALUMNOS DEL CUATRIMESTRE
 		if (cuatrimestre.getId()!=1) {
@@ -95,6 +94,10 @@ public class AdeudoCuatrimestreController {
 		
 		
 		// si el cuatrimestre no es 1 se proceden a inscribir los alumnos en sus respectivos grupos
+		if (alGrService.buscarPorPeriodoYCuatrimestre(periodo.getId(), cuatrimestre.getId()).size()>0) {
+			return "dupli";
+		}
+		
 		if (cuatrimestre.getId()!=1) {
 			for (AlumnoGrupo ag : alumnos) {
 				reinscripcion.reinscribir(ag, cuatrimestre.getId(), periodo.getId());
@@ -149,8 +152,8 @@ public class AdeudoCuatrimestreController {
         pagoGenerico.setCantidad(1);
         pagoGenerico.setCliente(0);
         pagoGenerico.setActivo(true);
-        pagoGenerico.setComentario(comentario);
-		pagoGenerico.setDescripcion(idConcepto==8 || idConcepto == 10 ? concepto.getConcepto().toUpperCase()+" "+periodo.getNombre() : concepto.getConcepto().toUpperCase());
+        pagoGenerico.setComentario(comentario+" "+periodo.getNombre());
+		pagoGenerico.setDescripcion(concepto.getConcepto().toUpperCase()+" "+periodo.getNombre());
 		pagoGenerico.setConcepto(concepto);
 		pagoGenerico.setDescuento(0.0);
 		pagoGenerico.setFechaAlta(new Date());

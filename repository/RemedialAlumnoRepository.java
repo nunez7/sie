@@ -71,6 +71,7 @@ public interface RemedialAlumnoRepository extends CrudRepository<RemedialAlumno,
 			+ "WHERE g.id_carrera=:idCarrera AND ra.tipo_remedial=:tipoRemedial AND ra.id_corte=:idCorteEvaluativo", nativeQuery = true)
 	Integer countByCarreraAndCorteEvaluativo(@Param("idCarrera") Integer idCarrera, @Param("tipoRemedial") Integer tipoRemedial, @Param("idCorteEvaluativo") Integer idCorteEvaluativo);
 	
+	
 	//trae la calificacion de un remedial o extraordinario de un corte en caso de tenerlo
 	@Query(value = "SELECT COALESCE(SUM(t.numero), 0) AS remedial FROM remedial_alumno ra "
 			+ "INNER JOIN testimonios t on t.id = ra.tipo_testimonio "
@@ -104,4 +105,19 @@ public interface RemedialAlumnoRepository extends CrudRepository<RemedialAlumno,
 			   + "INNER JOIN cargas_horarias cg on ra.id_carga_horaria=cg.id "
 			   + "WHERE cg.id=:idCargaHoraria AND ra.tipo_remedial=:tipoRemedial ", nativeQuery = true)
 	Integer countRemedialAlumnoByCargaHorariaAndRemedial(@Param("idCargaHoraria") Integer idCargaHoraria, @Param("tipoRemedial") Integer tipoRemedial);
+
+	@Query(value="SELECT CAST(COUNT(DISTINCT a.id)AS INT)AS cantidad "
+			+ "	FROM remedial_alumno ra "
+			+ "	INNER JOIN alumnos a on a.id = ra.id_alumno "
+			+ "	INNER JOIN cargas_horarias cg on ra.id_carga_horaria=cg.id "
+			+ "	INNER JOIN grupos g ON g.id=cg.id_grupo "
+			+ "	WHERE g.id_carrera=:carrera AND ra.tipo_remedial=:tipo", nativeQuery = true)
+	Integer countByCarreraAndTipoRemedial(@Param("carrera") Integer carrera, @Param("tipo") Integer tipo);
+	
+	@Query(value = "SELECT COUNT(DISTINCT(ra.id)) FROM remedial_alumno ra "
+			+ "	INNER JOIN cargas_horarias ch ON ra.id_carga_horaria = ch.id "
+			+ "	INNER JOIN testimonios t ON ra.tipo_testimonio = t.id "
+			+ "	WHERE id_alumno = :alumno AND ch.id_periodo = :periodo AND t.numero < 8 AND tipo_remedial = :tipo", nativeQuery = true)
+	Integer countByAlumnoAndPeriodoAndTipo(@Param("alumno") Integer alumno, @Param("periodo") Integer periodo, @Param("tipo") Integer tipo);
+
 }

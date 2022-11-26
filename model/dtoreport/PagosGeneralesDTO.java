@@ -30,4 +30,6 @@ public interface PagosGeneralesDTO {
 	Date getFechaImportacion();
 	
 	String getReferencia();
+	
+	String getDescripcion();
 }

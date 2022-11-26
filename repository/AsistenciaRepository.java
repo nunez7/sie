@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Asistencia;
+import edu.mx.utdelacosta.model.CargaHoraria;
+import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Horario;
 
 public interface AsistenciaRepository extends CrudRepository<Asistencia, Integer> {
@@ -86,5 +88,12 @@ public interface AsistenciaRepository extends CrudRepository<Asistencia, Integer
 			+ "AND a.valor = 'F' AND id_alumno = :idAlumno", nativeQuery = true)
 	Integer countFaltasByAlumnoAndCargaHorariaAndCorteEvalutivo(@Param("idAlumno") Integer idAlumno, @Param("idCargaHoraria") Integer idCargaHoraria,
 				@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
+	
+	@Query(value = "SELECT COUNT(DISTINCT(a.id)) "
+			+ "		FROM asistencias a "
+			+ "		INNER JOIN horarios h ON h.id = a.id_horario "
+			+ "		INNER JOIN calendario_evaluacion ce on ce.id_carga_horaria = h.id_carga_horaria "
+			+ "		WHERE h.id_carga_horaria = :carga AND ce.id_corte_evaluativo = :corte", nativeQuery = true)
+	Integer countAsistenciasByCargaAndCorte(@Param("carga")CargaHoraria carga,@Param("corte") CorteEvaluativo corte);
 
 }

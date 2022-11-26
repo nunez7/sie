@@ -49,4 +49,10 @@ public interface CalificacionCorteRepository extends CrudRepository<Calificacion
 			+ "WHERE id_carga_horaria = :idCargaHoraria AND id_corte_evaluativo = :idCorte "
 			+ "AND a.estatus = 1", nativeQuery = true)
 	Integer countByIdCargaHorariaAndIdCorteEvaluativo(@Param("idCargaHoraria")Integer idCargaHoraria, @Param("idCorte") Integer idCorte);
+
+	@Query(value = "SELECT COUNT(DISTINCT(cc.id)) "
+			+ "	FROM calificacion_corte cc "
+			+ "	WHERE id_corte_evaluativo =:corte AND id_carga_horaria =:carga ", nativeQuery = true)
+	Integer countCalificacionByCargaAndCorte(@Param("carga")CargaHoraria carga, @Param("corte") CorteEvaluativo corte);
+
 }

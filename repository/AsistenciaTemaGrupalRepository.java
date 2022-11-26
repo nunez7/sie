@@ -14,7 +14,7 @@ import edu.mx.utdelacosta.model.dto.AlumnoAsistenciaDTO;
 public interface AsistenciaTemaGrupalRepository extends CrudRepository<AsistenciaTemaGrupal, Integer>{
 
 	@Query(value = "SELECT a.id, "
-			+ "CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) AS nombreCompleto, "
+			+ "CONCAT(p.primer_apellido,' ',p.segundo_apellido,' ',p.nombre) AS nombreCompleto, "
 			+ "(SELECT atg.asistencia FROM asistencia_tema_grupal atg "
 			+ "WHERE atg.id_alumno=a.id and atg.id_tema_grupal=:idTemaGrupal) as asistencia "
 			+ "FROM alumnos_grupos ag "

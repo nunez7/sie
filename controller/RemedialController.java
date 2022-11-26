@@ -213,20 +213,22 @@ public class RemedialController {
 		RemedialAlumno remedialAlumno = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(alumno, carga,
 				new Remedial(tipoRemedial), new CorteEvaluativo(idCorte));
 
+		Integer contarRemediales = remedialAlumnoService.contarPorAlumnoYPeriodoYTipo(idAlumno,
+				usuario.getPreferencias().getIdPeriodo(), tipoRemedial);
+
+		if (tipoRemedial == 1) {
+			if (contarRemediales >= 5) {
+				respuesta = "baja";
+			}
+		} else {
+			if (contarRemediales >= 3) {
+				respuesta = "baja";
+			}
+		}
+		
 		// si no existe se crea, si ya existe se actualiza
 		if (remedialAlumno == null) {
-			List<RemedialAlumno> contarRemediales = remedialAlumnoService.buscarPorAlumnoYPeriodo(idAlumno,
-					usuario.getPreferencias().getIdPeriodo(), tipoRemedial);
-
-			if (tipoRemedial == 1) {
-				if (contarRemediales.size() >= 4) {
-					respuesta = "baja";
-				}
-			} else {
-				if (contarRemediales.size() >= 1) {
-					respuesta = "baja";
-				}
-			}
+			
 
 			remedialAlumno = new RemedialAlumno();
 			remedialAlumno.setAlumno(alumno);
