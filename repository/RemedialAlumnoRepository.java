@@ -93,6 +93,19 @@ public interface RemedialAlumnoRepository extends CrudRepository<RemedialAlumno,
 			+ "	AND id_corte = :corte AND ra.id_alumno = :alumno AND ra.tipo_testimonio IS NOT NULL) " ,  nativeQuery = true)
 	Boolean existsRemedialAlumno(@Param("alumno")Integer idAlumno, @Param("carga") Integer idCargaHoraria,@Param("corte") Integer idCorteEvaluativo, @Param("tipo_remedial") Integer tipoRemedial);
 	
+	@Query(value = "SELECT COUNT(*) FROM remedial_alumno "
+			+ "WHERE id_alumno = :idAlumno AND tipo_remedial = :tipo "
+			+ "AND id_corte = :idCorte ", nativeQuery = true)
+	Integer countByAlumnoAndCorteEvaluativoAndTipoRemedial(@Param("idAlumno") Integer idAlumno, @Param("idCorte") Integer idCorteEvaluativo,
+				@Param("tipo") Integer tipo);
+	
+	@Query(value="SELECT COUNT(DISTINCT(a.id)) "
+			   + "FROM remedial_alumno ra "
+			   + "INNER JOIN alumnos a ON ra.id_alumno = a.id "
+			   + "INNER JOIN cargas_horarias cg on ra.id_carga_horaria=cg.id "
+			   + "WHERE cg.id=:idCargaHoraria AND ra.tipo_remedial=:tipoRemedial ", nativeQuery = true)
+	Integer countRemedialAlumnoByCargaHorariaAndRemedial(@Param("idCargaHoraria") Integer idCargaHoraria, @Param("tipoRemedial") Integer tipoRemedial);
+
 	@Query(value="SELECT CAST(COUNT(DISTINCT a.id)AS INT)AS cantidad "
 			+ "	FROM remedial_alumno ra "
 			+ "	INNER JOIN alumnos a on a.id = ra.id_alumno "
@@ -106,4 +119,5 @@ public interface RemedialAlumnoRepository extends CrudRepository<RemedialAlumno,
 			+ "	INNER JOIN testimonios t ON ra.tipo_testimonio = t.id "
 			+ "	WHERE id_alumno = :alumno AND ch.id_periodo = :periodo AND t.numero < 8 AND tipo_remedial = :tipo", nativeQuery = true)
 	Integer countByAlumnoAndPeriodoAndTipo(@Param("alumno") Integer alumno, @Param("periodo") Integer periodo, @Param("tipo") Integer tipo);
+
 }

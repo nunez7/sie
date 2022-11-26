@@ -42,4 +42,11 @@ public class RespuestaCargaEvaluacionServiceJpa implements IRespuestaCargaEvalua
 		return respuestaCarEva.countRePuestasByAlumno(idEvaluacion, idGrupo, idCarga);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public Integer contarPorIdPersonaYEvaluacionYIdCargaHoraria(Integer idPersona, Integer idEvaluacion,
+			Integer idCargaHoraria) {
+		return respuestaCarEva.countByIdPersonaAndIdEvaluacionAndIdCargaHoraria(idPersona, idEvaluacion, idCargaHoraria);
+	}
+
 }

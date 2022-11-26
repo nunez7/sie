@@ -26,11 +26,11 @@ public interface AsesoriaRepository extends CrudRepository<Asesoria, Integer>{
 			+ " INNER JOIN personas p on p.id=a.id_persona "
 			+ " INNER JOIN grupos g on g.id = ag.id_grupo "
 			+ " WHERE ag.id_grupo=:idGrupo AND g.id_periodo = :idPeriodo "
-			+ " ORDER BY TRANSLATE (p.primer_apellido,'√Å√â√ç√ì√ö√ú','AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'√Å√â√ç√ì√ö√ú','AEIOUU') ASC, TRANSLATE (p.nombre,'√Å√â√ç√ì√ö√ú','AEIOUU') ASC", nativeQuery = true)
+			+ " ORDER BY TRANSLATE (p.primer_apellido,'¡…Õ”⁄‹', 'AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'¡…Õ”⁄‹','AEIOUU') ASC, TRANSLATE (p.nombre,'¡…Õ”⁄‹','AEIOUU') ASC", nativeQuery = true)
 	List<AsesoriaDTO> findByIdGrupo(@Param("idGrupo") Integer idGrupo, @Param("idPeriodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT COALESCE(COUNT(DISTINCT(aa.id)),0) as asesorias, al.matricula as matricula, CONCAT(p.primer_apellido,' ',p.segundo_apellido,' ',p.nombre) as nombre, "
-			+ "p.sexo, g.nombre as grupo "
+			+ "p.sexo, g.nombre as grupo, al.estatus as estatus "
 			+ "FROM asesorias a "
 			+ "INNER JOIN asesoria_alumno aa on a.id=aa.id_asesoria "
 			+ "INNER JOIN alumnos_grupos ag on ag.id_alumno=aa.id_alumno "
@@ -39,8 +39,8 @@ public interface AsesoriaRepository extends CrudRepository<Asesoria, Integer>{
 			+ "INNER JOIN grupos g on g.id = ag.id_grupo "
 			+ "INNER JOIN carreras c on c.id = g.id_carrera "
 			+ "WHERE c.id IN (SELECT id_carrera FROM persona_carrera WHERE id_persona = :idPersona) AND g.id_periodo = :idPeriodo "
-			+ "GROUP BY al.matricula, p.primer_apellido, p.segundo_apellido, p.nombre,p.sexo, g.nombre "
-			+ "ORDER BY TRANSLATE (p.primer_apellido,'√Å√â√ç√ì√ö√ú','AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'√Å√â√ç√ì√ö√ú','AEIOUU') ASC, TRANSLATE (p.nombre,'√Å√â√ç√ì√ö√ú','AEIOUU') ASC, asesorias ", nativeQuery = true)
+			+ "GROUP BY al.matricula, p.primer_apellido, p.segundo_apellido, p.nombre,p.sexo, g.nombre, al.estatus "
+			+ "ORDER BY TRANSLATE (p.primer_apellido,'¡…Õ”⁄‹','AEIOUU') ASC, TRANSLATE (p.segundo_apellido,'¡…Õ”⁄‹','AEIOUU') ASC, TRANSLATE (p.nombre,'¡…Õ”⁄‹','AEIOUU') ASC, asesorias ", nativeQuery = true)
 	List<AsesoriaDTO> findByPersonaCarreraAndPeriodo(@Param("idPersona") Integer idPersona, @Param("idPeriodo") Integer idPeriodo);
 	
 	@Query(value = "SELECT DISTINCT(a.*) FROM asesorias a "

@@ -46,4 +46,12 @@ public interface RespuestaEvaluacionTutorRepository extends CrudRepository<Respu
 			+ "INNER JOIN grupos g ON g.id=ag.id_grupo WHERE g.id =:idGrupo", nativeQuery = true)
 	Integer countEncuestadosByGrupo(@Param("idEvaluacion") Integer idEvaluacion,@Param("idGrupo") Integer idGrupo);
 	
+	//cuenta las respuestas por alumno y grupo
+	@Query(value = "SELECT COUNT(ret.*) as respuestas FROM respuesta_evaluacion_tutor ret "
+			+ "INNER JOIN respuestas r ON r.id = ret.id_respuesta "
+			+ "INNER JOIN evaluacion_tutor et ON et.id = ret.id_evaluacion_tutor "
+			+ "WHERE r.activo = 'True' AND et.id_grupo = :idGrupo "
+			+ "AND r.id_persona = :idPersona", nativeQuery = true)
+	Integer countByIdPersonaAndIdGrupoAndActivo(@Param("idPersona") Integer idPersona, @Param("idGrupo") Integer idGrupo);
+	
 }

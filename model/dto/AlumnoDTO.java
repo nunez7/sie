@@ -36,6 +36,7 @@ public class AlumnoDTO extends PersonaDTO{
 	private int idGrupo;
 	private Integer paginaDatos;
 	private int idAlumnoGrupo;
+	private Boolean activo; 
 	
 	private List<MateriaDTO> materias;
 	
@@ -245,6 +246,14 @@ public class AlumnoDTO extends PersonaDTO{
 
 	public void setIdAlumnoGrupo(int idAlumnoGrupo) {
 		this.idAlumnoGrupo = idAlumnoGrupo;
+	}
+
+	public Boolean getActivo() {
+		return activo;
+	}
+
+	public void setActivo(Boolean activo) {
+		this.activo = activo;
 	}
 	
 }

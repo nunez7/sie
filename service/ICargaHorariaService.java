@@ -35,4 +35,6 @@ public interface ICargaHorariaService {
 	
 	//materias que tengan la propiedad de calificacion true
 	List<CargaHoraria> buscarPorGrupoYPeriodoYCalificacionSi(Integer idGrupo, Integer idPeriodo);
+	
+	List<CargaHoraria> buscarPorProfesorYCarreraYPeriodo(Integer idProfesor, Integer idCarrera, Integer idPeriodo);
 }

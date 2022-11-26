@@ -41,8 +41,8 @@ public interface CalificacionMateriaRepository extends CrudRepository<Calificaci
 
 	@Query(value = "SELECT COALESCE(ROUND(SUM(calificacion),2), 0) FROM calificacion_materia "
 			+ "WHERE id_carga_horaria=:idCargaHoraria and id_alumno=:idAlumno", nativeQuery = true)
-	Float findCalificacionByAlumnoAndCargaHoraria(@Param("idCargaHoraria") Integer idAlumno,
-			@Param("idAlumno") Integer idCargaHoraria);
+	Float findCalificacionByAlumnoAndCargaHoraria(@Param("idAlumno") Integer idAlumno,
+			@Param("idCargaHoraria") Integer idCargaHoraria);
 
 	@Query(value = "SELECT ca.* " + "FROM calificacion_materia ca "
 			+ "INNER JOIN cargas_horarias ch on ch.id = ca.id_carga_horaria "

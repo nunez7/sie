@@ -79,6 +79,11 @@ public class CalificacionCorteServiceJpa implements ICalificacionCorteService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public Integer contarPorIdCargaHorariaYidCorte(Integer idCargaHoraria, Integer idCorte) {
+		// TODO Auto-generated method stub
+		return calificacionCorteRepository.countByIdCargaHorariaAndIdCorteEvaluativo(idCargaHoraria, idCorte);
+  }
+  
 	public Integer contarCalificacionesPorCargaHorariaYCorteEvaluativo(CargaHoraria carga, CorteEvaluativo corte) {
 		return calificacionCorteRepository.countCalificacionByCargaAndCorte(carga, corte);
 	}

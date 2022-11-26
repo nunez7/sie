@@ -27,8 +27,10 @@ public interface PersonasRepository extends CrudRepository<Persona, Integer> {
 			+ "FROM carreras c "
 			+ "INNER JOIN grupos g ON c.id=g.id_carrera "
 			+ "INNER JOIN cargas_horarias ch ON ch.id_grupo=g.id "
+			+ "INNER JOIN materias m ON ch.id_materia = m.id "
 			+ "INNER JOIN personas p ON ch.id_profesor=p.id "
-			+ "WHERE c.id=:idCarrera AND ch.id_periodo=:idPeriodo AND ch.activo=true ORDER BY p.nombre", nativeQuery = true)
+			+ "WHERE c.id=:idCarrera AND ch.id_periodo=:idPeriodo AND ch.activo=true "
+			+ "AND m.calificacion = 'True' AND m.activo = 'True' ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
 	List<Persona> findProfesoresByCarreraAndPeriodo(@Param("idCarrera") Integer idCarrera,@Param("idPeriodo") Integer idPeriodo);
 	
 	//para traerse todos los cajeros

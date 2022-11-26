@@ -381,6 +381,11 @@ public class AlumnosServiceJpa implements IAlumnoService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public Integer contarAlumnosPorGrupoYActivos(Integer idGrupo) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.countAlumnosByGrupoAndActivo(idGrupo);
+  }
 	public List<AlumnoActivoDTO> buscarAlumnoYEstatusPorGrupo(Integer grupo) {
 		return alumnosRepo.findAlumnoAndStatusByGrupo(grupo);
 	}

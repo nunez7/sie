@@ -42,4 +42,10 @@ public class RespuestaEvaluacionTutorServiceJpa implements IRespuestaEvaluacionT
 		return resEvaTuRepo.countEncuestadosByGrupo(idEvaluacion, idGrupo);
 	}
 
+	@Override
+	public Integer contarPorIdPersonaYIdGrupoYActivo(Integer idPersona, Integer idGrupo) {
+		// TODO Auto-generated method stub
+		return resEvaTuRepo.countByIdPersonaAndIdGrupoAndActivo(idPersona, idGrupo);
+	}
+
 }

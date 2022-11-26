@@ -44,6 +44,7 @@ public class CargaHorariaServiceJpa implements  ICargaHorariaService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public void guardar(CargaHoraria cargaHoraria) {
 		// TODO Auto-generated method stub
 		cargaHorariasRepository.save(cargaHoraria);
@@ -104,5 +105,12 @@ public class CargaHorariaServiceJpa implements  ICargaHorariaService{
 	public List<CargaHoraria> buscarPorGrupoYPeriodoYCalificacionSi(Integer idGrupo, Integer idPeriodo) {
 		// TODO Auto-generated method stub
 		return cargaHorariasRepository.findByGrupoAndPeriodoAndCalificacionSi(idGrupo, idPeriodo);
+	}
+
+	@Override
+	public List<CargaHoraria> buscarPorProfesorYCarreraYPeriodo(Integer idProfesor, Integer idCarrera,
+			Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return cargaHorariasRepository.findByIdProfesorAndIdCarreraAndIdPeriodo(idProfesor, idCarrera, idPeriodo);
 	}
 }

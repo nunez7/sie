@@ -14,6 +14,8 @@ public interface AsesoriaDTO {
 	
 	Integer getAsesoriasGrupales();
 	
+	Integer getEstatus();
+  
 	String getTema();
 	
 	String getComentario(); 
@@ -21,4 +23,5 @@ public interface AsesoriaDTO {
 	String getMateria();
 	
 	Boolean getActivo();
+  
 }

@@ -47,4 +47,15 @@ public interface RespuestaCargaEvaluacionRepository extends CrudRepository<Respu
 			 + "INNER JOIN cargas_horarias ch ON ch.id_grupo=g.id "
 			 + "WHERE g.id =:idGrupo AND ch.id=:idCarga", nativeQuery = true)
 	Integer countRePuestasByAlumno(@Param("idEvaluacion") Integer idEvaluacion,@Param("idGrupo") Integer idGrupo, @Param("idCarga") Integer idCarga);
+	
+	//cuenta las repuestas por evaluacion, cargahoraria y persona
+	@Query(value = "SELECT COUNT(rce.*) as respuestas "
+			+ "FROM respuesta_carga_evaluacion rce "
+			+ "INNER JOIN respuestas r ON r.id=rce.id_respuesta "
+			+ "INNER JOIN carga_evaluacion ce ON ce.id=rce.id_carga_evaluacion "
+			+ "WHERE r.activo=true AND ce.activo= 'True' "
+			+ "AND r.id_evaluacion=:idEvaluacion AND r.id_persona=:idPersona "
+			+ "AND ce.id_carga=:idCargaHoraria AND ce.id_evaluacion=:idEvaluacion ", nativeQuery = true)
+	Integer countByIdPersonaAndIdEvaluacionAndIdCargaHoraria(@Param("idPersona") Integer idPersona, @Param("idEvaluacion") Integer idEvaluacion, 
+				@Param("idCargaHoraria") Integer idCargaHoraria);
 }
