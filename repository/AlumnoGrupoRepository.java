@@ -51,7 +51,7 @@ public interface AlumnoGrupoRepository extends CrudRepository<AlumnoGrupo, Integ
 			+ "FROM alumnos a "
 			+ "INNER JOIN alumnos_grupos algr on algr.id_alumno = a.id "
 			+ "LEFT JOIN grupos gr on gr.id = algr.id_grupo "
-			+ "WHERE gr.id_periodo=:periodo and gr.id_cuatrimestre = :cuatrimestre "
+			+ "WHERE gr.id_periodo=:periodo and gr.id_cuatrimestre = :cuatrimestre AND algr.activo "
 			+ "ORDER BY algr.id DESC ", nativeQuery = true)
 	List<AlumnoGrupo> findByPeriodoAndCuatrimestre(@Param("periodo")Integer idPeriodo, @Param("cuatrimestre") Integer idCuatrimestre);
 	

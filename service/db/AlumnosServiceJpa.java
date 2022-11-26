@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
+import edu.mx.utdelacosta.model.dto.AlumnoActivoDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dto.ProspectoDTO;
 import edu.mx.utdelacosta.model.dto.RemedialAlumnoDTO;
@@ -377,5 +378,10 @@ public class AlumnosServiceJpa implements IAlumnoService{
 			Integer idPeriodo) {
 		// TODO Auto-generated method stub
 		return alumnosRepo.findAllByCarreraAndCuatrimestreAndPeriodo(idCarrera, idCuatrimestre, idPeriodo);
+	}
+
+	@Override
+	public List<AlumnoActivoDTO> buscarAlumnoYEstatusPorGrupo(Integer grupo) {
+		return alumnosRepo.findAlumnoAndStatusByGrupo(grupo);
 	}
 }

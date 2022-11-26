@@ -44,6 +44,7 @@ import edu.mx.utdelacosta.model.Servicio;
 import edu.mx.utdelacosta.model.TemaGrupal;
 import edu.mx.utdelacosta.model.TutoriaIndividual;
 import edu.mx.utdelacosta.model.Usuario;
+import edu.mx.utdelacosta.model.dto.AlumnoActivoDTO;
 import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dto.ComentarioDTO;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
@@ -716,10 +717,10 @@ public class TutorController {
 		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona),
 				new Periodo(usuario.getPreferencias().getIdPeriodo()));
 		Integer cveGrupo = (Integer) session.getAttribute("rdc-cveGrupo");
-		List<Alumno> alumnos = new ArrayList<>();
+		List<AlumnoActivoDTO> alumnos = new ArrayList<>();
 
 		if (cveGrupo != null) {
-			alumnos = alumnoService.buscarPorGrupo(cveGrupo);
+			alumnos = alumnoService.buscarAlumnoYEstatusPorGrupo(cveGrupo);
 		}
 
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());

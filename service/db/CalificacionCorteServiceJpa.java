@@ -71,9 +71,16 @@ public class CalificacionCorteServiceJpa implements ICalificacionCorteService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Float buscarPromedioCortePorMecanismoIntrumentoYCarga(Integer cargaHoraria, Integer corteEvaluativo,
 			Integer alumno) {
 		return calificacionCorteRepository.findPromedioCorteByMecanismoIntrumentoAndCarga(cargaHoraria, corteEvaluativo, alumno);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Integer contarCalificacionesPorCargaHorariaYCorteEvaluativo(CargaHoraria carga, CorteEvaluativo corte) {
+		return calificacionCorteRepository.countCalificacionByCargaAndCorte(carga, corte);
 	}
 	
 }

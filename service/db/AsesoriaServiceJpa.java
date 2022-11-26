@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Asesoria;
 import edu.mx.utdelacosta.model.AsesoriaSolicitud;
+import edu.mx.utdelacosta.model.Grupo;
+import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.dtoreport.AsesoriaDTO;
 import edu.mx.utdelacosta.repository.AsesoriaRepository;
 import edu.mx.utdelacosta.repository.AsesoriaSolicitudRepository;
@@ -31,14 +33,12 @@ public class AsesoriaServiceJpa implements IAsesoriaService{
 	@Override
 	@Transactional(readOnly = true)
 	public List<AsesoriaDTO> buscarPorIdGrupoYPeriodo(Integer idGrupo, Integer idPeriodo) {
-		// TODO Auto-generated method stub
 		return asesoriaRepository.findByIdGrupo(idGrupo, idPeriodo);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public List<AsesoriaDTO> buscarPorPersonaCarreraAndPeriodo(Integer idPersona, Integer idPeriodo) {
-		// TODO Auto-generated method stub
 		return asesoriaRepository.findByPersonaCarreraAndPeriodo(idPersona, idPeriodo);
 	}
 
@@ -66,4 +66,13 @@ public class AsesoriaServiceJpa implements IAsesoriaService{
 		return asesoriaSolicitudRepository.findByIdGrupoOrderByFecha(idGrupo);
 	}
 
+	@Override
+	public List<AsesoriaDTO> buscarIndividualesPorGrupo(Grupo grupo, Persona persona) {
+		return asesoriaRepository.findIndividualesByGrupo(grupo, persona);
+	}
+
+	@Override
+	public List<AsesoriaDTO> buscarGrupalesPorGrupo(Grupo grupo, Persona persona) {
+		return asesoriaRepository.findByGrupalesByGrupo(grupo, persona);
+	}
 }

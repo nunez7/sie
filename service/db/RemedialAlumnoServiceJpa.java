@@ -141,9 +141,22 @@ public class RemedialAlumnoServiceJpa implements IRemedialAlumnoService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Boolean exsisteRemedialAlumno(Integer idAlumno, Integer idCargaHoraria, Integer idCorteEvaluativo,
 			Integer tipoRemedial) {
 		return remedialAlumnoRepository.existsRemedialAlumno(idAlumno, idCargaHoraria, idCorteEvaluativo, tipoRemedial);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Integer contarPorCarreraYTipoRemedial(Integer carrera, Integer tipo) {
+		return remedialAlumnoRepository.countByCarreraAndTipoRemedial(carrera, tipo);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Integer contarPorAlumnoYPeriodoYTipo(Integer alumno, Integer periodo, Integer tipo) {
+		return remedialAlumnoRepository.countByAlumnoAndPeriodoAndTipo(alumno, periodo,tipo);
 	}
 	
 }

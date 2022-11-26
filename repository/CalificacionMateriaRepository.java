@@ -12,7 +12,12 @@ import edu.mx.utdelacosta.model.CargaHoraria;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
 
 public interface CalificacionMateriaRepository extends CrudRepository<CalificacionMateria, Integer> {
-	CalificacionMateria findByCargaHorariaAndAlumno(CargaHoraria cargaHoraria, Alumno alumno);
+	
+	@Query(value="SELECT * "
+			+ "FROM calificacion_materia "
+			+ "WHERE id_carga_horaria = :carga AND id_alumno =:alumno "
+			+ "ORDER BY id DESC LIMIT 1", nativeQuery = true)
+	CalificacionMateria findByCargaHorariaAndAlumno(@Param("carga")CargaHoraria cargaHoraria,@Param("alumno") Alumno alumno);
 
 	@Query(value = "SELECT m.id AS idMateria, m.nombre, m.abreviatura, COALESCE(cm.calificacion, 0)AS calificacion, "
 			+ "COALESCE(cm.estatus, 'NA')AS estatus, m.integradora " + "FROM materias m "
@@ -30,7 +35,7 @@ public interface CalificacionMateriaRepository extends CrudRepository<Calificaci
 
 	@Query(value = "SELECT COALESCE(estatus, 'NA') as estatus "
 			+ "FROM calificacion_materia WHERE id_carga_horaria = :cargaHoraria "
-			+ "AND id_alumno = :alumno", nativeQuery = true)
+			+ "AND id_alumno = :alumno ORDER BY id DESC LIMIT 1", nativeQuery = true)
 	String findEstatusByAlumnoAndCargaHoraria(@Param("alumno") Integer idAlumno,
 			@Param("cargaHoraria") Integer idCargaHoraria);
 

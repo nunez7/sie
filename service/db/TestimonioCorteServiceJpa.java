@@ -34,9 +34,9 @@ public class TestimonioCorteServiceJpa implements ITestimonioCorteService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public Integer countAlumnosSDByCarrera(Integer idCarrera, Integer idCorteEvaluativo) {
+	public Integer contarAlumnoSDPorCarreraYCorteEvaluativo(Integer idCarrera, Integer idCorteEvaluativo) {
 		// TODO Auto-generated method stub
-		return testimonioRepository.countAlumnosSDByCarrera(idCarrera, idCorteEvaluativo);
+		return testimonioRepository.countAlumnosSDByCarreraAndCorte(idCarrera, idCorteEvaluativo);
 	}
 
 	@Override
@@ -50,6 +50,11 @@ public class TestimonioCorteServiceJpa implements ITestimonioCorteService{
 	@Transactional(readOnly = true)
 	public Integer countAlumnosSDByCarreraYTurno(Integer idCarrera, Integer idCorteEvaluativo, Integer idTurno) {
 		return testimonioRepository.countAlumnosSDByCarreraAndTurno(idCarrera, idCorteEvaluativo, idTurno);
+	}
+
+	@Override
+	public Integer contarAlumnoSDPorCarrera(Integer idCarrera) {
+		return testimonioRepository.countAlumnosSDByCarrera(idCarrera);
 	}
 
 }

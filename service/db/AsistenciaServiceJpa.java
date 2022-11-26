@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Asistencia;
+import edu.mx.utdelacosta.model.CargaHoraria;
+import edu.mx.utdelacosta.model.CorteEvaluativo;
 import edu.mx.utdelacosta.model.Horario;
 import edu.mx.utdelacosta.repository.AsistenciaRepository;
 import edu.mx.utdelacosta.service.IAsistenciaService;
@@ -110,5 +112,10 @@ public class AsistenciaServiceJpa implements IAsistenciaService{
 	public Integer contarFaltasPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria,
 			Date fechaInicio, Date fechaFin) {
 		return asistenciaRepo.countFaltasByAlumnoAndCargaHorariaAndCorteEvalutivo(idAlumno, idCargaHoraria, fechaInicio, fechaFin);
+	}
+
+	@Override
+	public Integer contarAsistenciasPorCargaYCorte(CargaHoraria carga, CorteEvaluativo corte) {
+		return asistenciaRepo.countAsistenciasByCargaAndCorte(carga, corte);
 	}
 }
