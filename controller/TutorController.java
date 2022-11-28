@@ -49,6 +49,7 @@ import edu.mx.utdelacosta.model.dto.AlumnoInfoDTO;
 import edu.mx.utdelacosta.model.dto.ComentarioDTO;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
 import edu.mx.utdelacosta.model.dto.HorarioDTO;
+import edu.mx.utdelacosta.model.dto.HorarioDiaDTO;
 import edu.mx.utdelacosta.model.dto.OpcionRespuestaDTO;
 import edu.mx.utdelacosta.model.dto.PreguntaDTO;
 import edu.mx.utdelacosta.model.dto.PromedioPreguntaDTO;
@@ -763,56 +764,29 @@ public class TutorController {
 
 		if (cveGrupo != null) {
 			Grupo grupo = grupoService.buscarPorId(cveGrupo);
-			// se extrae la lista de dias guardados en la BD
 			List<Dia> dias = serviceDia.buscarDias();
-			model.addAttribute("dias", dias);
 
-			// formato de hora
-			DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-
-			// Se extrae una lista de las horas unicas de la lista de horas asociadas al
-			// grupo
+			DateFormat formatoVista = new SimpleDateFormat("HH:mm");
+			DateFormat formatoBusqueda = new SimpleDateFormat("HH:mm:ss");
 			List<Horario> horas = serviceHorario.buscarPorGrupoDistinctPorHoraInicio(cveGrupo);
-			model.addAttribute("horas", horas);
-
-			// se crea una lista vacía para colocarle los datos de las horas de clase
-			List<HorarioDTO> horasDto = new ArrayList<>();
-
-			// crea el horario con las horas vinculados al grupo
+			List<HorarioDiaDTO> horarios = new ArrayList<>();
 			for (Horario hora : horas) {
-
+				HorarioDiaDTO horario = new HorarioDiaDTO();
+				horario.setHoraInicio(formatoVista.format(hora.getHoraInicio()));
+				horario.setHoraFin(formatoVista.format(hora.getHoraFin()));
+				List<HorarioDTO> diasClase = new ArrayList<>();
 				for (Dia dia : dias) {
-					String horaI = dateFormat.format(hora.getHoraInicio());
-					// se genera el horario al comparar la lista de horas únicas y la lista de días
-					List<Horario> horario = serviceHorario.buscarPorHoraInicioDiaYGrupo(horaI, dia.getId(), cveGrupo);
-					for (Horario hr : horario) {
-						HorarioDTO horaDto = new HorarioDTO();
-						if (horario == null) {
-							horaDto.setHoraInicio("");
-							horaDto.setHoraFin("");
-							horaDto.setDia("");
-							horaDto.setProfesor("");
-							horaDto.setMateria("");
-							horaDto.setAbreviaturaMateria("");
-							horasDto.add(horaDto);
-						} else {
-							// se formatea la hora de "Date" a "String"
-							String horaInicio = dateFormat.format(hr.getHoraInicio());
-							String horaFin = dateFormat.format(hr.getHoraFin());
-
-							horaDto.setHoraInicio(horaInicio);
-							horaDto.setHoraFin(horaFin);
-							horaDto.setDia(dia.getDia());
-							horaDto.setProfesor(hr.getCargaHoraria().getProfesor().getNombreCompleto());
-							horaDto.setMateria(hr.getCargaHoraria().getMateria().getNombre());
-							horaDto.setAbreviaturaMateria(hr.getCargaHoraria().getMateria().getAbreviatura());
-							horasDto.add(horaDto);
-						}
-					}
+					HorarioDTO horarioDia = null;
+					horarioDia = serviceHorario.buscarPorHoraInicioDiaYGrupo(
+							formatoBusqueda.format(hora.getHoraInicio()), dia.getId(), cveGrupo);
+					diasClase.add(horarioDia);
 				}
-
+				horario.setHorarios(diasClase);
+				horarios.add(horario);
 			}
-			model.addAttribute("horasDto", horasDto);
+
+			model.addAttribute("dias", dias);
+			model.addAttribute("horarios", horarios);
 			model.addAttribute("nomGrupo", grupo.getNombre());
 			model.addAttribute("turno", grupo.getTurno() != null ? grupo.getTurno().getNombre() : null);
 		}

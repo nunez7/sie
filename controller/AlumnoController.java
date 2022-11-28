@@ -69,6 +69,7 @@ import edu.mx.utdelacosta.model.dto.DiaDTO;
 import edu.mx.utdelacosta.model.dto.DocumentoDTO;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
 import edu.mx.utdelacosta.model.dto.HorarioDTO;
+import edu.mx.utdelacosta.model.dto.HorarioDiaDTO;
 import edu.mx.utdelacosta.model.dto.MesDTO;
 import edu.mx.utdelacosta.model.dto.ReferenciaBanamexDTO;
 import edu.mx.utdelacosta.service.EmailSenderService;
@@ -722,52 +723,31 @@ public class AlumnoController {
 				//Se extrae la lista de días guardados en la BD				
 				List<Dia> dias = serviceDia.buscarDias();				
 				model.addAttribute("dias", dias);			
-				
-				//formato de hora 				
-				DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss"); 
-				
-				//Se extrae una lista de las horas únicas de la lista de horas asociadas al grupo		
-				List<Horario> horas = serviceHorario.buscarPorGrupoDistinctPorHoraInicio(cveGrupo);
-				model.addAttribute("horas", horas);
-				
-				//Se crea una lista vacía para colocarle los datos de las horas de clase				
-				List<HorarioDTO> horasDto = new ArrayList<>();
-				
-				//Crea el horario con el horario vinculado al grupo				
-				for (Horario hora : horas) {
-															
-					for (Dia dia : dias) {
-						String horaI = dateFormat.format(hora.getHoraInicio());				
-						//Se genera el horario al comparar la lista de horas únicas y la lista de días 						
-						List<Horario> horario = serviceHorario.buscarPorHoraInicioDiaYGrupo(horaI, dia.getId(), cveGrupo);						
-						for(Horario hr : horario) {
-							HorarioDTO horaDto = new HorarioDTO();						
-							if (horario == null) {							
-								horaDto.setHoraInicio("");
-								horaDto.setHoraFin("");
-								horaDto.setDia("");
-								horaDto.setProfesor("");
-								horaDto.setMateria("");
-								horaDto.setAbreviaturaMateria("");	
-								horasDto.add(horaDto);							
-							}else{	
-								//se formatea la hora de "Date" a "String"					
-								String horaInicio = dateFormat.format(hr.getHoraInicio());
-								String horaFin = dateFormat.format(hr.getHoraFin()); 
-								
-								horaDto.setHoraInicio(horaInicio);
-								horaDto.setHoraFin(horaFin);
-								horaDto.setDia(dia.getDia());
-								horaDto.setProfesor(hr.getCargaHoraria().getProfesor().getNombreCompleto());
-								horaDto.setMateria(hr.getCargaHoraria().getMateria().getNombre());
-								horaDto.setAbreviaturaMateria(hr.getCargaHoraria().getMateria().getAbreviatura());
-								horasDto.add(horaDto);
-							}
-						}
-					}
-					
-				}				
-				model.addAttribute("horasDto", horasDto);				
+				DateFormat formatoVista = new SimpleDateFormat("HH:mm");
+				   DateFormat formatoBusqueda = new SimpleDateFormat("HH:mm:ss");
+				   //se buscan las horas de cada dia del profesor
+				   List<Horario> horas = serviceHorario.buscarPorGrupoDistinctPorHoraInicio(cveGrupo);
+				   //se crean las listas de datos
+				   List<HorarioDiaDTO> horarios = new ArrayList<>();
+				   for (Horario hora : horas) {
+					HorarioDiaDTO horario = new HorarioDiaDTO();
+					// se agregan las fechas y horas de inicio
+					horario.setHoraInicio(formatoVista.format(hora.getHoraInicio()));
+				    horario.setHoraFin(formatoVista.format(hora.getHoraFin()));
+				    // se crea la lista de horas por dia y hora
+				    List<HorarioDTO> diasClase = new ArrayList<>();
+				    for (Dia dia : dias) {
+				    	HorarioDTO horarioDia = null;
+				    	//se busca el horario por dia y hora y se agregan al DTO 
+				    	horarioDia = serviceHorario.buscarPorHoraInicioDiaYGrupo(formatoBusqueda.format(hora.getHoraInicio()), dia.getId(), cveGrupo);
+				    	diasClase.add(horarioDia);
+				    }
+				    horario.setHorarios(diasClase);
+				    horarios.add(horario);
+				   }		
+				   
+				   model.addAttribute("horarios", horarios);
+				   
 			}
 										
 		}

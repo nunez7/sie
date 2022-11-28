@@ -15,7 +15,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import edu.mx.utdelacosta.model.Actividad;
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Asesoria;
 import edu.mx.utdelacosta.model.CargaEvaluacion;
@@ -38,12 +37,12 @@ import edu.mx.utdelacosta.model.dto.AlumnoActivoDTO;
 import edu.mx.utdelacosta.model.dto.DosificacionImportarDTO;
 import edu.mx.utdelacosta.model.dto.GrupoDTO;
 import edu.mx.utdelacosta.model.dto.HorarioDTO;
+import edu.mx.utdelacosta.model.dto.HorarioDiaDTO;
 import edu.mx.utdelacosta.model.dto.ParcialDosificacionDTO;
 import edu.mx.utdelacosta.model.dto.PreguntaDTO;
 import edu.mx.utdelacosta.model.dto.PromedioPreguntaDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaProfesorDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorProfesorDTO;
-import edu.mx.utdelacosta.service.IActividadService;
 import edu.mx.utdelacosta.service.IAlumnoService;
 import edu.mx.utdelacosta.service.ICargaEvaluacionService;
 import edu.mx.utdelacosta.service.ICargaHorariaService;
@@ -108,9 +107,6 @@ public class ProfesorController {
 	
 	@Autowired
 	private IDosificacionService dosificacionService;
-	
-	@Autowired
-	private IActividadService actividadService;
 	
 	@Autowired
 	private IDiaService diaService;
@@ -276,65 +272,40 @@ public class ProfesorController {
 	public String horario(Model model, HttpSession session) {
 		Persona persona = personaService.buscarPorId((Integer) session.getAttribute("cvePersona"));
 		Usuario usuario = usuarioService.buscarPorPersona(persona);
-		Periodo periodo =  new Periodo(usuario.getPreferencias().getIdPeriodo());
-		List<CargaHoraria> cargas = cargaService.buscarPorProfesorYPeriodo(usuario.getPersona(), periodo);
-		model.addAttribute("cargasHorarias", cargas);
-		   List<Actividad> actividades = actividadService.buscarTodas();
-		   model.addAttribute("actividades", actividades);
-		   /////////******** SE HACE EL PROCESO DE DIBUJAR EL HORARIO *******/////////////
+		   
+		   // se obtienen los dias y el formate
 		   List<Dia> dias = diaService.buscarDias();
-		   model.addAttribute("dias", dias);
-		   //formato para horas
-		   DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-		   //Se extrae una lista de las horas que ahi asociadas a cada hora de calse con un disting por hora inicio y hora fin    
+		   DateFormat formatoVista = new SimpleDateFormat("HH:mm");
+		   DateFormat formatoBusqueda = new SimpleDateFormat("HH:mm:ss");
+		  
+		   //se buscan las horas de cada dia del profesor
 		   List<Horario> horas = horarioService.buscarPorProfesorDistinctPorHoraInicio(persona.getId(), usuario.getPreferencias().getIdPeriodo());
-		   model.addAttribute("horas", horas);
-		   //se crea una lista vacia para colocarle los datos de las horas de calse    
-		   List<HorarioDTO> horasDto = new ArrayList<>();
-		   //crea el horario con las horarios vinculados al grupo    
+		   
+		   //se crean las listas de datos
+		   List<HorarioDiaDTO> horarios = new ArrayList<>();
+		   
 		   for (Horario hora : horas) {
+			HorarioDiaDTO horario = new HorarioDiaDTO();
+		   
+			// se agregan las fechas y horas de inicio
+			horario.setHoraInicio(formatoVista.format(hora.getHoraInicio()));
+		    horario.setHoraFin(formatoVista.format(hora.getHoraFin()));
 		    
-		    //se formatea la hora de "Date" a "String"     
-		    String horaInicio = dateFormat.format(hora.getHoraInicio());
-		    String horaFin = dateFormat.format(hora.getHoraFin());
-		    
+		    // se crea la lista de horas por dia y hora
+		    List<HorarioDTO> diasClase = new ArrayList<>();
 		    for (Dia dia : dias) {
-		     
-		     List<Horario> horarios = horarioService.buscarPorHoraInicioDiaYProfesor(horaInicio, dia.getId(), persona.getId(), usuario.getPreferencias().getIdPeriodo());      
-		     for(Horario horario : horarios) {
-		      HorarioDTO horaDto = new HorarioDTO();
-		      
-		      if (horario == null) { 
-		       horaDto.setIdHorario(0); //cambios en DTOHorario
-		       horaDto.setHoraInicio("");
-		       horaDto.setHoraFin("");
-		       horaDto.setDia(dia.getDia());
-		       horaDto.setProfesor("");
-		       horaDto.setMateria("");
-		       horaDto.setAbreviaturaMateria("");
-		       horaDto.setGrupo(""); //cambios en DTOHorario
-		       horaDto.setIdCargaHoraria(null); //cambios en DTOHorario
-		       horaDto.setIdActividad(null); //cambios en DTOHorario
-		       horaDto.setIdDia(null);
-		       horasDto.add(horaDto);
-		      }else{      
-		       horaDto.setIdHorario(horario.getId()); //cambios en DTOHorario
-		       horaDto.setHoraInicio(horaInicio);
-		       horaDto.setHoraFin(horaFin);
-		       horaDto.setDia(dia.getDia());
-		       horaDto.setProfesor(horario.getCargaHoraria().getProfesor().getNombreCompleto());
-		       horaDto.setMateria(horario.getCargaHoraria().getMateria().getNombre());
-		       horaDto.setAbreviaturaMateria(horario.getCargaHoraria().getMateria().getAbreviatura());
-		       horaDto.setGrupo(horario.getCargaHoraria().getGrupo().getNombre()); //cambios en DTOHorario
-		       horaDto.setIdCargaHoraria(horario.getCargaHoraria().getId());//cambios en DTOHorario
-		       horaDto.setIdActividad(horario.getActividad().getId());
-		       horaDto.setIdDia(dia.getId());
-		       horasDto.add(horaDto);
-		      }
-		     }
+		    	HorarioDTO horarioDia = null;
+		    	//se busca el horario por dia y hora y se agregan al DTO 
+		    	horarioDia = horarioService.buscarPorHoraInicioDiaYProfesor(formatoBusqueda.format(hora.getHoraInicio()), dia.getId(), persona.getId(), usuario.getPreferencias().getIdPeriodo());
+		    	diasClase.add(horarioDia);
 		    }
+		    horario.setHorarios(diasClase);
+		    horarios.add(horario);
 		   }
-		   model.addAttribute("horasDto", horasDto);
+		   
+		   model.addAttribute("dias", dias);
+		   model.addAttribute("horas", horas);
+		   model.addAttribute("horarios", horarios);
 		return "profesor/horario";
 	}
 

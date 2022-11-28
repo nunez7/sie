@@ -34,7 +34,7 @@ public class HorarioServiceJpa implements IHorarioService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Horario> buscarPorHoraInicioDiaYGrupo(String horaInicio, Integer dia, Integer grupo) {
+	public HorarioDTO buscarPorHoraInicioDiaYGrupo(String horaInicio, Integer dia, Integer grupo) {
 		// TODO Auto-generated method stub
 		return horariosRepository.findAllByHoraInicioAndDiaAndGrupoActivoTrue(horaInicio, dia, grupo);
 	}
@@ -71,7 +71,7 @@ public class HorarioServiceJpa implements IHorarioService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Horario> buscarPorHoraInicioDiaYProfesor(String horaInicio, Integer dia, Integer idProfesor,
+	public HorarioDTO buscarPorHoraInicioDiaYProfesor(String horaInicio, Integer dia, Integer idProfesor,
 			Integer idPeriodo) {
 		// TODO Auto-generated method stub
 		return horariosRepository.findAllByHoraInicioAndDiaAndProfesorAndPeriodo(horaInicio, dia, idProfesor, idPeriodo);

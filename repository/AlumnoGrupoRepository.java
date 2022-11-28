@@ -10,7 +10,10 @@ import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.AlumnoGrupo;
 import edu.mx.utdelacosta.model.Grupo;
 public interface AlumnoGrupoRepository extends CrudRepository<AlumnoGrupo, Integer>{
-	AlumnoGrupo findByAlumnoAndGrupo(Alumno alumno, Grupo grupo);
+	
+	@Query(value = "SELECT * FROM alumnos_grupos ag "
+			+ "WHERE id_grupo = :grupo AND id_alumno = :alumno ORDER BY id DESC LIMIT 1", nativeQuery = true)
+	AlumnoGrupo findByAlumnoAndGrupo(@Param("alumno")Alumno alumno,@Param("grupo") Grupo grupo);
 	
 	@Query(value = "SELECT ag.* FROM alumnos_grupos ag "
 			+ "INNER JOIN grupos g ON g.id=ag.id_grupo "

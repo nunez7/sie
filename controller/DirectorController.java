@@ -55,6 +55,7 @@ import edu.mx.utdelacosta.model.dto.CambiarGrupoDTO;
 import edu.mx.utdelacosta.model.dto.CorteEvaluativoDTO;
 import edu.mx.utdelacosta.model.dto.DiaDTO;
 import edu.mx.utdelacosta.model.dto.HorarioDTO;
+import edu.mx.utdelacosta.model.dto.HorarioDiaDTO;
 import edu.mx.utdelacosta.model.dto.MateriaDTO;
 import edu.mx.utdelacosta.model.dto.MesDTO;
 import edu.mx.utdelacosta.model.dto.ProfesorProrrogaDTO;
@@ -332,6 +333,7 @@ public class DirectorController {
 		Usuario usuario = usuariosService.buscarPorPersona(persona);
 		List<Personal> profesores = personalService.buscarProfesores();
 		List<CargaHoraria> cargasHorarias = null;
+		List<HorarioDiaDTO> horarios = new ArrayList<>();			   
 		int cveProfesor = 0;
 		if(session.getAttribute("cveProfesor") != null) {
 			cveProfesor = (Integer) session.getAttribute("cveProfesor");
@@ -348,62 +350,28 @@ public class DirectorController {
 			/////////******** SE HACE EL PROCESO DE DIBUJAR EL HORARIO *******/////////////
 			List<Dia> dias = diaService.buscarDias();
 			model.addAttribute("dias", dias);
-			//List<Horario> cantHoras = horarioService.buscarPorIdProfesor(cveProfesor);
-			//formato para horas
-			DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-			//Se extrae una lista de las horas que ahi asociadas a cada hora de calse con un disting por hora inicio y hora fin				
-			List<Horario> horas = horarioService.buscarPorProfesorDistinctPorHoraInicio(cveProfesor, usuario.getPreferencias().getIdPeriodo());
-			model.addAttribute("horas", horas);
-			//se crea una lista vacia para colocarle los datos de las horas de calse				
-			List<HorarioDTO> horasDto = new ArrayList<>();
-			//crea el horario con las horarios vinculados al grupo				
+			
+			DateFormat formatoVista = new SimpleDateFormat("HH:mm");
+			DateFormat formatoBusqueda = new SimpleDateFormat("HH:mm:ss");
+			List<Horario> horas = horarioService.buscarPorProfesorDistinctPorHoraInicio(profesor.getId(), usuario.getPreferencias().getIdPeriodo());
 			for (Horario hora : horas) {
-				//se formatea la hora de "Date" a "String"					
-				String horaInicio = dateFormat.format(hora.getHoraInicio());
-				String horaFin = dateFormat.format(hora.getHoraFin()); 
-				
-				for (Dia dia : dias) {
-					
-					List<Horario> horarios = horarioService.buscarPorHoraInicioDiaYProfesor(horaInicio, dia.getId(), cveProfesor, usuario.getPreferencias().getIdPeriodo());						
-					for(Horario horario : horarios) {
-						HorarioDTO horaDto = new HorarioDTO();
-						
-						if (horario == null) {	
-							horaDto.setIdHorario(0); //cambios en DTOHorario
-							horaDto.setHoraInicio("");
-							horaDto.setHoraFin("");
-							horaDto.setDia(dia.getDia());
-							horaDto.setProfesor("");
-							horaDto.setMateria("");
-							horaDto.setAbreviaturaMateria("");
-							horaDto.setGrupo(""); //cambios en DTOHorario
-							horaDto.setIdCargaHoraria(null); //cambios en DTOHorario
-							horaDto.setIdActividad(null); //cambios en DTOHorario
-							horaDto.setIdDia(null);
-							horasDto.add(horaDto);
-						}else{						
-							horaDto.setIdHorario(horario.getId()); //cambios en DTOHorario
-							horaDto.setHoraInicio(horaInicio);
-							horaDto.setHoraFin(horaFin);
-							horaDto.setDia(dia.getDia());
-							horaDto.setProfesor(horario.getCargaHoraria().getProfesor().getNombreCompleto());
-							horaDto.setMateria(horario.getCargaHoraria().getMateria().getNombre());
-							horaDto.setAbreviaturaMateria(horario.getCargaHoraria().getMateria().getAbreviatura());
-							horaDto.setGrupo(horario.getCargaHoraria().getGrupo().getNombre()); //cambios en DTOHorario
-							horaDto.setIdCargaHoraria(horario.getCargaHoraria().getId());//cambios en DTOHorario
-							horaDto.setIdActividad(horario.getActividad().getId());
-							horaDto.setIdDia(dia.getId());
-							horasDto.add(horaDto);
-						}
-					} 
-				}
-				
-			}
-			model.addAttribute("horasDto", horasDto);
+				HorarioDiaDTO horario = new HorarioDiaDTO();
+				horario.setHoraInicio(formatoVista.format(hora.getHoraInicio()));
+			    horario.setHoraFin(formatoVista.format(hora.getHoraFin()));
+			    List<HorarioDTO> diasClase = new ArrayList<>();
+			    for (Dia dia : dias) {
+			    	HorarioDTO horarioDia = null;
+			    	horarioDia = horarioService.buscarPorHoraInicioDiaYProfesor(formatoBusqueda.format(hora.getHoraInicio()), dia.getId(),profesor.getId(), usuario.getPreferencias().getIdPeriodo());
+			    	diasClase.add(horarioDia);
+			    }
+			    horario.setHorarios(diasClase);
+			    horarios.add(horario);
+			   }
 		} 
 		else {
 			model.addAttribute("cveProfesor", cveProfesor);
 		}
+		model.addAttribute("horarios", horarios);
 		model.addAttribute("profesores", profesores);
 		return "director/horarios";
 	}
