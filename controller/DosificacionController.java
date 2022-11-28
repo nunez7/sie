@@ -770,11 +770,10 @@ public class DosificacionController {
 		// se envia correo al profesor
 		Mail mail = new Mail();
 		String de = correo; // se deberá enviar el correo al profesor
-		//String para = profesor.getEmail();
-		String para = "raul.hernandez@utnay.edu.mx";
+		String para = profesor.getEmail();
 		mail.setDe(de);
 		mail.setPara(new String[] { para }); // Email title
-		mail.setTitulo("¡Se elimino validación de programación de asignatura!");
+		mail.setTitulo("¡Se eliminó validación de programación de asignatura!");
 		// Variables a plantilla
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("titulo", "Validación de programación de asignatura eliminada");
