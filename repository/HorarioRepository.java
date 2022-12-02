@@ -101,5 +101,10 @@ public interface HorarioRepository extends CrudRepository<Horario, Integer>{
 	List<HorarioDTO> findByIdProfesor(@Param("idProfesor") Integer idProfesor);
 
 	Optional<Horario> findById(Integer idHorario);
+	
+	@Query(value="SELECT COUNT(h.id) "
+			+ "	FROM horarios h "
+			+ "	WHERE id_carga_horaria = :carga AND id_dia = :dia  AND activo = TRUE ", nativeQuery = true)
+	Integer countByCargaHorariaAndDia(@Param("carga")Integer cargaHoraria,@Param("dia") Integer dia);
 		
 }

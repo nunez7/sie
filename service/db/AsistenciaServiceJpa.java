@@ -118,4 +118,9 @@ public class AsistenciaServiceJpa implements IAsistenciaService{
 	public Integer contarAsistenciasPorCargaYCorte(CargaHoraria carga, CorteEvaluativo corte) {
 		return asistenciaRepo.countAsistenciasByCargaAndCorte(carga, corte);
 	}
+
+	@Override
+	public Integer contarTotalPorAlumnoYCargaHorariaYFecha(Integer alumno, Integer cargaHoraria, Date fecha) {
+		return asistenciaRepo.countByAlumnoAndCargaHorariaAndFecha(alumno, cargaHoraria, fecha);
+	}
 }

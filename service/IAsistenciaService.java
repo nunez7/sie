@@ -40,4 +40,5 @@ public interface IAsistenciaService {
 	
 	Integer contarFaltasPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria, Date fechaInicio, Date fechaFin);
 	
+	Integer contarTotalPorAlumnoYCargaHorariaYFecha(Integer alumno, Integer cargaHoraria, Date fecha);
 }

@@ -600,7 +600,7 @@ public interface AlumnosRepository extends JpaRepository<Alumno, Integer>{
 			+ "		INNER JOIN alumnos a ON a.id=ag.id_alumno "
 			+ "		INNER JOIN personas p ON p.id=a.id_persona "
 			+ "		INNER JOIN datos_personales dp ON dp.id_persona = p.id "
-			+ "		WHERE ag.id_grupo= :grupo AND ag.activo = 'True' "
+			+ "		WHERE ag.id_grupo= :grupo "
 			+ "		ORDER BY TRANSLATE (p.primer_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, TRANSLATE (p.segundo_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, "
 			+ "		TRANSLATE (p.nombre,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC ", nativeQuery = true)
 	List<AlumnoActivoDTO>  findAlumnoAndStatusByGrupo(@Param("grupo") Integer grupo);

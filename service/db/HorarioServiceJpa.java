@@ -104,4 +104,9 @@ public class HorarioServiceJpa implements IHorarioService{
 	public List<HorarioDTO> buscarPorProfesor(Integer idProfesor) {
 		return horariosRepository.findByIdProfesor(idProfesor);
 	}
+
+	@Override
+	public Integer contarPorCargaHorariaYDia(Integer cargaHoraria, Integer dia) {
+		return horariosRepository.countByCargaHorariaAndDia(cargaHoraria, dia);
+	}
 }

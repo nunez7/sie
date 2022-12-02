@@ -95,5 +95,11 @@ public interface AsistenciaRepository extends CrudRepository<Asistencia, Integer
 			+ "		INNER JOIN calendario_evaluacion ce on ce.id_carga_horaria = h.id_carga_horaria "
 			+ "		WHERE h.id_carga_horaria = :carga AND ce.id_corte_evaluativo = :corte", nativeQuery = true)
 	Integer countAsistenciasByCargaAndCorte(@Param("carga")CargaHoraria carga,@Param("corte") CorteEvaluativo corte);
-
+	
+	@Query(value = "SELECT COUNT(a.id) "
+			+ "	FROM asistencias a "
+			+ "	INNER JOIN horarios h ON a.id_horario = h.id "
+			+ "	WHERE id_alumno = :alumno AND fecha = :fecha "
+			+ "	AND h.id_carga_horaria = :carga", nativeQuery = true)
+	Integer countByAlumnoAndCargaHorariaAndFecha(@Param("alumno") Integer alumno, @Param("carga") Integer cargaHoraria, @Param("fecha") Date fecha);
 }

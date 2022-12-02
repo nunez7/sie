@@ -17,10 +17,16 @@ public interface DosificacionCargaRepository extends CrudRepository<Dosificacion
 	List<DosificacionCarga> findByCargaHoraria(CargaHoraria cargaHoraria);
 	
 	// se obtiene el numero de cargas con dosificaciones sin entregar, notificaciones/profesor
-	@Query(value = "SELECT COUNT(*) "
-			+ "FROM cargas_horarias ch "
-			+ "LEFT JOIN dosificaciones_cargas dc ON dc.id_carga_horaria=ch.id "
-			+ "WHERE ch.id_profesor = :idProfesor and ch.id_periodo = :idPeriodo and dc.id IS NULL", nativeQuery = true)
+	@Query(value = "SELECT (SELECT count(d.id) "
+			+ "	FROM dosificaciones_cargas dc "
+			+ "	INNER JOIN cargas_horarias ch ON dc.id_carga_horaria = ch.id "
+			+ "	INNER JOIN dosificaciones d ON dc.id_dosificacion=d.id "
+			+ "	WHERE ch.id_profesor = :idProfesor AND ch.id_periodo = :idPeriodo AND d.id IS NULL ) + "
+			+ "	(SELECT count(d.id) "
+			+ "	FROM dosificacion_importada di "
+			+ "	INNER JOIN cargas_horarias ch ON di.id_carga_horaria = ch.id "
+			+ "	INNER JOIN dosificaciones d ON di.id_dosificacion=d.id "
+			+ "	WHERE ch.id_profesor = :idProfesor AND ch.id_periodo = :idPeriodo AND d.id IS NULL ) AS total", nativeQuery = true)
 	Integer countNoEntregadas(@Param("idProfesor") Integer idProfesor, @Param("idPeriodo") Integer idPeriodo);
 	
 }

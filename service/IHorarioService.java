@@ -25,4 +25,6 @@ public interface IHorarioService {
 	List<Horario> buscarPorIdCargaHorariaEIdDia (Integer IdCargaHoraria, Integer IdDia);
 
 	List<HorarioDTO> buscarPorProfesor(Integer idProfesor);
+	
+	Integer contarPorCargaHorariaYDia(Integer cargaHoraria, Integer dia);
 }

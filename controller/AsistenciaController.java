@@ -156,17 +156,23 @@ public class AsistenciaController {
 			}
 		}
 		
+		
+		
 		Integer noAsistencias = asistenciaService.contarPorFechaInicioYFechaFindYCargaHoraria(corte.getFechaInicio(),
 				corte.getFechaFin(), carga.getId());
-
+		
 		// --------------- PROCESO DE GUARDADO DE ASISTENCIAS ---------------
 		for (Alumno alumno : alumnos) {
 			valor = obj.get(alumno.getId().toString());
 			if (valor != null) {
 				Integer asistenciasTotales = noAsistencias;
+				Integer horariosDia = 0;
+				horariosDia = horarioService.contarPorCargaHorariaYDia(idCargaHoraria, horario.getDia().getId());				
+				Integer asistenciasDia = asistenciaService.contarTotalPorAlumnoYCargaHorariaYFecha(noAsistencias, idCargaHoraria, fechaHoy);
 				Asistencia asistencia = asistenciaService.buscarPorFechaYAlumnoYHorario(fecha, alumno, horario);
 
 				if (asistencia == null) {
+					if (asistenciasDia <= horariosDia) {
 					asistencia = new Asistencia();
 					asistencia.setFecha(fecha);
 					asistencia.setFechaAlta(fechaHoy);
@@ -175,6 +181,7 @@ public class AsistenciaController {
 					asistencia.setValor(valor);
 					asistenciaService.guardar(asistencia); // guarda el nuevo valor de la asistencia
 					asistenciasTotales++;
+					}
 				} else {
 					asistencia.setFechaAlta(fechaHoy);
 					asistencia.setValor(valor);
