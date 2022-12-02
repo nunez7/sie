@@ -3,6 +3,9 @@ package edu.mx.utdelacosta.service;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.PagoGeneral;
 import edu.mx.utdelacosta.model.dto.FolioDTO;
@@ -80,4 +83,10 @@ public interface IPagoGeneralService {
 	List<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYTipoPagoYTodosCajeros(Date fechaInicio, Date fechaFin, Integer tipo);
 
 	Integer contarAdeudoCutrimestreAlumno(Integer alumnoGrupo);
+	
+	//lista de pagos para reporte detallado con fechas de inicio, fin y un cajero con paginacion activa
+	Page<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYCajeroPaginado(Date fechaInicio, Date fechaFin, Integer idCajero, Pageable pageable);
+		
+	//lista de pagos para reporte detallado con fechas de inicio, fin y todos los cajeros con paginacion activa
+	Page<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYTodosCajerosPaginado(Date fechaInicio, Date fechaFin, Pageable pageable);
 }

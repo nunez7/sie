@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -228,5 +230,17 @@ public class PagoGeneralServiceJpa implements IPagoGeneralService{
 	@Transactional(readOnly = true)
 	public Integer contarAdeudoCutrimestreAlumno(Integer alumnoGrupo) {
 		return pagoRepo.countAdeudoCutrimestreAlumno(alumnoGrupo);
+	}
+
+	@Override
+	public Page<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYCajeroPaginado(Date fechaInicio, Date fechaFin,
+			Integer idCajero, Pageable pageable) {
+		return pagoRepo.findByFechaInicioAndFechaFinAndCajeroPaginable(fechaInicio, fechaFin, idCajero, pageable);
+	}
+
+	@Override
+	public Page<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYTodosCajerosPaginado(Date fechaInicio, Date fechaFin,
+			Pageable pageable) {
+		return pagoRepo.findByFechaInicioAndFechaFinAndAllCajerosPaginable(fechaInicio, fechaFin, pageable);
 	}
 }

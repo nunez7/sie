@@ -1,6 +1,9 @@
 package edu.mx.utdelacosta.service;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Persona;
 import edu.mx.utdelacosta.model.dto.AlumnoActivoDTO;
@@ -125,4 +128,8 @@ public interface IAlumnoService {
 	Integer contarAlumnosPorGrupoYActivos(Integer idCargaHoraria);
 
 	List<AlumnoActivoDTO> buscarAlumnoYEstatusPorGrupo (Integer grupo);
+	
+	Page<AlumnoAdeudoDTO> reporteTodosAlumnosAdeudosPaginado(Integer periodo, Pageable pageable);
+	
+	Page<AlumnoAdeudoDTO> reporteAlumnosAdeudosPaginadoPorCarrera(Integer periodo, Integer carrera, Pageable pageable);
 }

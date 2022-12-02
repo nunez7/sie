@@ -3,6 +3,7 @@ package edu.mx.utdelacosta.controller;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -10,12 +11,16 @@ import java.util.List;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.mx.utdelacosta.model.Alumno;
 import edu.mx.utdelacosta.model.Carrera;
@@ -46,6 +51,8 @@ import edu.mx.utdelacosta.service.IPeriodosService;
 import edu.mx.utdelacosta.service.IPersonaService;
 import edu.mx.utdelacosta.service.IPersonalService;
 import edu.mx.utdelacosta.service.IProrrogaAdeudoService;
+import edu.mx.utdelacosta.util.PageRender;
+import edu.mx.utdelacosta.util.ReporteXlsxView;
 
 @Controller
 @PreAuthorize("hasRole('Administrador') and hasRole('Caja')")
@@ -91,7 +98,13 @@ public class CajaController {
 	@Autowired
 	private INotaCreditoService notaCreditoService;
 	
+	@Autowired
+	private ReporteXlsxView generarReporte;
+	
 	private String NOMBRE_UT = "UNIVERSIDAD TECNOLÓGICA DE NAYARIT";
+	
+	//se usa para delimitar la cantidad de registros por pagina en los reportes con paginado
+	private Integer REGISTROS_REPORTE = 500;
 	
 	@GetMapping("/archivosBanco")
 	public String archivosBanco() {
@@ -220,17 +233,20 @@ public class CajaController {
 			int cveCajero = (Integer) session.getAttribute("cveCajero");
 			model.addAttribute("cveCajero", cveCajero);
 			// lista que guardará los pagos
-			List<PagosGeneralesDTO> pagos = null;
+			Page<PagosGeneralesDTO> pagos = null;
 			Double notaCredito = 0d;
+			Pageable page = PageRequest.of(0, REGISTROS_REPORTE);
 			if (cveCajero > 0) {
-				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);
-				notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);
+				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYCajeroPaginado(fechaInicio, fechaFin, cveCajero, page);
+				//notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);
 			} else {
-				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYTodosCajeros(fechaInicio, fechaFin);
-				notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFin(fechaInicio, fechaFin);
+				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYTodosCajerosPaginado(fechaInicio, fechaFin, page);
+				//notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFin(fechaInicio, fechaFin);
 			}
 			model.addAttribute("pagos", pagos);
 			model.addAttribute("totalNota", notaCredito);
+			PageRender<PagosGeneralesDTO> pageRender = new PageRender<>(pagos);
+			model.addAttribute("page", pageRender);
 		}
 		List<Persona> cajeros = personaService.buscarCajeros();
 		model.addAttribute("fechaHoy", new Date());
@@ -239,6 +255,99 @@ public class CajaController {
 		model.addAttribute("cajeros", cajeros);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "caja/reporteCorteCajaDetallado";
+	}
+	
+	@GetMapping("/reporte-corte-caja-detallado-frag/{page}")
+	public String reporteCorteCajaDetalladoFrag(Model model, HttpSession session, @PathVariable("page") Integer pagina) {
+		Date fechaInicio;
+		Date fechaFin;
+		
+		if (session.getAttribute("fechaInicio") == null) {
+			fechaInicio = new Date();
+		} else {
+			fechaInicio = java.sql.Date.valueOf((String) session.getAttribute("fechaInicio"));
+		}
+
+		// cuando selecciona la fecha de fin
+		if (session.getAttribute("fechaFin") == null) {
+			fechaFin = new Date();
+		} else {
+			fechaFin = java.sql.Date.valueOf((String) session.getAttribute("fechaFin"));
+		}
+		
+		if (session.getAttribute("cveCajero") != null) {
+			int cveCajero = (Integer) session.getAttribute("cveCajero");
+			model.addAttribute("cveCajero", cveCajero);
+			// lista que guardará los pagos
+			Page<PagosGeneralesDTO> pagos = null;
+			Double notaCredito = 0d;
+			Pageable page = PageRequest.of(pagina, REGISTROS_REPORTE);
+			if (cveCajero > 0) {
+				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYCajeroPaginado(fechaInicio, fechaFin, cveCajero, page);
+				//notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);
+			} else {
+				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYTodosCajerosPaginado(fechaInicio, fechaFin, page);
+				//notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFin(fechaInicio, fechaFin);
+			}
+			model.addAttribute("pagos", pagos);
+			model.addAttribute("totalNota", notaCredito);
+			PageRender<PagosGeneralesDTO> pageRender = new PageRender<>(pagos);
+			model.addAttribute("page", pageRender);
+			model.addAttribute("limitePagina", REGISTROS_REPORTE*pagina);
+		}
+		return "fragments/buscar-caja :: reporte-corte-detallado-paginado";
+	}
+	
+	@GetMapping("/reporte-detalladoexcel/{page}")
+	@ResponseBody
+	public String reporteCorteDetalladoExcel(HttpSession session, @PathVariable("page") Integer paginas) {		
+		// se obtienen las variables
+		Page<PagosGeneralesDTO> pagos = null;
+		List<PagosGeneralesDTO> pagosList = new ArrayList<>();
+		List<Object> datos = new ArrayList<Object>();
+		String reporteGenerar = null;
+		String[] headers = null;
+		Date fechaInicio = session.getAttribute("fechaInicio")!=null ? java.sql.Date.valueOf((String) session.getAttribute("fechaInicio")) : new Date();
+		Date fechaFin = session.getAttribute("fechaFin")!=null ? java.sql.Date.valueOf((String) session.getAttribute("fechaFin")) : new Date();
+		if (session.getAttribute("cveCajero") != null) {
+			int cveCajero = (Integer) session.getAttribute("cveCajero");
+				// se itera la consulta paginada segun el numero de paginas que pageRender nos devuelve
+				for(int i=0;i<paginas;i+=1) {
+				Pageable page = PageRequest.of(i, REGISTROS_REPORTE);
+				if (cveCajero > 0) {
+					pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYCajeroPaginado(fechaInicio, fechaFin, cveCajero, page);
+				} else {
+					pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYTodosCajerosPaginado(fechaInicio, fechaFin, page);
+				}
+				pagosList.addAll(pagos.getContent());
+				}
+				headers = new String[]{ "No", "Folio", "ID", "Nombre", "Concepto", "Descripción", "Estatus", "Tipo pago", "Cajero", "Factura", "Fecha", "Total"};
+				
+				int n = 0;
+				Double total=0d;
+				Double totalDesc =0d;
+				// se itera el resultado de la busqueda para rellenar la data del reporte
+				for (PagosGeneralesDTO p : pagosList) {
+					n++;
+					if (p.getEstatus()==1) {						
+						total = total + p.getMonto();
+					}
+					totalDesc = p.getEstatus()!=1 ? totalDesc + p.getMonto() : totalDesc;
+					Boolean factura = p.getFactura()!=null ? p.getFactura() : false;
+					Arrays.asList(datos.add(new Object[] {n+"", p.getFolio(), p.getMatricula(), p.getNombre(), p.getConcepto(), p.getDescripcion(), 
+							p.getEstatus() == 1 ? "Pagado" : "Cancelado", p.getTipoPago().toString(), p.getCajero(),factura==true ? "Si" : "No",p.getFecha().toString(), p.getMonto().toString() }));
+				}
+				Double notaCredito = cveCajero > 0 ? notaCreditoService.buscarTotalPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero) :
+					notaCreditoService.buscarTotalPorFechaInicioYFechaFin(fechaInicio, fechaFin);
+				Arrays.asList(datos.add(new Object[] {"","","","","","","","","","","Nota de credito", notaCredito.toString()}));
+				total = total - notaCredito;
+				Arrays.asList(datos.add(new Object[] {"","","","","","","","","","","Total",  total.toString()}));
+				//se condiciona de que carrera se obtuvieron los datos
+				String cajero = cveCajero ==0 ? "Todos" : personaService.buscarPorId(cveCajero).getNombreCompleto();
+				//se genera el reporte
+				reporteGenerar = generarReporte.generarExcelGenerico("Corte de caja detallado", NOMBRE_UT, "REPORTE DE CORTE DE CAJA DETALALDO ", "De: "+fechaInicio+" A: "+fechaFin+" | Cajero: "+cajero, headers, datos);
+		}
+		return reporteGenerar;
 	}
 	
 	@GetMapping("/reportePoliza")
@@ -251,18 +360,20 @@ public class CajaController {
 	public String reporteAdeudos(Model model, HttpSession session) {
 		List<Periodo> periodos = periodosService.buscarTodos();
 		List<Carrera> carreras = carrerasServices.buscarTodasMenosIngles();
-		List<AlumnoAdeudoDTO> adeudos = new ArrayList<>();
+		Page<AlumnoAdeudoDTO> adeudos = null;
 		if(session.getAttribute("cveCarrera") != null) {
 			int cveCarrera = (Integer) session.getAttribute("cveCarrera");
 			if(session.getAttribute("cvePeriodo") != null) {
 				int cvePeriodo = (Integer) session.getAttribute("cvePeriodo");
-				//para todas las carrera
+				Pageable page = PageRequest.of(0, REGISTROS_REPORTE);
 				if(cveCarrera == 0) {
-					adeudos = alumnoService.obtenerAlumnosAdeudoPorTodasCarreraYPeriodo(cvePeriodo);
+					adeudos = alumnoService.reporteTodosAlumnosAdeudosPaginado(cvePeriodo, page);
 				} 
 				else {
-					adeudos = alumnoService.obtenerAlumnosAdeudoPorCarreraYPeriodo(cveCarrera, cvePeriodo);
+					adeudos = alumnoService.reporteAlumnosAdeudosPaginadoPorCarrera(cvePeriodo, cveCarrera, page);
 				}
+				PageRender<AlumnoAdeudoDTO> pageRender = new PageRender<>(adeudos);
+				model.addAttribute("page", pageRender);
 				model.addAttribute("cvePeriodo", cvePeriodo);
 			}
 			model.addAttribute("cveCarrera", cveCarrera);
@@ -272,6 +383,85 @@ public class CajaController {
 		model.addAttribute("periodos", periodos);
 		model.addAttribute("NOMBRE_UT", NOMBRE_UT);
 		return "caja/reporteAdeudos";
+	}
+	
+	@GetMapping("/reporteAdeudos-frag/{page}")
+	public String reporteAdeudosFragment(@PathVariable("page") Integer pagina, Model model, HttpSession session) {
+		// se crean las variables
+		Page<AlumnoAdeudoDTO> adeudos = null;
+		int cveCarrera = (Integer) session.getAttribute("cveCarrera");
+		int cvePeriodo = (Integer) session.getAttribute("cvePeriodo");
+		Pageable page = PageRequest.of(pagina, REGISTROS_REPORTE);
+		// se compara si solo se usa una carrera o todas
+		if(cveCarrera == 0) {
+			adeudos = alumnoService.reporteTodosAlumnosAdeudosPaginado(cvePeriodo, page);
+		} 
+			else {
+			adeudos = alumnoService.reporteAlumnosAdeudosPaginadoPorCarrera(cvePeriodo, cveCarrera, page);
+		}
+		//se crear la funcion de render para los botones del paginado
+		PageRender<AlumnoAdeudoDTO> pageRender = new PageRender<>(adeudos);
+		model.addAttribute("page", pageRender);
+		model.addAttribute("adeudos", adeudos);
+		model.addAttribute("limitePagina", REGISTROS_REPORTE*pagina);
+		return "fragments/buscar-caja :: reporte-adeudos-paginado";
+	}
+	
+	@GetMapping("/reporte-adeudosexcel/{page}")
+	@ResponseBody
+	public String reporteAdeudosExcel(HttpSession session, @PathVariable("page") Integer paginas) {		
+		// se crean las varibles
+		Page<AlumnoAdeudoDTO> adeudos = null;
+		List<AlumnoAdeudoDTO> adeudosList = new ArrayList<>();
+		int cvePeriodo = 0;
+		List<Object> datos = new ArrayList<Object>();
+		String reporteGenerar = null;
+		String[] headers = null;
+		//se obtiene la carrera
+		if(session.getAttribute("cveCarrera") != null) {
+			int cveCarrera = (Integer) session.getAttribute("cveCarrera");
+			if(session.getAttribute("cvePeriodo") != null) {
+				cvePeriodo = (Integer) session.getAttribute("cvePeriodo");
+				//se itera desde el 0 hasta el numero de paginas obtenidas del pageRender del metodo reporteAdeudosFragment | reporteAdeudos
+				for(int i=0;i<paginas;i+=1) {
+				/* se crea la page (limites de busqueda) para delimitar desde que numero se inicia la busqueda 
+					y que tiene de limite (declarada al inicio del controller) */
+				Pageable page = PageRequest.of(i, REGISTROS_REPORTE);
+				if(cveCarrera == 0) {
+					adeudos = alumnoService.reporteTodosAlumnosAdeudosPaginado(cvePeriodo, page);
+				} 
+				else {
+					adeudos = alumnoService.reporteAlumnosAdeudosPaginadoPorCarrera(cvePeriodo, cveCarrera, page);
+				}
+				// tras realizar la consulta, se convierten de Page<T> a List<T> y se agregan a la lista para cerrar ciclo
+				adeudosList.addAll(adeudos.getContent());
+				}
+				//titulos del reporte
+				headers = new String[]{
+		                "No",
+		                "Alumno",
+		                "Matrícula",
+		                "Concepto",
+		                "Descripción",
+		                "Costo"
+		        };
+			}
+			int n = 0;
+			Float total=0f;
+			// se itera el resultado de la busqueda para rellenar la data del reporte
+			for (AlumnoAdeudoDTO adeudo : adeudosList) {
+				n++;
+				total = adeudo.getCantidad()!=null ? total + adeudo.getCantidad() : total;
+				Arrays.asList(datos.add(new Object[] {n+"", adeudo.getAlumno(), adeudo.getMatricula(),adeudo.getConcepto(),
+						adeudo.getDescripcion(), adeudo.getCantidad().toString()}));
+			}
+			Arrays.asList(datos.add(new Object[] {"", "","","","Total",  total.toString()}));
+			//se condiciona de que carrera se obtuvieron los datos
+			String carrera = cveCarrera==0 ? "Todos" : carrerasServices.buscarPorId(cveCarrera).getNombre();
+			//se genera el reporte
+			reporteGenerar = generarReporte.generarExcelGenerico("Adeudos ", NOMBRE_UT, "REPORTE DE ADEUDOS ", "Cuatrimestre: "+periodosService.buscarPorId(cvePeriodo).getNombre() +" | Carrrera: "+carrera, headers, datos);
+		}
+		return reporteGenerar;
 	}
 	
 	@GetMapping("/manual")

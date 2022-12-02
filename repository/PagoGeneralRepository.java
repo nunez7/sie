@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.persistence.QueryHint;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.CrudRepository;
@@ -297,5 +299,45 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "WHERE pc.id_alumno_grupo = :alumnoGrupo AND pg.id_concepto = 10", nativeQuery = true)
 	Integer countAdeudoCutrimestreAlumno(@Param("alumnoGrupo") Integer alumnoGrupo);
 
+	// busca los pagos para reporte detallado con fechas de inicio, fin y un cajero con paginacion
+		@Query(value = "SELECT COALESCE(pg.folio, 'S/F') AS folio, "
+				+ "COALESCE(a.matricula, c.clave, per.no_empleado, 'N/A') as matricula, " + "CASE "
+				+ "	WHEN(ap.nombre IS NOT NULL AND ap.primer_apellido IS NOT NULL AND ap.segundo_apellido IS NOT NULL) "
+				+ "	THEN CONCAT(ap.nombre,' ', ap.primer_apellido,' ', ap.segundo_apellido) "
+				+ "	WHEN(c.nombre_cliente IS NOT NULL) " + "	THEN c.nombre_cliente "
+				+ "	WHEN(ppp.nombre IS NOT NULL AND ppp.primer_apellido IS NOT NULL AND ppp.segundo_apellido IS NOT NULL) "
+				+ "	THEN CONCAT(ppp.nombre,' ', ppp.primer_apellido,' ', ppp.segundo_apellido) "
+				+ "END as nombre, pg.concepto as concepto, pg.status as estatus, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as cajero, "
+				+ "pg.monto as monto, pr.fecha_cobro as fecha, pg.factura as factura, pg.tipo as TipoPago, pg.comentario as descripcion " + "FROM pagos_generales pg "
+				+ "INNER JOIN pago_recibe pr ON pg.id = pr.id_pago " + "INNER JOIN personas p ON p.id = pr.id_cajero "
+				+ "LEFT JOIN pago_alumno pa ON pa.id_pago = pg.id " + "LEFT JOIN alumnos a ON a.id = pa.id_alumno "
+				+ "LEFT JOIN personas ap ON ap.id = a.id_persona " + "LEFT JOIN pago_cliente pc ON pc.id_pago = pg.id "
+				+ "LEFT JOIN clientes c ON c.id = pc.id_cliente " + "LEFT JOIN pago_persona pp ON pp.id_pago = pg.id "
+				+ "LEFT JOIN personas ppp ON ppp.id = pp.id_persona " + "LEFT JOIN personal per ON per.id_persona = ppp.id "
+				+ "WHERE p.id = :cajero " + "AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin "
+				+ "ORDER BY pg.folio ASC ", nativeQuery = true)
+		Page<PagosGeneralesDTO> findByFechaInicioAndFechaFinAndCajeroPaginable(@Param("fechaInicio") Date fechaInicio,
+				@Param("fechaFin") Date fechaFin, @Param("cajero") Integer idCajero, Pageable pageable);
+
+		// busca los pagos para reporte detallado con fechas de inicio, fin y todos los cajeros con paginacion
+		@Query(value = "SELECT COALESCE(pg.folio, 'S/F') AS folio, "
+				+ "COALESCE(a.matricula, c.clave, per.no_empleado, 'N/A') as matricula, " + "CASE "
+				+ "	WHEN(ap.nombre IS NOT NULL AND ap.primer_apellido IS NOT NULL AND ap.segundo_apellido IS NOT NULL) "
+				+ "	THEN CONCAT(ap.nombre,' ', ap.primer_apellido,' ', ap.segundo_apellido) "
+				+ "	WHEN(c.nombre_cliente IS NOT NULL) " + "	THEN c.nombre_cliente "
+				+ "	WHEN(ppp.nombre IS NOT NULL AND ppp.primer_apellido IS NOT NULL AND ppp.segundo_apellido IS NOT NULL) "
+				+ "	THEN CONCAT(ppp.nombre,' ', ppp.primer_apellido,' ', ppp.segundo_apellido) "
+				+ "END as nombre, pg.concepto as concepto, pg.status as estatus, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as cajero, "
+				+ "pg.monto as monto, pr.fecha_cobro as fecha, pg.factura as factura,  pg.tipo as TipoPago,pg.comentario as descripcion " + "FROM pagos_generales pg "
+				+ "INNER JOIN pago_recibe pr ON pg.id = pr.id_pago " + "INNER JOIN personas p ON p.id = pr.id_cajero "
+				+ "LEFT JOIN pago_alumno pa ON pa.id_pago = pg.id " + "LEFT JOIN alumnos a ON a.id = pa.id_alumno "
+				+ "LEFT JOIN personas ap ON ap.id = a.id_persona " + "LEFT JOIN pago_cliente pc ON pc.id_pago = pg.id "
+				+ "LEFT JOIN clientes c ON c.id = pc.id_cliente " + "LEFT JOIN pago_persona pp ON pp.id_pago = pg.id "
+				+ "LEFT JOIN personas ppp ON ppp.id = pp.id_persona " + "LEFT JOIN personal per ON per.id_persona = ppp.id "
+				+ "WHERE pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin "
+				+ "ORDER BY pg.folio ASC ", nativeQuery = true)
+		Page<PagosGeneralesDTO> findByFechaInicioAndFechaFinAndAllCajerosPaginable(@Param("fechaInicio") Date fechaInicio,
+				@Param("fechaFin") Date fechaFin, Pageable pageable);
+		
 
 }

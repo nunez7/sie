@@ -5,9 +5,11 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.Alumno;
@@ -23,7 +25,7 @@ import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioEscolaresDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoRegularDTO;
 import edu.mx.utdelacosta.model.dtoreport.ProspectoEscolaresDTO;
 
-public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
+public interface AlumnosRepository extends JpaRepository<Alumno, Integer>{
 	Alumno findByPersona(Persona persona);
 	Alumno findByMatricula(String matricula);
 	
@@ -598,9 +600,34 @@ public interface AlumnosRepository extends CrudRepository<Alumno, Integer>{
 			+ "		INNER JOIN alumnos a ON a.id=ag.id_alumno "
 			+ "		INNER JOIN personas p ON p.id=a.id_persona "
 			+ "		INNER JOIN datos_personales dp ON dp.id_persona = p.id "
-			+ "		WHERE ag.id_grupo= :grupo "
+			+ "		WHERE ag.id_grupo= :grupo AND ag.activo = 'True' "
 			+ "		ORDER BY TRANSLATE (p.primer_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, TRANSLATE (p.segundo_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, "
 			+ "		TRANSLATE (p.nombre,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC ", nativeQuery = true)
 	List<AlumnoActivoDTO>  findAlumnoAndStatusByGrupo(@Param("grupo") Integer grupo);
 
+	// para traer los adeudos de alumnos por carrera y periodo
+	@Query(value = "SELECT a.id as idAlumno, CONCAT(p.nombre,' ',p.primer_apellido,' ',p.segundo_apellido) as alumno, a.matricula, c.concepto, pg.monto as cantidad, pg.concepto as descripcion "
+		+ "FROM pagos_generales pg " + "INNER JOIN pago_alumno pa on pg.id=pa.id_pago "
+		+ "INNER JOIN alumnos a on pa.id_alumno=a.id " + "INNER JOIN alumnos_grupos ag ON ag.id_alumno = a.id "
+		+ "INNER JOIN grupos g ON g.id = ag.id_grupo " + "INNER JOIN personas p ON p.id = a.id_persona "
+		+ "INNER JOIN conceptos c ON c.id = pg.id_concepto " + "WHERE pg.status = 0 AND g.id_periodo = :periodo "
+		+ "ORDER BY p.nombre, p.primer_apellido, p.segundo_apellido", nativeQuery = true)
+	Page<AlumnoAdeudoDTO> reportAllAlumnosAdeudosPaginado(@Param("periodo") Integer periodo,  Pageable pageable);
+	
+	// para traer los adeudos de alumnos por carrera y periodo
+	@Query(value = "SELECT a.id as idAlumno, CONCAT(p.primer_apellido,' ',p.segundo_apellido, ' ',p.nombre) as alumno, a.matricula, "
+		+ " c.concepto, pg.monto as cantidad, pg.concepto as descripcion "
+		+ "	FROM pagos_generales pg "
+		+ "	INNER JOIN pago_alumno pa on pg.id=pa.id_pago "
+		+ "	INNER JOIN alumnos a on pa.id_alumno=a.id "
+		+ "	INNER JOIN alumnos_grupos ag ON ag.id_alumno = a.id "
+		+ "	INNER JOIN grupos g ON g.id = ag.id_grupo "
+		+ "	INNER JOIN personas p ON p.id = a.id_persona "
+		+ "	INNER JOIN conceptos c ON c.id = pg.id_concepto "
+		+ "	WHERE a.id_carrera=:carrera "
+		+ "	AND pg.status=0 AND g.id_periodo = :periodo "
+		+ "	ORDER BY TRANSLATE (p.primer_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, TRANSLATE (p.segundo_apellido,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC, "
+		+ "	TRANSLATE (p.nombre,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC ", nativeQuery = true)
+	Page<AlumnoAdeudoDTO> reportAlumnosAdeudosPaginadoByCarrera(@Param("periodo") Integer periodo, @Param("carrera") Integer carrera, Pageable pageable);
+	
 }

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -388,5 +390,17 @@ public class AlumnosServiceJpa implements IAlumnoService{
   }
 	public List<AlumnoActivoDTO> buscarAlumnoYEstatusPorGrupo(Integer grupo) {
 		return alumnosRepo.findAlumnoAndStatusByGrupo(grupo);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<AlumnoAdeudoDTO> reporteTodosAlumnosAdeudosPaginado(Integer periodo, Pageable pageable) {
+		return alumnosRepo.reportAllAlumnosAdeudosPaginado(periodo, pageable);
+	}
+
+	@Override
+	public Page<AlumnoAdeudoDTO> reporteAlumnosAdeudosPaginadoPorCarrera(Integer periodo, Integer carrera,
+			Pageable pageable) {
+		return alumnosRepo.reportAlumnosAdeudosPaginadoByCarrera(periodo, carrera, pageable);
 	}
 }
