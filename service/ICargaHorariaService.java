@@ -37,4 +37,8 @@ public interface ICargaHorariaService {
 	List<CargaHoraria> buscarPorGrupoYPeriodoYCalificacionSi(Integer idGrupo, Integer idPeriodo);
 	
 	List<CargaHoraria> buscarPorProfesorYCarreraYPeriodo(Integer idProfesor, Integer idCarrera, Integer idPeriodo);
+	
+	List<Integer> buscarPorIdProfesorYidCarreraYidPeriodo(Integer idProfesor, Integer idCarrera, Integer idPeriodo);
+	
+	List<Integer> BuscarPorIdProfesorYIdPeriodo(Integer idProfesor, Integer idPeriodo);
 }

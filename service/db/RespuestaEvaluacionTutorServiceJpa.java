@@ -37,15 +37,28 @@ public class RespuestaEvaluacionTutorServiceJpa implements IRespuestaEvaluacionT
 	}
 
 	@Override
-	@Transactional(readOnly = true)
-	public int contarEncuestadosPorGrupo(Integer idEvaluacion, Integer idGrupo) {
-		return resEvaTuRepo.countEncuestadosByGrupo(idEvaluacion, idGrupo);
-	}
-
-	@Override
 	public Integer contarPorIdPersonaYIdGrupoYActivo(Integer idPersona, Integer idGrupo) {
 		// TODO Auto-generated method stub
 		return resEvaTuRepo.countByIdPersonaAndIdGrupoAndActivo(idPersona, idGrupo);
+	}
+
+	@Override
+	public Integer sumarPonderacionPorIdPreguntaIdGrupoIdEvaluacion(Integer idPregunta, Integer idGrupo,
+			Integer idEvaluacion) {
+		// TODO Auto-generated method stub
+		return resEvaTuRepo.sumPonderacionByIdPreguntaAndIdGrupoAndIdEvaluacion(idPregunta, idGrupo, idEvaluacion);
+	}
+
+	@Override
+	public Integer contarPorIdPreguntaIdGrupoIdEvaluacion(Integer idPregunta, Integer idGrupo, Integer idEvaluacion) {
+		// TODO Auto-generated method stub
+		return resEvaTuRepo.countRespuestasByIdPreguntaAndIdGrupoAndIdEvaluacion(idPregunta, idGrupo, idEvaluacion);
+	}
+
+	@Override
+	public Integer contarAlumnosPorIdGrupoIdPeriodo(Integer idGrupo, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return resEvaTuRepo.countAlumnosByIdGrupoAndIdPeriodo(idGrupo, idPeriodo);
 	}
 
 }

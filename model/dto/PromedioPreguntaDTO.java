@@ -10,4 +10,7 @@ public interface PromedioPreguntaDTO {
 	
 	Double getPromedio();
 	
+	String getGrupo();
+	
+	String getMateria();
 }

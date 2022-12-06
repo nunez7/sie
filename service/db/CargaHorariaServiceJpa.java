@@ -113,4 +113,17 @@ public class CargaHorariaServiceJpa implements  ICargaHorariaService{
 		// TODO Auto-generated method stub
 		return cargaHorariasRepository.findByIdProfesorAndIdCarreraAndIdPeriodo(idProfesor, idCarrera, idPeriodo);
 	}
+
+	@Override
+	public List<Integer> buscarPorIdProfesorYidCarreraYidPeriodo(Integer idProfesor, Integer idCarrera,
+			Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return cargaHorariasRepository.findByIDprofesorAndIdCarreraAndIdPeriodo(idProfesor, idCarrera, idPeriodo);
+	}
+
+	@Override
+	public List<Integer> BuscarPorIdProfesorYIdPeriodo(Integer idProfesor, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return cargaHorariasRepository.findByIdProfesorAndIdPeriodo(idProfesor, idPeriodo);
+	}
 }

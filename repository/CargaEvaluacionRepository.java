@@ -1,11 +1,14 @@
 package edu.mx.utdelacosta.repository;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import edu.mx.utdelacosta.model.CargaEvaluacion;
-import edu.mx.utdelacosta.model.CargaHoraria;
-import edu.mx.utdelacosta.model.Evaluacion;
 
 public interface CargaEvaluacionRepository extends CrudRepository<CargaEvaluacion, Integer>{
-	CargaEvaluacion findByCargaHorariaAndEvaluacion(CargaHoraria cargaHoraria, Evaluacion evaluacion);
+	
+	@Query(value="SELECT * FROM carga_evaluacion WHERE id_carga = :idCargaHoraria "
+			+ "AND id_evaluacion = :idEvaluacion AND activo = 'True' LIMIT 1", nativeQuery = true)
+	CargaEvaluacion findByCargaHorariaAndEvaluacion(@Param("idCargaHoraria") Integer idCargaHoraria, @Param("idEvaluacion") Integer idEvaluacion);
 }

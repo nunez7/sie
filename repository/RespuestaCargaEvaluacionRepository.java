@@ -28,25 +28,13 @@ public interface RespuestaCargaEvaluacionRepository extends CrudRepository<Respu
 			+ "INNER JOIN respuestas r ON r.id=rce.id_respuesta "
 			+ "INNER JOIN carga_evaluacion ce ON ce.id=rce.id_carga_evaluacion "
 			+ "WHERE r.activo=true AND ce.activo=true "
-			+ "AND r.id_evaluacion=:idEvaluacion AND r.id_pregunta=:idPregunta AND r.id_opcion_respuesta=opr.id AND r.id_persona=:idPersona AND ce.id_carga=:idCarga AND ce.id_evaluacion=:idEvaluacion) AS respuesta "
+			+ "AND r.id_evaluacion=:idEvaluacion AND r.id_pregunta=:idPregunta AND r.id_opcion_respuesta=opr.id AND r.id_persona=:idPersona "
+			+ "AND ce.id_carga=:idCarga AND ce.id_evaluacion=:idEvaluacion ORDER BY rce.id DESC LIMIT 1) AS respuesta "
 			+ "FROM opcion_respuestas opr "
 			+ "INNER JOIN pregunta_opcion_respuesta popr "
 			+ "ON opr.id=popr.id_opcion_respuesta "			
 			+ "WHERE popr.id_pregunta=:idPregunta", nativeQuery = true)
 	List<OpcionRespuestaDTO> findOpcionRespuestaAndRespuestaByPregunta(@Param("idEvaluacion") Integer idEvaluacion, @Param("idPregunta") Integer idPregunta, @Param("idPersona") Integer idPersona, @Param("idCarga") Integer idCarga);
-	
-	@Query(value = "SELECT COUNT((SELECT ROUND(AVG((SELECT(SELECT ponderacion FROM opcion_respuestas WHERE id=r.id_opcion_respuesta) FROM respuesta_carga_evaluacion rce " 
-			 + "INNER JOIN respuestas r ON r.id=rce.id_respuesta "
-			 + "INNER JOIN carga_evaluacion ce ON ce.id=rce.id_carga_evaluacion "
-			 + "WHERE r.activo=true AND ce.activo=true "
-			 + "AND r.id_evaluacion=:idEvaluacion AND r.id_pregunta=pr.id AND r.id_persona=p.id AND ce.id_carga=:idCarga AND ce.id_evaluacion=:idEvaluacion)),2)FROM preguntas pr WHERE pr.id_evaluacion =:idEvaluacion)) "
-			 + "FROM alumnos_grupos ag "
-			 + "INNER JOIN alumnos a ON a.id=ag.id_alumno "
-			 + "INNER JOIN personas p ON p.id=a.id_persona "
-			 + "INNER JOIN grupos g ON g.id=ag.id_grupo "
-			 + "INNER JOIN cargas_horarias ch ON ch.id_grupo=g.id "
-			 + "WHERE g.id =:idGrupo AND ch.id=:idCarga", nativeQuery = true)
-	Integer countRePuestasByAlumno(@Param("idEvaluacion") Integer idEvaluacion,@Param("idGrupo") Integer idGrupo, @Param("idCarga") Integer idCarga);
 	
 	//cuenta las repuestas por evaluacion, cargahoraria y persona
 	@Query(value = "SELECT COUNT(rce.*) as respuestas "
@@ -58,4 +46,54 @@ public interface RespuestaCargaEvaluacionRepository extends CrudRepository<Respu
 			+ "AND ce.id_carga=:idCargaHoraria AND ce.id_evaluacion=:idEvaluacion ", nativeQuery = true)
 	Integer countByIdPersonaAndIdEvaluacionAndIdCargaHoraria(@Param("idPersona") Integer idPersona, @Param("idEvaluacion") Integer idEvaluacion, 
 				@Param("idCargaHoraria") Integer idCargaHoraria);
+	
+	//suma las ponderaciones de las respuestas de una evaluacion por carga y pregunta
+	@Query(value = "SELECT COALESCE(SUM((SELECT ponderacion FROM opcion_respuestas WHERE id=r.id_opcion_respuesta)),0) AS total "
+			+ "FROM respuesta_carga_evaluacion rce "
+			+ "INNER JOIN respuestas r ON r.id=rce.id_respuesta "
+			+ "INNER JOIN carga_evaluacion ce ON ce.id=rce.id_carga_evaluacion "
+			+ "WHERE r.activo=true AND ce.activo='True' "
+			+ "AND r.id_evaluacion=:idEvaluacion AND r.id_pregunta=:idPregunta "
+			+ "AND ce.id_carga=:idCarga AND ce.id_evaluacion=:idEvaluacion ", nativeQuery = true)
+	Integer sumPonderacionByIdPreguntaAndIdCargaHorariaAndIdEvaluacion(@Param("idPregunta") Integer idPregunta, @Param("idCarga") Integer idCargaHoraria,
+				@Param("idEvaluacion") Integer idEvaluacion);
+	
+	//cuenta las respuestas de una evaluacion por carga y pregunta
+	@Query(value = "SELECT COUNT((SELECT ponderacion FROM opcion_respuestas WHERE id=r.id_opcion_respuesta)) AS total "
+			+ "FROM respuesta_carga_evaluacion rce "
+			+ "INNER JOIN respuestas r ON r.id=rce.id_respuesta "
+			+ "INNER JOIN carga_evaluacion ce ON ce.id=rce.id_carga_evaluacion "
+			+ "WHERE r.activo=true AND ce.activo='True' "
+			+ "AND r.id_evaluacion=:idEvaluacion AND r.id_pregunta=:idPregunta "
+			+ "AND ce.id_carga=:idCarga AND ce.id_evaluacion=:idEvaluacion ", nativeQuery = true)
+	Integer countRespuestasByIdPreguntaAndIdCargaHorariaAndIdEvaluacion(@Param("idPregunta") Integer idPregunta, @Param("idCarga") Integer idCargaHoraria,
+					@Param("idEvaluacion") Integer idEvaluacion);
+	
+	//cuentas los alumnos que respondieron por profesor, carrera, periodo
+	@Query(value = "SELECT COUNT(DISTINCT(r.id_persona)) as alumnos FROM cargas_horarias ch "
+			+ "INNER JOIN materias m ON m.id=ch.id_materia "
+			+ "INNER JOIN grupos g on g.id=ch.id_grupo "
+			+ "INNER JOIN carreras c on c.id=g.id_carrera "
+			+ "INNER JOIN carga_evaluacion ce ON ce.id_carga = ch.id "
+			+ "INNER JOIN respuesta_carga_evaluacion rce ON rce.id_carga_evaluacion = ce.id "
+			+ "INNER JOIN respuestas r ON r.id = rce.id_respuesta "
+			+ "WHERE ch.id_profesor = :idProfesor AND g.id_periodo = :idPeriodo "
+			+ "AND g.id_carrera = :idCarrera "
+			+ "AND m.calificacion = 'True' AND m.activo = 'True' "
+			+ "AND m.curricular = 'True' ", nativeQuery = true)
+	Integer countAlumnosByIdProfesorAndIdCarreraAndIdPeriodo(@Param("idProfesor") Integer idProfesor, @Param("idCarrera") Integer idCarrera,
+					@Param("idPeriodo") Integer idPeriodo);
+	
+	//cuenta los alumnos que contestaron por profesor y periodo
+	@Query(value = "SELECT COUNT(DISTINCT(r.id_persona)) as alumnos FROM cargas_horarias ch "
+			+ "INNER JOIN materias m ON m.id=ch.id_materia "
+			+ "INNER JOIN grupos g on g.id=ch.id_grupo "
+			+ "INNER JOIN carreras c on c.id=g.id_carrera "
+			+ "INNER JOIN carga_evaluacion ce ON ce.id_carga = ch.id "
+			+ "INNER JOIN respuesta_carga_evaluacion rce ON rce.id_carga_evaluacion = ce.id "
+			+ "INNER JOIN respuestas r ON r.id = rce.id_respuesta "
+			+ "WHERE ch.id_profesor = :idProfesor AND g.id_periodo = :idPeriodo "
+			+ "AND m.calificacion = 'True' AND m.activo = 'True' "
+			+ "AND m.curricular = 'True'", nativeQuery = true)
+	Integer countAlumnosByIdProfesorAndIdPeriodo(@Param("idProfesor") Integer idProfesor, @Param("idPeriodo") Integer idPeriodo);
 }

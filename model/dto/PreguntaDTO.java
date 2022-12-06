@@ -11,6 +11,8 @@ public class PreguntaDTO {
 	private int consecutivo;
 	
 	private List<GrupoDTO> gruposDTO;
+	
+	private Double promedio;
 
 	public int getIdPregunta() {
 		return idPregunta;
@@ -43,5 +45,12 @@ public class PreguntaDTO {
 	public void setGruposDTO(List<GrupoDTO> gruposDTO) {
 		this.gruposDTO = gruposDTO;
 	}
-	
+
+	public Double getPromedio() {
+		return promedio;
+	}
+
+	public void setPromedio(Double promedio) {
+		this.promedio = promedio;
+	}
 }

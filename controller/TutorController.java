@@ -52,12 +52,10 @@ import edu.mx.utdelacosta.model.dto.HorarioDTO;
 import edu.mx.utdelacosta.model.dto.HorarioDiaDTO;
 import edu.mx.utdelacosta.model.dto.OpcionRespuestaDTO;
 import edu.mx.utdelacosta.model.dto.PreguntaDTO;
-import edu.mx.utdelacosta.model.dto.PromedioPreguntaDTO;
 import edu.mx.utdelacosta.model.dto.TutoriasProgramadasDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoEvaluacionesDTO;
 import edu.mx.utdelacosta.model.dtoreport.AlumnoPromedioDTO;
 import edu.mx.utdelacosta.model.dtoreport.EvaluacionMateriaDTO;
-import edu.mx.utdelacosta.model.dtoreport.GruposEvaluacionTutorDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorMateriaDTO;
 import edu.mx.utdelacosta.model.dtoreport.IndicadorParcialDTO;
 import edu.mx.utdelacosta.model.dtoreport.MateriaPromedioDTO;
@@ -73,7 +71,6 @@ import edu.mx.utdelacosta.service.ICausaBajaService;
 import edu.mx.utdelacosta.service.IComentarioEvaluacionTutorService;
 import edu.mx.utdelacosta.service.ICorteEvaluativoService;
 import edu.mx.utdelacosta.service.IDiaService;
-import edu.mx.utdelacosta.service.IEvaluacionComentarioService;
 import edu.mx.utdelacosta.service.IEvaluacionesService;
 import edu.mx.utdelacosta.service.IFocosAtencionService;
 import edu.mx.utdelacosta.service.IFortalezaService;
@@ -121,9 +118,6 @@ public class TutorController {
 
 	@Autowired
 	private IEvaluacionesService evaluacionService;
-
-	@Autowired
-	private IRespuestaEvaluacionTutorService resEvaTutorService;
 
 	@Autowired
 	private IComentarioEvaluacionTutorService comEvaTurtorService;
@@ -502,82 +496,78 @@ public class TutorController {
 
 		List<Grupo> grupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona),
 				new Periodo(usuario.getPreferencias().getIdPeriodo()));
-		Integer cveGrupo = (Integer) session.getAttribute("recveGrupoTutor");
-		int aluEncuestados = 0;
+		Integer cveGrupo = (Integer) session.getAttribute("ret-cveGrupo");
 		Periodo periodo = periodoService.buscarPorId(usuario.getPreferencias().getIdPeriodo());
-		Evaluacion evaluacion = evaluacionService.buscar(4);
-
 		if (cveGrupo != null) {
-			// Validación por si el reporte es de todos los grupos tutorados o de solo uno
-			// en particular
-			List<Grupo> Rgrupos = new ArrayList<>();
-			if (cveGrupo == 0) {
-				Rgrupos = grupoService.buscarPorProfesorYPeriodoAsc(new Persona(cvePersona),
-						new Periodo(usuario.getPreferencias().getIdPeriodo()));
-			} else {
-				Grupo Rgrupo = grupoService.buscarPorId(cveGrupo);
-				Rgrupos.add(Rgrupo);
-			}
-
-			List<GruposEvaluacionTutorDTO> gruposEvaDto = new ArrayList<>();
-			for (Grupo grupo : Rgrupos) {
-				GruposEvaluacionTutorDTO grupoEvaDto = new GruposEvaluacionTutorDTO();
-				aluEncuestados = resEvaTutorService.contarEncuestadosPorGrupo(4, grupo.getId());
-				List<ComentarioDTO> comentarios = comEvaTurtorService.buscarComentariosPorGrupo(4, grupo.getId());
-				// Se calculan los promedios de cada una de las preguntas para cada uno de los
-				// grupos en lo que el profesor imparte dicha materia en determinada carrera
-				List<PreguntaDTO> preguntasDto = new ArrayList<>();
-				double promedioPre = 0.0;
-				for (Pregunta pre : evaluacion.getPreguntas()) {
-					PromedioPreguntaDTO promedioPreguntaDTOs = preguntasService.ObtenerPromedioEvaTuPorPregunta(4,
-							pre.getId(), grupo.getId());
-					promedioPre = promedioPreguntaDTOs.getPromedio() + promedioPre;
-
-					List<GrupoDTO> gruposDTO = new ArrayList<>();
-					GrupoDTO grupoDto = new GrupoDTO();
-					grupoDto.setIdGrupo(grupo.getId());
-					grupoDto.setNombreGrupo(grupo.getNombre());
-					grupoDto.setPromedioPre(promedioPreguntaDTOs.getPromedio());
-					gruposDTO.add(grupoDto);
-
-					PreguntaDTO preguntaDto = new PreguntaDTO();
-					preguntaDto.setIdPregunta(pre.getId());
-					preguntaDto.setDescripcion(pre.getDescripcion());
-					preguntaDto.setConsecutivo(pre.getConsecutivo());
-					preguntaDto.setGruposDTO(gruposDTO);
-					preguntasDto.add(preguntaDto);
-				}
-
-				List<GrupoDTO> gruposDTOs = new ArrayList<>();
-				Double proGe = 0.0;
-				for (PreguntaDTO preDTO : preguntasDto) {
-					proGe = preDTO.getGruposDTO().get(0).getPromedioPre() + proGe;
-				}
-
-				proGe = proGe / evaluacion.getPreguntas().size();
+			//se crea e objeto de evaluacion 
+			Evaluacion evaluacion = evaluacionService.buscar(4);
+			//lista de preguntas 
+			List<PreguntaDTO> preguntasDTO = new ArrayList<>();
+			//se buscan las preguntas 
+			List<Integer> preguntas = preguntasService.buscarPorIdEvaluacion(evaluacion.getId());
+			//comentarios de la evaluacion
+			List<ComentarioDTO> comentarios = comEvaTurtorService.buscarComentariosPorGrupo(4, cveGrupo);
+			//variable para promedio total
+			double promedioTotal = 0;
+			Integer encuestados = serviceResEvaTutor.contarAlumnosPorIdGrupoIdPeriodo(cveGrupo, periodo.getId()); 
+			//se iteran las preguntas
+			for (Integer p : preguntas) {
+				//se crea el objeto de la pregunta
+				Pregunta pre = preguntasService.buscarPorId(p);
+				//se crea el objeto de pregunta
+				PreguntaDTO pregunta = new PreguntaDTO();
+				pregunta.setIdPregunta(p);
+				pregunta.setDescripcion(pre.getDescripcion());
+				pregunta.setConsecutivo(pre.getConsecutivo());
+				//se crea una lista de grupos
+				List<GrupoDTO> gruposDto = new ArrayList<>();
+				//se crea un objeto de grupos
 				GrupoDTO grupoDto = new GrupoDTO();
-				grupoDto.setIdGrupo(0);
-				grupoDto.setNombreGrupo("0");
-				grupoDto.setPromedioPre(proGe);
-				gruposDTOs.add(grupoDto);
-
-				PreguntaDTO preguntaDto = new PreguntaDTO();
-				preguntaDto.setIdPregunta(evaluacion.getPreguntas().size() + 1);
-				preguntaDto.setDescripcion("Promedio");
-				preguntaDto.setConsecutivo(evaluacion.getPreguntas().size() + 1);
-				preguntaDto.setGruposDTO(gruposDTOs);
-				preguntasDto.add(preguntaDto);
-
-				grupoEvaDto.setPromedioGeneral(proGe);
-				grupoEvaDto.setPreguntas(preguntasDto);
-				grupoEvaDto.setGrupo(grupo);
-				grupoEvaDto.setComentarios(comentarios);
-				grupoEvaDto.setDirectorCarrera(grupo.getCarrera().getDirectorCarrera());
-				grupoEvaDto.setAlumnosEncuestados(aluEncuestados);
-				gruposEvaDto.add(grupoEvaDto);
-
+				//se crea el objeto de grupo
+				Grupo grupo = grupoService.buscarPorId(cveGrupo);
+				//se envia el grupo a la pantalla
+				model.addAttribute("grupo", grupo);
+				//variable ppara promedio por pregunta
+				double pp = 0;
+				//sumatoria de las respuestas
+				Integer ponderacion = serviceResEvaTutor.sumarPonderacionPorIdPreguntaIdGrupoIdEvaluacion(p, cveGrupo, 4);
+				//cuenta los alumnos que respondieron a la evaluacion
+				Integer alumnos = serviceResEvaTutor.contarPorIdPreguntaIdGrupoIdEvaluacion(p, cveGrupo, 4);
+				double promedio = 0;
+				if(ponderacion > 0 && alumnos > 0) {
+					promedio =  Double.valueOf(ponderacion) / Double.valueOf(alumnos);
+				}
+				grupoDto.setNombreGrupo(grupo.getNombre());
+				grupoDto.setPromedioPre(promedio);
+				//se agrega el objeto a la lista de grupos
+				gruposDto.add(grupoDto);
+				//promedio
+				pp = pp + promedio;
+				//se agrega la lista de grupos a la pregunta
+				pregunta.setGruposDTO(gruposDto);
+				//se agrega la pregunta a la lista de preguntas
+				preguntasDTO.add(pregunta);
+				//iteracion de grupos
+				int divisor = 0;
+				for (GrupoDTO g : pregunta.getGruposDTO()) {
+					if(g.getPromedioPre() > 0) {
+						divisor = divisor + 1;
+					}
+				}
+				//promedio por pregunta
+				pregunta.setPromedio(pp/divisor);
+				//se enva la lista de grupos para los encabezados
+				model.addAttribute("gruposDto", gruposDto);
+				//promedio total de la evaluacion
+				promedioTotal = promedioTotal + pregunta.getPromedio();
 			}
-			model.addAttribute("gruposEvaDto", gruposEvaDto);
+			promedioTotal = promedioTotal / preguntas.size();
+			model.addAttribute("promedioTotal", promedioTotal);
+			//se envia a la vista la lista de preguntas
+			model.addAttribute("preguntas", preguntasDTO);
+			model.addAttribute("comentarios", comentarios);
+			model.addAttribute("evaluacion", evaluacion);
+			model.addAttribute("encuestados", encuestados);
 		}
 
 		model.addAttribute("grupos", grupos);

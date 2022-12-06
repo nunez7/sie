@@ -205,10 +205,9 @@ public class EncuestasController {
 		Integer idOpRepuesta = Integer.parseInt(obj.get("idOpRepuesta"));
 		Integer cveCargaHr = (Integer) session.getAttribute("cveCargaHr");
 		Date fechaActual = new Date();
-
+		
 		// Se valida si ya ahi una evaluaci�n registrada para esta carga horaria
-		CargaEvaluacion cargaEvaluacion = serviceCargaEva.buscarPorCargaHorariaYEvaluacion(new CargaHoraria(cveCargaHr),
-				new Evaluacion(idEvaluacion));
+		CargaEvaluacion cargaEvaluacion = serviceCargaEva.buscarPorCargaHorariaYEvaluacion(cveCargaHr, idEvaluacion);
 
 		// Se valida si ya hay una respuesta para esta respuesta, evaluaci�n y carga
 		// horaria
@@ -283,8 +282,8 @@ public class EncuestasController {
 		Integer cveCargaHr = (Integer) session.getAttribute("cveCargaHr");
 
 		// Se valida si ya ahi una evaluaci�n vinculada a la carga horaria en cesion
-		CargaEvaluacion cargaEvaluacion = serviceCargaEva.buscarPorCargaHorariaYEvaluacion(new CargaHoraria(cveCargaHr),
-				evaluacion);
+		CargaEvaluacion cargaEvaluacion = serviceCargaEva.buscarPorCargaHorariaYEvaluacion(cveCargaHr,
+				evaluacion.getId());
 
 		// Se valida si ya ahi un comentario asociado a un rejitro en carga evalusion en
 		// base a carga horaria en cesion

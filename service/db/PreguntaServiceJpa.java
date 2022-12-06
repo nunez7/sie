@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.Pregunta;
 import edu.mx.utdelacosta.model.PreguntaFrecuente;
-import edu.mx.utdelacosta.model.dto.PromedioPreguntaDTO;
 import edu.mx.utdelacosta.repository.PreguntaFrecuenteRepository;
 import edu.mx.utdelacosta.repository.PreguntaRepository;
 import edu.mx.utdelacosta.service.IPreguntaService;
@@ -22,18 +21,6 @@ public class PreguntaServiceJpa implements IPreguntaService{
 	
 	@Autowired
 	private PreguntaFrecuenteRepository preguntaRepository;
-
-	@Override
-	@Transactional(readOnly = true)
-	public PromedioPreguntaDTO ObtenerPromedioPorPregunta(Integer idEvaluacion, Integer idPregunta, Integer idCarga,Integer idGrupo) {
-		return preguntaRepo.findPromedioByPregunta(idEvaluacion, idPregunta, idCarga, idGrupo);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public PromedioPreguntaDTO ObtenerPromedioEvaTuPorPregunta(Integer idEvaluacion, Integer idPregunta,Integer idGrupo) {
-		return preguntaRepo.findPromedioEvaTuByPregunta(idEvaluacion, idPregunta, idGrupo);
-	}
 	
 	@Override
 	@Transactional(readOnly = true)
@@ -47,9 +34,17 @@ public class PreguntaServiceJpa implements IPreguntaService{
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<PreguntaFrecuente> preguntasFrecuentesPorModulo(Integer idModulo) {
 		// TODO Auto-generated method stub
 		return preguntaRepository.getAllByModulo(idModulo);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Integer> buscarPorIdEvaluacion(Integer idEvaluacion) {
+		// TODO Auto-generated method stub
+		return preguntaRepo.findByIdEvaluacion(idEvaluacion);
 	}
 
 }

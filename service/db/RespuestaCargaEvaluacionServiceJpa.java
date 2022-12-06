@@ -35,18 +35,39 @@ public class RespuestaCargaEvaluacionServiceJpa implements IRespuestaCargaEvalua
 			Integer idEvaluacion, Integer idPregunta, Integer idPersona, Integer idCarga) {
 		return respuestaCarEva.findOpcionRespuestaAndRespuestaByPregunta(idEvaluacion, idPregunta, idPersona, idCarga);
 	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public Integer contarPorGrupoYCargaHoraria(Integer idEvaluacion, Integer idGrupo, Integer idCarga) {
-		return respuestaCarEva.countRePuestasByAlumno(idEvaluacion, idGrupo, idCarga);
-	}
-
+	
 	@Override
 	@Transactional(readOnly = true)
 	public Integer contarPorIdPersonaYEvaluacionYIdCargaHoraria(Integer idPersona, Integer idEvaluacion,
 			Integer idCargaHoraria) {
 		return respuestaCarEva.countByIdPersonaAndIdEvaluacionAndIdCargaHoraria(idPersona, idEvaluacion, idCargaHoraria);
+	}
+
+	@Override
+	public Integer sumarPonderacionPorIdPreguntaIdCargaHorariaIdEvaluacion(Integer idPregunta, Integer idCargaHoraria,
+			Integer idEvaluacion) {
+		// TODO Auto-generated method stub
+		return respuestaCarEva.sumPonderacionByIdPreguntaAndIdCargaHorariaAndIdEvaluacion(idPregunta, idCargaHoraria, idEvaluacion);
+	}
+
+	@Override
+	public Integer contarPorIdPreguntaIdCargaHorariaIdEvaluacion(Integer idPregunta, Integer idCargaHoraria,
+			Integer idEvaluacion) {
+		// TODO Auto-generated method stub
+		return respuestaCarEva.countRespuestasByIdPreguntaAndIdCargaHorariaAndIdEvaluacion(idPregunta, idCargaHoraria, idEvaluacion);
+	}
+
+	@Override
+	public Integer contarAlumnosPorIdProfesorIdCarreraIdPeriodo(Integer idProfesor, Integer idCarrera,
+			Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return respuestaCarEva.countAlumnosByIdProfesorAndIdCarreraAndIdPeriodo(idProfesor, idCarrera, idPeriodo);
+	}
+
+	@Override
+	public Integer contarAlumnosPorIdProfesorIdPeriodo(Integer idProfesor, Integer idPeriodo) {
+		// TODO Auto-generated method stub
+		return respuestaCarEva.countAlumnosByIdProfesorAndIdPeriodo(idProfesor, idPeriodo);
 	}
 
 }

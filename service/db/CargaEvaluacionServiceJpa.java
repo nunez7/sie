@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import edu.mx.utdelacosta.model.CargaEvaluacion;
-import edu.mx.utdelacosta.model.CargaHoraria;
-import edu.mx.utdelacosta.model.Evaluacion;
 import edu.mx.utdelacosta.repository.CargaEvaluacionRepository;
 import edu.mx.utdelacosta.service.ICargaEvaluacionService;
 
@@ -35,9 +33,9 @@ public class CargaEvaluacionServiceJpa implements ICargaEvaluacionService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public CargaEvaluacion buscarPorCargaHorariaYEvaluacion(CargaHoraria cargaHoraria, Evaluacion evaluacion) {
+	public CargaEvaluacion buscarPorCargaHorariaYEvaluacion(Integer idCargaHoraria, Integer idEvaluacion) {
 		// TODO Auto-generated method stub
-		return cargaEvaRepo.findByCargaHorariaAndEvaluacion(cargaHoraria, evaluacion);
+		return cargaEvaRepo.findByCargaHorariaAndEvaluacion(idCargaHoraria, idEvaluacion);
 	}
 
 }
