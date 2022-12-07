@@ -31,13 +31,6 @@ public class AsistenciaServiceJpa implements IAsistenciaService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Date> diasEntreFechaInicioYFechaFin(String fechaInicio, String fechaFin) {
-		// TODO Auto-generated method stub
-		return asistenciaRepo.findAllByFechaInicioFechafin(fechaInicio, fechaFin);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
 	public List<Asistencia> buscarPorGrupoYalumno(Integer idGrupo, Integer idAlumno) {
 		// TODO Auto-generated method stub
 		return asistenciaRepo.findAllByGrupoAndAlumno(idGrupo, idAlumno);
@@ -115,12 +108,20 @@ public class AsistenciaServiceJpa implements IAsistenciaService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarAsistenciasPorCargaYCorte(CargaHoraria carga, CorteEvaluativo corte) {
 		return asistenciaRepo.countAsistenciasByCargaAndCorte(carga, corte);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Integer contarTotalPorAlumnoYCargaHorariaYFecha(Integer alumno, Integer cargaHoraria, Date fecha) {
 		return asistenciaRepo.countByAlumnoAndCargaHorariaAndFecha(alumno, cargaHoraria, fecha);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Date> diasEntreFechaInicioYFechaFin(Date fechaInicio, Date fechaFin) {
+		return asistenciaRepo.findAllByFechaInicioFechafin(fechaInicio, fechaFin);
 	}
 }

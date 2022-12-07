@@ -12,7 +12,7 @@ import edu.mx.utdelacosta.model.Horario;
 public interface IAsistenciaService {	
 	List<Date> mesesEntreFechaInicioYFechaFinAsc(Date fechaInicio, Date fechaFin);	
 	
-	List<Date> diasEntreFechaInicioYFechaFin(String fechaInicio, String fechaFin);
+	//List<Date> diasEntreFechaInicioYFechaFin(String fechaInicio, String fechaFin);
 	
 	List<Asistencia> buscarPorGrupoYalumno(Integer idGrupo, Integer idAlumno);
 	
@@ -41,4 +41,6 @@ public interface IAsistenciaService {
 	Integer contarFaltasPorAlumnoYCargaHorariaYCorteEvaluativo(Integer idAlumno, Integer idCargaHoraria, Date fechaInicio, Date fechaFin);
 	
 	Integer contarTotalPorAlumnoYCargaHorariaYFecha(Integer alumno, Integer cargaHoraria, Date fecha);
+	
+	List<Date> diasEntreFechaInicioYFechaFin(Date fechaInicio, Date fechaFin);
 }

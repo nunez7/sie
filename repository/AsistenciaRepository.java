@@ -22,13 +22,6 @@ public interface AsistenciaRepository extends CrudRepository<Asistencia, Integer
 	List<Date> findAllByFechaInicioFechafinOrderByFechaAsc(@Param("fechaInicio") Date fechaInicio,
 			@Param("fechaFin") Date fechaFin);
 
-	// Lista de dias
-	@Query(value = "SELECT CAST(dd AS date) AS fecha "
-			+ "FROM generate_series(CAST(:fechaInicio AS date),CAST(:fechaFin AS date),CAST('1 day' AS interval))AS dia(dd) "
-			+ "WHERE CAST(TO_CHAR(dia.dd, 'd') AS INT) NOT IN (7, 1) " + "LIMIT 200 ", nativeQuery = true)
-	List<Date> findAllByFechaInicioFechafin(@Param("fechaInicio") String fechaInicio,
-			@Param("fechaFin") String fechaFin);
-
 	// Lista de asistencias de las cargas horarias asociadas al grupo y al alumno
 	@Query(value = "SELECT asi.* FROM asistencias asi " + "INNER JOIN horarios hr ON hr.id=asi.id_horario "
 			+ "INNER JOIN cargas_horarias cr ON cr.id=hr.id_carga_horaria "
@@ -102,4 +95,11 @@ public interface AsistenciaRepository extends CrudRepository<Asistencia, Integer
 			+ "	WHERE id_alumno = :alumno AND fecha = :fecha "
 			+ "	AND h.id_carga_horaria = :carga", nativeQuery = true)
 	Integer countByAlumnoAndCargaHorariaAndFecha(@Param("alumno") Integer alumno, @Param("carga") Integer cargaHoraria, @Param("fecha") Date fecha);
+	
+	// Lista de dias
+	@Query(value = "SELECT CAST(dd AS date) AS fecha "
+		+ "FROM generate_series(CAST(:fechaInicio AS date),CAST(:fechaFin AS date),CAST('1 day' AS interval))AS dia(dd) "
+		+ "WHERE CAST(TO_CHAR(dia.dd, 'd') AS INT) NOT IN (7, 1) " + "LIMIT 200 ", nativeQuery = true)
+	List<Date> findAllByFechaInicioFechafin(@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
+	
 }

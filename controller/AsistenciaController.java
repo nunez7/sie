@@ -310,7 +310,7 @@ public class AsistenciaController {
 		model.addAttribute("listaPrevia", listaPrevia);
 		return "fragments/asistencias:: listaAsistencias";
 	}
-
+	
 	@GetMapping("/reporte-profesor")
 	public String verReporteProfesor(Model model, HttpSession session) {
 		//se crean las variables
@@ -347,41 +347,40 @@ public class AsistenciaController {
 						cortesEvaluativosDTO.setFechaFin(corte.getFechaFin());
 						cortesEvaluativosDTO.setConsecutivo(corte.getConsecutivo());
 
-						List<Date> meses = asistenciaService.mesesEntreFechaInicioYFechaFinAsc(corte.getFechaInicio(),
-								corte.getFechaFin());
+						//se igual la fecha de inicio del corte al dia 1 del mes de inicio
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(corte.getFechaInicio());
+						cal.set(Calendar.DAY_OF_MONTH, 1);
+						Date fechaInicio = cal.getTime();
+						
+						//se buscan los meses usando el dia 1 del mes del corte para obtener todos los meses sin excepcion
+						List<Date> meses = asistenciaService.mesesEntreFechaInicioYFechaFinAsc(fechaInicio,	corte.getFechaFin());
 						List<Asistencia> asistencias = asistenciaService.buscarPorFechaInicioYFechaFinEIdCargaHorariaEIdGrupo(
 								corte.getFechaInicio(), corte.getFechaFin(), cveCarga.getId(), cveGrupo);
 						model.addAttribute("asistencias", asistencias);
 
 						List<MesDTO> mesesDto = new ArrayList<>();
 						for (Date mes : meses) {
-
-							SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");  
-						    SimpleDateFormat sdfM=new SimpleDateFormat("MMMM"); 
-						    
-						    //Fecha       
-						    Calendar fecha = Calendar.getInstance();  
-						    fecha.setTime(mes); 
-						          
-						    // Obtenga el primer día del mes actual: 
-						    fecha.add(Calendar.MONTH, 0); 
-						    fecha.set (Calendar.DAY_OF_MONTH, 1); // Establecido en el 1, la fecha actual es el primer día del mes  
-						    String primerDia = sdf.format(fecha.getTime());  
-						          
-						    //extraigo el primer dia del mes lo guardo como string y le doy formato de mes para el dto                
-						    String mesLetra = sdfM.format(fecha.getTime()); 
-						       
-						    // Obtener el último día del mes actual           
-						    fecha.set(Calendar.DAY_OF_MONTH, fecha.getActualMaximum(Calendar.DAY_OF_MONTH));   
-						    String ultimoDia = sdf.format(fecha.getTime()); 
-						          
+							//se obtiene la fecha del ultimo dia del mes
+							Calendar mesFor = Calendar.getInstance();
+							mesFor.setTime(mes);
+							mesFor.set(Calendar.DAY_OF_MONTH, mesFor.getActualMaximum(Calendar.DATE));
+							Date finDeMes = mesFor.getTime();
+							
+							/* se cargan las fechas de los meses, para esto se compara si la fecha de inicio del mes 
+							 * es menor a la fecha de inicio del corte, lo mismo con la fecha de fin de mes y delimitar
+							 * el numero de dias que aparecen en la vista
+							*/
+							Date inicioMes = mes.compareTo(corte.getFechaInicio())<0 ? corte.getFechaInicio() : mes;
+							Date finMes = finDeMes.compareTo(corte.getFechaFin())>0 ? corte.getFechaFin() : finDeMes;
+     
 						    MesDTO mesDTO = new MesDTO(); 
-						    mesDTO.setMes(mesLetra);       
+						    mesDTO.setMes(new SimpleDateFormat("MMMM").format(mesFor.getTime()));       
 						    mesesDto.add(mesDTO); 
 						    cortesEvaluativosDTO.setMeses(mesesDto);
 							
-
-							List<Date> dias = asistenciaService.diasEntreFechaInicioYFechaFin(primerDia, ultimoDia);
+						    //se obtienen los dias en base a las fechas asignadas de inicio y fin
+							List<Date> dias = asistenciaService.diasEntreFechaInicioYFechaFin(inicioMes, finMes);
 
 							List<DiaDTO> diasDto = new ArrayList<>();
 							for (Date dia : dias) {
@@ -472,40 +471,40 @@ public class AsistenciaController {
 					cortesEvaluativosDTO.setFechaInicio(corte.getFechaInicio());
 					cortesEvaluativosDTO.setFechaFin(corte.getFechaFin());
 					cortesEvaluativosDTO.setConsecutivo(corte.getConsecutivo());			
+					//se igual la fecha de inicio del corte al dia 1 del mes de inicio
+					Calendar cal = Calendar.getInstance();
+					cal.setTime(corte.getFechaInicio());
+					cal.set(Calendar.DAY_OF_MONTH, 1);
+					Date fechaInicio = cal.getTime();
 					
-					List<Date> meses = asistenciaService.mesesEntreFechaInicioYFechaFinAsc(corte.getFechaInicio(), corte.getFechaFin());
-					List<Asistencia> asistencias = asistenciaService.buscarPorFechaInicioYFechaFinEIdCargaHorariaEIdGrupo(corte.getFechaInicio(), corte.getFechaFin(), cveCarga, cveGrupo);
+					//se buscan los meses usando el dia 1 del mes del corte para obtener todos los meses sin excepcion
+					List<Date> meses = asistenciaService.mesesEntreFechaInicioYFechaFinAsc(fechaInicio,	corte.getFechaFin());
+					List<Asistencia> asistencias = asistenciaService.buscarPorFechaInicioYFechaFinEIdCargaHorariaEIdGrupo(
+							corte.getFechaInicio(), corte.getFechaFin(), cveCarga, cveGrupo);
 					model.addAttribute("asistencias", asistencias);
 					
 					List<MesDTO> mesesDto = new ArrayList<>();
 					for (Date mes : meses) {									
+						//se obtiene la fecha del ultimo dia del mes
+						Calendar mesFor = Calendar.getInstance();
+						mesFor.setTime(mes);
+						mesFor.set(Calendar.DAY_OF_MONTH, mesFor.getActualMaximum(Calendar.DATE));
+						Date finDeMes = mesFor.getTime();
 						
-						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-						SimpleDateFormat sdfM = new SimpleDateFormat("MMMM");
-						// Fecha
-						Calendar fecha = Calendar.getInstance();
-						fecha.setTime(mes);
-
-						// Obtenga el primer día del mes actual:
-						fecha.add(Calendar.MONTH, 0);
-						fecha.set(Calendar.DAY_OF_MONTH, 1); // Establecido en el 1, la fecha actual es el primer día
-																// del mes
-						String primerDia = sdf.format(fecha.getTime());
-
-						// extraigo el primer dia del mes lo guardo como string y le doy formato de mes
-						// para el dto
-						String mesLetra = sdfM.format(fecha.getTime());
-
-						// Obtener el último día del mes actual
-						fecha.set(Calendar.DAY_OF_MONTH, fecha.getActualMaximum(Calendar.DAY_OF_MONTH));
-						String ultimoDia = sdf.format(fecha.getTime());
-
-						MesDTO mesDTO = new MesDTO();
-						mesDTO.setMes(mesLetra);
-						mesesDto.add(mesDTO);
-						cortesEvaluativosDTO.setMeses(mesesDto);
-						
-						List<Date> dias = asistenciaService.diasEntreFechaInicioYFechaFin(primerDia, ultimoDia);							 
+						/* se cargan las fechas de los meses, para esto se compara si la fecha de inicio del mes 
+						 * es menor a la fecha de inicio del corte, lo mismo con la fecha de fin de mes y delimitar
+						 * el numero de dias que aparecen en la vista
+						*/
+						Date inicioMes = mes.compareTo(corte.getFechaInicio())<0 ? corte.getFechaInicio() : mes;
+						Date finMes = finDeMes.compareTo(corte.getFechaFin())>0 ? corte.getFechaFin() : finDeMes;
+ 
+					    MesDTO mesDTO = new MesDTO(); 
+					    mesDTO.setMes(new SimpleDateFormat("MMMM").format(mesFor.getTime()));       
+					    mesesDto.add(mesDTO); 
+					    cortesEvaluativosDTO.setMeses(mesesDto);
+					    
+					  //se obtienen los dias en base a las fechas asignadas de inicio y fin
+					    List<Date> dias = asistenciaService.diasEntreFechaInicioYFechaFin(inicioMes, finMes);							 
 						 
 						List<DiaDTO> diasDto = new ArrayList<>();
 	                    for (Date dia : dias) {
