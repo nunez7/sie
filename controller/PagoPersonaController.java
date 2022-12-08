@@ -187,6 +187,10 @@ public class PagoPersonaController {
 				pagoExiste.setFolio(folio);
 				pagoExiste.setStatus(1);
 				pagoExiste.setFactura(Boolean.valueOf(factura));
+				if (pagoExiste.getSistemaAnterior()==true) {
+					pagoExiste.setDescuento(100d);
+					pagoExiste.setMonto(0d);
+				}
 				//se guarda el pago recibe
 				
 				PagoRecibe pr = new PagoRecibe();
@@ -392,7 +396,7 @@ public class PagoPersonaController {
     			if(a.getConcepto().getId() == 7 || a.getConcepto().getId() == 8 || a.getConcepto().getId() == 9
 			        || a.getConcepto().getId() == 10) {
     				//se guardan el pago y concepto
-    				abono.setPago(a);//se añade el pago general
+    				abono.setPago(a);//se aï¿½ade el pago general
         			abono.setConcepto(new Concepto(idConcepto)); 
         			comentario = "ABONO " + a.getDescripcion();
     			}
@@ -400,7 +404,7 @@ public class PagoPersonaController {
     		//abono de titulo
     		if(idConcepto == 50 || idConcepto == 51) {
     			if(a.getConcepto().getId() == 50 || a.getConcepto().getId() == 51) {
-    				abono.setPago(a);//se añade el pago general
+    				abono.setPago(a);//se aï¿½ade el pago general
         			abono.setConcepto(new Concepto(idConcepto));
         			comentario = "ABONO " + a.getDescripcion();
     			}
@@ -426,5 +430,18 @@ public class PagoPersonaController {
 		}
     	
     	return comentario;
+	}
+	
+	@PostMapping(path = "/editar-pagadoAnterior", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String editarPagadoAnterior(@RequestBody Map<String, String> obj) {
+		Integer adeudo = Integer.valueOf(obj.get("adeudo"));
+		PagoGeneral pago = null;
+		if (adeudo!= null) {
+			pago = pagoGeneralService.buscarPorId(adeudo);
+			   pago.setSistemaAnterior(pago.getSistemaAnterior()!=null ? !pago.getSistemaAnterior() : true);
+			   pagoGeneralService.guardar(pago);
+		}
+		return pago.getSistemaAnterior()==true ? "ok" : "okf";
 	}
 }

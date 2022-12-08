@@ -89,4 +89,9 @@ public interface IPagoGeneralService {
 		
 	//lista de pagos para reporte detallado con fechas de inicio, fin y todos los cajeros con paginacion activa
 	Page<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYTodosCajerosPaginado(Date fechaInicio, Date fechaFin, Pageable pageable);
+	
+	Double ObtenerTotalMontoPorFechaInicioYFechaFinTodosCajeros(Date fechaInicio, Date fechaFin);
+	
+	Double ObtenerTotalMontoPorFechaInicioYFechaFinYCajero(Date fechaInicio, Date fechaFin, Integer cajero);
+	
 }

@@ -342,5 +342,21 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 		Page<PagosGeneralesDTO> findByFechaInicioAndFechaFinAndAllCajerosPaginable(@Param("fechaInicio") Date fechaInicio,
 				@Param("fechaFin") Date fechaFin, Pageable pageable);
 		
+		@Query(value = "SELECT COALESCE(SUM(pg.monto),0) AS total "
+				+ "	FROM pagos_generales pg "
+				+ "	INNER JOIN pago_recibe pr ON pg.id = pr.id_pago "
+				+ "	INNER JOIN personas p ON p.id = pr.id_cajero "
+				+ "	WHERE pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin AND pg.status = 1 ", nativeQuery = true)
+		Double findSumByFechaInicioAndFechaFindAllCajeros(@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
+		
+		@Query(value = "SELECT COALESCE(SUM(pg.monto),0) AS total "
+				+ "	FROM pagos_generales pg "
+				+ "	INNER JOIN pago_recibe pr ON pg.id = pr.id_pago "
+				+ "	INNER JOIN personas p ON p.id = pr.id_cajero "
+				+ "	WHERE p.id = :cajero AND pr.fecha_cobro BETWEEN :fechaInicio AND :fechaFin AND pg.status = 1  ", nativeQuery = true)
+		Double findSumByFechaInicioAndFechaFindAndCajero(@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin, @Param("cajero") Integer cajero);
+		
+		
+		
 
 }

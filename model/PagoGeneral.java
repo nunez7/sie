@@ -74,6 +74,8 @@ public class PagoGeneral {
 	
 	private Boolean factura;
 	
+	private Boolean sistemaAnterior;
+	
 	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER, mappedBy = "pagoGeneral")
 	private PagoAlumno pagoAlumno;
 	
@@ -322,6 +324,14 @@ public class PagoGeneral {
 
 	public void setPagoArea(PagoArea pagoArea) {
 		this.pagoArea = pagoArea;
+	}
+
+	public Boolean getSistemaAnterior() {
+		return sistemaAnterior;
+	}
+
+	public void setSistemaAnterior(Boolean sistemaAnterior) {
+		this.sistemaAnterior = sistemaAnterior;
 	}
 	
 }

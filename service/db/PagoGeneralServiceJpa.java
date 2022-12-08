@@ -233,14 +233,28 @@ public class PagoGeneralServiceJpa implements IPagoGeneralService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Page<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYCajeroPaginado(Date fechaInicio, Date fechaFin,
 			Integer idCajero, Pageable pageable) {
 		return pagoRepo.findByFechaInicioAndFechaFinAndCajeroPaginable(fechaInicio, fechaFin, idCajero, pageable);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Page<PagosGeneralesDTO> buscarPorFechaInicioYFechaFinYTodosCajerosPaginado(Date fechaInicio, Date fechaFin,
 			Pageable pageable) {
 		return pagoRepo.findByFechaInicioAndFechaFinAndAllCajerosPaginable(fechaInicio, fechaFin, pageable);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Double ObtenerTotalMontoPorFechaInicioYFechaFinTodosCajeros(Date fechaInicio, Date fechaFin) {
+		return pagoRepo.findSumByFechaInicioAndFechaFindAllCajeros(fechaInicio, fechaFin);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Double ObtenerTotalMontoPorFechaInicioYFechaFinYCajero(Date fechaInicio, Date fechaFin, Integer cajero) {
+		return pagoRepo.findSumByFechaInicioAndFechaFindAndCajero(fechaInicio, fechaFin, cajero);
 	}
 }

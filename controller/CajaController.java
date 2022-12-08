@@ -234,18 +234,28 @@ public class CajaController {
 			model.addAttribute("cveCajero", cveCajero);
 			// lista que guardará los pagos
 			Page<PagosGeneralesDTO> pagos = null;
-			Double notaCredito = 0d;
+			Double notaCredito = null;
+			Double total = null;
 			Pageable page = PageRequest.of(0, REGISTROS_REPORTE);
 			if (cveCajero > 0) {
 				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYCajeroPaginado(fechaInicio, fechaFin, cveCajero, page);
-				//notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);
 			} else {
 				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYTodosCajerosPaginado(fechaInicio, fechaFin, page);
-				//notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFin(fechaInicio, fechaFin);
 			}
+			PageRender<PagosGeneralesDTO> pageRender = new PageRender<>(pagos);
+			if (1 == pageRender.getTotalPaginas()) {
+				if (cveCajero > 0) {
+					total = pagoGeneralService.ObtenerTotalMontoPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);
+					notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);					
+				}else {					
+					total = pagoGeneralService.ObtenerTotalMontoPorFechaInicioYFechaFinTodosCajeros(fechaInicio, fechaFin);
+					notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFin(fechaInicio, fechaFin);
+				}
+			}
+			model.addAttribute("total", total);
+			model.addAttribute("notaCredito", notaCredito);
 			model.addAttribute("pagos", pagos);
 			model.addAttribute("totalNota", notaCredito);
-			PageRender<PagosGeneralesDTO> pageRender = new PageRender<>(pagos);
 			model.addAttribute("page", pageRender);
 		}
 		List<Persona> cajeros = personaService.buscarCajeros();
@@ -282,6 +292,7 @@ public class CajaController {
 			Page<PagosGeneralesDTO> pagos = null;
 			Double notaCredito = 0d;
 			Pageable page = PageRequest.of(pagina, REGISTROS_REPORTE);
+			Double total = 0d;
 			if (cveCajero > 0) {
 				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYCajeroPaginado(fechaInicio, fechaFin, cveCajero, page);
 				//notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);
@@ -289,10 +300,21 @@ public class CajaController {
 				pagos = pagoGeneralService.buscarPorFechaInicioYFechaFinYTodosCajerosPaginado(fechaInicio, fechaFin, page);
 				//notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFin(fechaInicio, fechaFin);
 			}
-			model.addAttribute("pagos", pagos);
-			model.addAttribute("totalNota", notaCredito);
 			PageRender<PagosGeneralesDTO> pageRender = new PageRender<>(pagos);
+			if (pagina+1 == pageRender.getTotalPaginas()) {
+				if (cveCajero > 0) {
+					total = pagoGeneralService.ObtenerTotalMontoPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);
+					notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFinYCajero(fechaInicio, fechaFin, cveCajero);					
+				}else {					
+					total = pagoGeneralService.ObtenerTotalMontoPorFechaInicioYFechaFinTodosCajeros(fechaInicio, fechaFin);
+					notaCredito = notaCreditoService.buscarTotalPorFechaInicioYFechaFin(fechaInicio, fechaFin);
+				}
+			}
+			model.addAttribute("total", total);
+			model.addAttribute("notaCredito", notaCredito);
+			model.addAttribute("totalNota", notaCredito);
 			model.addAttribute("page", pageRender);
+			model.addAttribute("pagos", pagos);
 			model.addAttribute("limitePagina", REGISTROS_REPORTE*pagina);
 		}
 		return "fragments/buscar-caja :: reporte-corte-detallado-paginado";
