@@ -403,4 +403,11 @@ public class AlumnosServiceJpa implements IAlumnoService{
 			Pageable pageable) {
 		return alumnosRepo.reportAlumnosAdeudosPaginadoByCarrera(periodo, carrera, pageable);
 	}
+
+	@Override
+	public List<AlumnoPromedioEscolaresDTO> buscarTodoPromedioEscolaresPorPeriodoYGrupo(Integer idPeriodo,
+			Integer idGrupo) {
+		// TODO Auto-generated method stub
+		return alumnosRepo.findPromedioEcolaresByIdPeriodoAndIdGrupo(idPeriodo, idGrupo);
+	}
 }

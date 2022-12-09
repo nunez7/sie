@@ -132,4 +132,6 @@ public interface IAlumnoService {
 	Page<AlumnoAdeudoDTO> reporteTodosAlumnosAdeudosPaginado(Integer periodo, Pageable pageable);
 	
 	Page<AlumnoAdeudoDTO> reporteAlumnosAdeudosPaginadoPorCarrera(Integer periodo, Integer carrera, Pageable pageable);
+	
+	List<AlumnoPromedioEscolaresDTO> buscarTodoPromedioEscolaresPorPeriodoYGrupo(Integer idPeriodo, Integer idGrupo);
 }

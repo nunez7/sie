@@ -630,4 +630,27 @@ public interface AlumnosRepository extends JpaRepository<Alumno, Integer>{
 		+ "	TRANSLATE (p.nombre,'ÁÉÍÓÚÜÑ ','AEIOUUN') ASC ", nativeQuery = true)
 	Page<AlumnoAdeudoDTO> reportAlumnosAdeudosPaginadoByCarrera(@Param("periodo") Integer periodo, @Param("carrera") Integer carrera, Pageable pageable);
 	
+	//buscar promedio escolares por grupo y periodo
+	@Query(value = "SELECT cm.id_alumno,CONCAT(p.primer_apellido, ' ',p.segundo_apellido, ' ',p.nombre)AS nombreCompleto, a.matricula, "
+			+ "g.nombre AS grupo, COALESCE(ROUND(AVG(cm.calificacion),1),0) AS calificacion, c.descripcion AS cuatrimestre, ca.nombre AS carrera, "
+			+ "COALESCE(( "
+			+ "	SELECT cmm.estatus FROM calificacion_materia  cmm "
+			+ "	INNER JOIN cargas_horarias chh ON chh.id=cmm.id_carga_horaria "
+			+ "	WHERE cmm.id_alumno=a.id AND chh.id_grupo=:idGrupo AND estatus IN ('E', 'R') "
+			+ "	ORDER BY cmm.estatus DESC LIMIT 1 "
+			+ "	), 'O')AS estatus "
+			+ "FROM calificacion_materia cm "
+			+ "LEFT JOIN cargas_horarias ch ON cm.id_carga_horaria = ch.id "
+			+ "INNER JOIN materias m ON ch.id_materia = m.id "
+			+ "INNER JOIN alumnos a ON a.id = cm.id_alumno "
+			+ "INNER JOIN personas p ON p.id = a.id_persona "
+			+ "INNER JOIN grupos g ON g.id = ch.id_grupo "
+			+ "INNER JOIN cuatrimestres c ON c.id = g.id_cuatrimestre "
+			+ "INNER JOIN carreras ca ON ca.id = g.id_carrera "
+			+ "WHERE g.id = :idGrupo AND ch.activo = 'True' AND g.id_periodo = :idPeriodo "
+			+ "AND m.activo = 'True' AND m.calificacion = 'True' AND m.curricular = 'True' "
+			+ "GROUP BY p.primer_apellido, p.segundo_apellido, p.nombre, a.id, cm.id_alumno, g.nombre, ca.nombre, c.descripcion "
+			+ "ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre", nativeQuery = true)
+	List<AlumnoPromedioEscolaresDTO> findPromedioEcolaresByIdPeriodoAndIdGrupo(@Param("idPeriodo") Integer idPeriodo, @Param("idGrupo") Integer idGrupo);
+	
 }
