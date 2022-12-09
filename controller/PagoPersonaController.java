@@ -187,7 +187,7 @@ public class PagoPersonaController {
 				pagoExiste.setFolio(folio);
 				pagoExiste.setStatus(1);
 				pagoExiste.setFactura(Boolean.valueOf(factura));
-				if (pagoExiste.getSistemaAnterior()==true) {
+				if (pagoExiste.getSistemaAnterior() != null && pagoExiste.getSistemaAnterior()==true) {
 					pagoExiste.setDescuento(100d);
 					pagoExiste.setMonto(0d);
 				}
@@ -261,6 +261,10 @@ public class PagoPersonaController {
 			        		return "fail-menor";
 			        	}
 			        	else {
+			        		//se compara si el comentario es vacio para retornar que no hay concepto
+			        		if(comentarioAbono.isEmpty()) {
+			        			return "no-concepto";
+			        		}
 			        		comentario = comentarioAbono;
 			        		
 			        	}
@@ -272,6 +276,10 @@ public class PagoPersonaController {
 			        		return "fail-menor";
 			        	}
 			        	else {
+			        		//se compara si el comentario es vacio para retornar que no hay concepto
+			        		if(comentarioAbono.isEmpty()) {
+			        			return "no-concepto";
+			        		}
 			        		comentario = comentarioAbono;
 			        		
 			        	}
@@ -385,51 +393,53 @@ public class PagoPersonaController {
 	public String generarAbono(Integer idAlumno, Integer idConcepto, double monto, String folio) {
 		double adeudo = 0.0; //adeudo que tendra el pago 
     	List<PagoGeneral> adeudos = pagoGeneralService.buscarPorAlumno(idAlumno, 0);
-    	//se crea el objeto del abono
-    	ConceptoAbono abono = new ConceptoAbono();
-    	//comentario para el abono
-    	String comentario = "";
-    	//se iteran los adeudos
-    	for (PagoGeneral a : adeudos) {
-    		//abono de colegiatura
-    		if(idConcepto == 7 || idConcepto == 8 || idConcepto == 9 || idConcepto == 10) {
-    			if(a.getConcepto().getId() == 7 || a.getConcepto().getId() == 8 || a.getConcepto().getId() == 9
-			        || a.getConcepto().getId() == 10) {
-    				//se guardan el pago y concepto
-    				abono.setPago(a);//se aï¿½ade el pago general
-        			abono.setConcepto(new Concepto(idConcepto)); 
-        			comentario = "ABONO " + a.getDescripcion();
-    			}
-    		}
-    		//abono de titulo
-    		if(idConcepto == 50 || idConcepto == 51) {
-    			if(a.getConcepto().getId() == 50 || a.getConcepto().getId() == 51) {
-    				abono.setPago(a);//se aï¿½ade el pago general
-        			abono.setConcepto(new Concepto(idConcepto));
-        			comentario = "ABONO " + a.getDescripcion();
-    			}
-    		}
-    		//se guardan los demas datos 
-    		adeudo = a.getMonto() - monto;
-			a.setMonto(adeudo);
-			//para saber si ya se completo de pago 
-			if(adeudo == 0) {
-				a.setFolio(folio);
-				a.setStatus(1);
-				a.setComentario("PAGADO EN PARCIALIDADES");
+		// comentario para el abono
+		String comentario = "";
+		// se iteran los adeudos
+		for (PagoGeneral a : adeudos) {
+			// se compara que el adeudo sea igual al concepto enviado
+			if (a.getConcepto().getId() == idConcepto) {
+				// se crea el objeto del abono
+				ConceptoAbono abono = new ConceptoAbono();
+				// abono de colegiatura
+				if (idConcepto == 7 || idConcepto == 8 || idConcepto == 9 || idConcepto == 10) {
+					if (a.getConcepto().getId() == 7 || a.getConcepto().getId() == 8 || a.getConcepto().getId() == 9
+							|| a.getConcepto().getId() == 10) {
+						// se guardan el pago y concepto
+						abono.setPago(a);// se añade el pago general
+						abono.setConcepto(new Concepto(idConcepto));
+						comentario = "ABONO " + a.getDescripcion();
+					}
+				}
+				// abono de titulo
+				if (idConcepto == 50 || idConcepto == 51) {
+					if (a.getConcepto().getId() == 50 || a.getConcepto().getId() == 51) {
+						abono.setPago(a);// se añade el pago general
+						abono.setConcepto(new Concepto(idConcepto));
+						comentario = "ABONO " + a.getDescripcion();
+					}
+				}
+				// se guardan los demas datos
+				adeudo = a.getMonto() - monto;
+				a.setMonto(adeudo);
+				// para saber si ya se completo de pago
+				if (adeudo == 0) {
+					a.setFolio(folio);
+					a.setStatus(1);
+					a.setComentario("PAGADO EN PARCIALIDADES");
+				}
+				if (adeudo < 0) {
+					return "fail-menor";
+				}
+				// se termina de guardar el objeto de abono concepto
+				abono.setFolio(folio);
+				abono.setCantidad(monto); // monto que viene en la cadena del adeudo
+				conceptoAbonoService.guardar(abono);
+				// se guarda el pagoGeneral actualizado
+				pagoGeneralService.guardar(a);
 			}
-			if(adeudo < 0) {
-				return "fail-menor";
-			}
-			//se termina de guardar el objeto de abono concepto
-			abono.setFolio(folio);
-			abono.setCantidad(monto); //monto que viene en la cadena del adeudo
-			conceptoAbonoService.guardar(abono);
-			//se guarda el pagoGeneral actualizado
-			pagoGeneralService.guardar(a);
 		}
-    	
-    	return comentario;
+		return comentario;
 	}
 	
 	@PostMapping(path = "/editar-pagadoAnterior", consumes = MediaType.APPLICATION_JSON_VALUE)
