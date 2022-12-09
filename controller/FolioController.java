@@ -358,9 +358,8 @@ public class FolioController {
 			
 			//se comprar si existen remediales en caso de ser asi estos se marcan como no pagados
 			if (pago.getPagoAsignatura()!=null) {
-				if (pago.getPagoAsignatura().getCargaHoraria()==null || pago.getPagoAsignatura().getIdCorteEvaluativo()==null) {
-					return "null";
-				}
+				if (pago.getPagoAsignatura().getCargaHoraria()!=null && pago.getPagoAsignatura().getIdCorteEvaluativo()!=null) {
+//					return "null";
 		
 				RemedialAlumno remedial = remedialAlumnoService.buscarPorAlumnoYCargaHorariaYRemedialYCorte(pago.getPagoAlumno().getAlumno(), pago.getPagoAsignatura().getCargaHoraria(), new Remedial(2), new CorteEvaluativo(pago.getPagoAsignatura().getIdCorteEvaluativo()));
 				//se compara si el extraordinario es diferente a nulo	
@@ -373,6 +372,8 @@ public class FolioController {
 				if (remedial!=null) {
 					remedial.setPagado(false);
 					remedialAlumnoService.guardar(remedial);
+				}
+				
 				}
 			}
 			
