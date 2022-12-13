@@ -187,6 +187,9 @@ public class PagoPersonaController {
 				pagoExiste.setFolio(folio);
 				pagoExiste.setStatus(1);
 				pagoExiste.setFactura(Boolean.valueOf(factura));
+				if (pagoExiste.getSistemaAnterior()==null) {
+					pagoExiste.setSistemaAnterior(false);
+				}
 				if (pagoExiste.getSistemaAnterior() != null && pagoExiste.getSistemaAnterior()==true) {
 					pagoExiste.setDescuento(100d);
 					pagoExiste.setMonto(0d);
@@ -253,6 +256,7 @@ public class PagoPersonaController {
 					//se busca el nuevo concepto
 					Concepto concepto = conceptoService.buscarPorId(idConcepto);
 					pago.setConcepto(concepto);
+					pago.setSistemaAnterior(false);
 					
 					//para generar el abano de colegiatura
 			        if(cveAlumno > 0 && idConcepto == 7 || idConcepto == 8 || idConcepto == 9 || idConcepto == 10) { //se comprueba que sea un alumno
@@ -406,7 +410,7 @@ public class PagoPersonaController {
 					if (a.getConcepto().getId() == 7 || a.getConcepto().getId() == 8 || a.getConcepto().getId() == 9
 							|| a.getConcepto().getId() == 10) {
 						// se guardan el pago y concepto
-						abono.setPago(a);// se añade el pago general
+						abono.setPago(a);// se aï¿½ade el pago general
 						abono.setConcepto(new Concepto(idConcepto));
 						comentario = "ABONO " + a.getDescripcion();
 					}
@@ -414,7 +418,7 @@ public class PagoPersonaController {
 				// abono de titulo
 				if (idConcepto == 50 || idConcepto == 51) {
 					if (a.getConcepto().getId() == 50 || a.getConcepto().getId() == 51) {
-						abono.setPago(a);// se añade el pago general
+						abono.setPago(a);// se aï¿½ade el pago general
 						abono.setConcepto(new Concepto(idConcepto));
 						comentario = "ABONO " + a.getDescripcion();
 					}
