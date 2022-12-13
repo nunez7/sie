@@ -28,7 +28,7 @@ public interface CargaHorariaRepository extends JpaRepository<CargaHoraria, Inte
 	
 	@Query(value = "SELECT ch.* FROM cargas_horarias ch " + "INNER JOIN materias m ON ch.id_materia = m.id "
 			+ "WHERE id_grupo = :grupo and id_periodo = :periodo "
-			+ "AND ch.activo = 'True' AND m.calificacion = 'True' AND m.activo = 'True' ORDER BY m.nombre", nativeQuery = true)
+			+ "AND ch.activo = 'True' AND m.calificacion = 'True' ORDER BY m.nombre", nativeQuery = true)
 	List<CargaHoraria> findByGrupoAndPeriodoAndCalificacionSi(@Param("grupo") Integer idGrupo, @Param("periodo") Integer idPeriodo);
 
 	List<CargaHoraria> findByProfesorAndPeriodoAndActivo(Persona profesor, Periodo periodo, Boolean activo);
@@ -37,7 +37,7 @@ public interface CargaHorariaRepository extends JpaRepository<CargaHoraria, Inte
 			+ "INNER JOIN materias m ON ch.id_materia = m.id "
 			+ "INNER JOIN grupos g ON ch.id_grupo = g.id "
 			+ "WHERE ch.id_profesor = :profesor AND ch.id_periodo = :periodo "
-			+ "AND m.curricular = TRUE AND m.calificacion = TRUE AND m.activo = TRUE "
+			+ "AND m.curricular = 'True' AND m.calificacion = 'True' "
 			+ "ORDER BY g.id_cuatrimestre,g.nombre, m.nombre ", nativeQuery = true)
 	List<CargaHoraria> findByProfesorAndPeriodo(@Param("profesor") Persona profesor,@Param("periodo") Periodo periodo);
 
@@ -95,7 +95,7 @@ public interface CargaHorariaRepository extends JpaRepository<CargaHoraria, Inte
 			+ "INNER JOIN planes_estudio pe ON pe.id = m.id_plan_estudio "
 			+ "INNER JOIN carreras c ON c.id = pe.id_carrera "
 			+ "WHERE ch.id_profesor = :idProfesor AND ch.id_periodo = :idPeriodo AND c.id = :idCarrera "
-			+ "AND m.curricular = 'True' AND m.calificacion = 'True' AND m.activo = 'True' "
+			+ "AND m.curricular = 'True' AND m.calificacion = 'True' "
 			+ "ORDER BY g.id_cuatrimestre,g.nombre, m.nombre", nativeQuery = true)
 	List<CargaHoraria> findByIdProfesorAndIdCarreraAndIdPeriodo(@Param("idProfesor") Integer idPersona, @Param("idCarrera") Integer idCarrera, @Param("idPeriodo") Integer idPeriodo);
 	
