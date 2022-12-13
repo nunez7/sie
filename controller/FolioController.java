@@ -168,7 +168,10 @@ public class FolioController {
 			NotaCredito nota = new NotaCredito(); 
 			if (estatus==true) {	
 				for (PagoGeneral pago : pagosFolio) {
-					totalPago = totalPago + pago.getMonto();
+					Double monto = 0.0;
+					//compara si es pago de sistema anterior
+					monto = pago.getSistemaAnterior() == true ? pago.getConcepto().getMonto() : pago.getMonto();
+					totalPago = totalPago + monto;
 
 					nota = notaCreditoService.buscarPorPagoGeneral(pago);
 					if (nota!=null) {

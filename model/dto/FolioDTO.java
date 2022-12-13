@@ -50,4 +50,6 @@ public interface FolioDTO {
 	
 	Integer getFactura();
 	
+	Boolean sistemaAnterior();
+	
 }

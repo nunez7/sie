@@ -202,7 +202,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "	SUM(DISTINCT(pg.cantidad  * pg.monto_unitario) - ((COALESCE(pg.descuento,0) * (pg.cantidad * pg.monto_unitario))/100) ) AS Monto, "
 			+ "	MAX(CAST(pg.activo AS INT)) AS Activo, MAX(pg.created) AS Fecha, MAX(pg.tipo)AS TipoPago, "
 			+ "	MAX(COALESCE(pa2.area, g.nombre,'--')) as grupo, MAX(COALESCE(c.tipo, concat(to_char(cc.fecha_inicio,'dd/MM/yyyy'),' - ',to_char(cc.fecha_fin,'dd/MM/yyyy')))) as ciclos, MAX(COALESCE(c.tamano, CAST(cu.consecutivo AS VARCHAR))) as cuatrimestre, "
-			+ "	MAX(COALESCE(pr.fecha_cobro, null)) as fechaPago, MAX(COALESCE(CONCAT(p2.primer_apellido, ' ', p2.segundo_apellido,' ',p2.nombre), '')) as pagoRecibe, MAX(COALESCE(a.id, 0)) as idAlumno "
+			+ "	MAX(COALESCE(pr.fecha_cobro, null)) as fechaPago, MAX(COALESCE(CONCAT(p2.primer_apellido, ' ', p2.segundo_apellido,' ',p2.nombre), '')) as pagoRecibe, MAX(COALESCE(a.id, 0)) as idAlumno, pg.sistema_anterior as sistemaAnterior "
 			+ "	FROM pagos_generales pg "
 			+ "	LEFT JOIN pago_recibe pr ON pr.id_pago = pg.id "
 			+ "	LEFT JOIN personas p2 ON pr.id_cajero  = p2.id "
@@ -222,7 +222,7 @@ public interface PagoGeneralRepository extends CrudRepository<PagoGeneral, Integ
 			+ "	LEFT JOIN personas p3 ON pp.id_persona = p3.id "
 			+ "	LEFT JOIN personal per ON p3.id = per.id_persona "
 			+ "	WHERE pg.folio = :folio "
-			+ "	GROUP BY pg.folio ORDER BY pg.folio DESC", nativeQuery = true)
+			+ "	GROUP BY pg.folio, pg.sistema_anterior ORDER BY pg.folio DESC", nativeQuery = true)
 	FolioDTO findFolioRecibo(@Param("folio") String folio);
 	
 	//para generar el folio 
