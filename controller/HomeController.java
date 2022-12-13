@@ -5,6 +5,7 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.security.core.Authentication;
@@ -147,7 +148,7 @@ public class HomeController {
 		model.addAttribute("totalNoti", totalNoti);
 		
 		model.addAttribute("modulos", modulosService.buscarModulosPorRol(rol));
-		model.addAttribute("periodos", periodosService.buscarTodos());
+		model.addAttribute("periodos",rol == 1 || rol == 2 ?  periodosService.buscarLiberados() : periodosService.buscarTodos());
 	}
 	
     

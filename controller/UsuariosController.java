@@ -182,7 +182,7 @@ public class UsuariosController {
     	Usuario usuario = (Usuario) session.getAttribute("usuario");
     	int rol = usuario.getRoles().get(0).getId();
 		model.addAttribute("modulos", modulosService.buscarModulosPorRol(rol));
-		model.addAttribute("periodos", periodosService.buscarTodos());
+		model.addAttribute("periodos", rol == 1 || rol == 2 ? periodosService.buscarLiberados() : periodosService.buscarTodos());
 		model.addAttribute("carreras", carrerasService.buscarTodasMenosIngles());
     	return "perfil/preferencias";
     }

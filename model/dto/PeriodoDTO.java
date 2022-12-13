@@ -9,6 +9,7 @@ public class PeriodoDTO {
 	private String inicioInscripcion;
 	private String finInscripcion;
 	private int idCiclo;
+	private Boolean liberado;
 	
 	public int getIdPeriodo() {
 		return idPeriodo;
@@ -51,6 +52,12 @@ public class PeriodoDTO {
 	}
 	public void setIdCiclo(int idCiclo) {
 		this.idCiclo = idCiclo;
+	}
+	public Boolean getLiberado() {
+		return liberado;
+	}
+	public void setLiberado(Boolean liberado) {
+		this.liberado = liberado;
 	}	
 	
 }

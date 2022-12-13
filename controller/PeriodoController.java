@@ -61,6 +61,7 @@ public class PeriodoController {
 			if(!dto.getFinInscripcion().isEmpty() && !dto.getFinInscripcion().equals("")) {
 				periodo.setFinInscripcion(format.parse(dto.getFinInscripcion()));
 			}
+			periodo.setLiberado(dto.getLiberado()!=null ? dto.getLiberado() : false);
 			periodosService.guardar(periodo);
 			return "ok";
 		} catch (ParseException e) {

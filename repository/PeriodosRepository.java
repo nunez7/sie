@@ -23,4 +23,7 @@ public interface PeriodosRepository extends JpaRepository<Periodo, Integer>{
 	
 	@Query(value = "SELECT p.* FROM periodos p ORDER BY id DESC LIMIT 3", nativeQuery = true)
 	List<Periodo> findLastCaja();
+	
+	@Query(value = "SELECT p.* FROM periodos p WHERE liberado = 'True' ORDER BY id DESC ", nativeQuery = true)
+	List<Periodo> findLiberados();
 }

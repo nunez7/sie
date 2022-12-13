@@ -2,11 +2,9 @@ package edu.mx.utdelacosta.service.db;
 
 import java.util.Date;
 import java.util.List;
-
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
@@ -69,6 +67,12 @@ public class PeriodosServiceJpa implements IPeriodosService{
 	@Transactional(readOnly = true)
 	public List<Periodo> buscarUltimosCaja() {
 		return periodosRepository.findLastCaja();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Periodo> buscarLiberados() {
+		return periodosRepository.findLiberados();
 	}
 
 }

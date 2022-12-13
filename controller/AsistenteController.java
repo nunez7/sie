@@ -783,7 +783,7 @@ public class AsistenteController {
 		Evaluacion evaluacion = serviceEvaluacion.buscar(3);
 		Periodo periodo = servicePeriodo.buscarPorId(usuario.getPreferencias().getIdPeriodo());
 		List<Carrera> carreras = carrerasServices.buscarCarrerasPorIdPersona(persona.getId());
-		List<Periodo> periodos = periodoService.buscarTodos();
+		List<Periodo> periodos = periodoService.buscarLiberados();
 		List<Persona> profesores = new ArrayList<>();
 		
 		if(cveCarrera > 0) {

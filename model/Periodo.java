@@ -61,6 +61,8 @@ public class Periodo {
 	@JoinColumn(name = "id_ciclo", referencedColumnName = "id")
 	private Ciclo ciclo;
 	
+	private Boolean liberado;
+	
 	public Periodo() {
 	}
 
@@ -131,5 +133,15 @@ public class Periodo {
 	public void setCiclo(Ciclo ciclo) {
 		this.ciclo = ciclo;
 	}
+
+	public Boolean getLiberado() {
+		return liberado;
+	}
+
+	public void setLiberado(Boolean liberado) {
+		this.liberado = liberado;
+	}
+	
+	
 	
 }

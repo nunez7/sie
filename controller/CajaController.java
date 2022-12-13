@@ -380,7 +380,7 @@ public class CajaController {
 	
 	@GetMapping("/reporteAdeudos")
 	public String reporteAdeudos(Model model, HttpSession session) {
-		List<Periodo> periodos = periodosService.buscarTodos();
+		List<Periodo> periodos = periodosService.buscarLiberados();
 		List<Carrera> carreras = carrerasServices.buscarTodasMenosIngles();
 		Page<AlumnoAdeudoDTO> adeudos = null;
 		if(session.getAttribute("cveCarrera") != null) {

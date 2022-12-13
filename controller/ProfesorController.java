@@ -502,7 +502,7 @@ public class ProfesorController {
 		Evaluacion evaluacion = serviceEvaluacion.buscar(3);
 		int aluEncuestados = 0;
 
-		List<Periodo> periodos = periodoService.buscarTodos();
+		List<Periodo> periodos = periodoService.buscarLiberados();
 		if (cvePerido != null) {
 			Persona profesor = personaService.buscarPorId(persona.getId());
 			//lista de preguntas 

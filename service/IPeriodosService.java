@@ -7,6 +7,7 @@ import edu.mx.utdelacosta.model.Periodo;
 
 public interface IPeriodosService {
 	List<Periodo> buscarTodos();
+	List<Periodo> buscarLiberados();
 	Periodo buscarPorId(Integer idPeriodo);
 	void guardar(Periodo periodo);
 	List<Date> buscarDiasPorFechaInicioYFechafin(String fechaInicio, String fechaFin);
