@@ -44,6 +44,7 @@ import edu.mx.utdelacosta.service.IProrrogaService;
 import edu.mx.utdelacosta.service.IRemedialAlumnoService;
 import edu.mx.utdelacosta.service.ITestimonioService;
 import edu.mx.utdelacosta.service.IUsuariosService;
+import edu.mx.utdelacosta.util.ActualizarCalificacion;
 import edu.mx.utdelacosta.util.ActualizarRemedial;
 
 @Controller
@@ -83,6 +84,8 @@ public class RemedialController {
 	
 	@Autowired
 	private ActualizarRemedial actualizarRemedial;
+	
+	@Autowired ActualizarCalificacion actualizaCal;
 
 	// cargar modal remedial
 	@GetMapping("/cargar/{alumno}/{tipo}/{carga}/{corte}")
@@ -245,10 +248,12 @@ public class RemedialController {
 
 		//se actualiza el valor de la calificacion corte
 		CalificacionCorte caCorte = calificacionCorteService.buscarPorAlumnoYCargaHorariaYCorteEvaluativo(new Alumno(idAlumno), new CargaHoraria(carga.getId()), new CorteEvaluativo(idCorte));
-		caCorte.setValor( testimonio.getNumero().floatValue());
+		caCorte.setValor(testimonio.getNumero().floatValue());
 		calificacionCorteService.guardar(caCorte);
 		
 		//se busca la calificacion materia y se actualiza su estatus 
+		actualizaCal.actualizaCalificacionMateria(idAlumno, carga.getId());
+		
 		CalificacionMateria caMateria = calificacionMateriaService.buscarPorCargayAlumno(new CargaHoraria(carga.getId()), new Alumno(idAlumno));
 
 		if (tipoRemedial == 1) {
@@ -257,6 +262,8 @@ public class RemedialController {
 			caMateria.setEstatus("E");
 		}
 		calificacionMateriaService.guardar(caMateria);
+		
+		
 		
 		// se busca si ya esxiste un adeudo
 		PagoGeneral pago = new PagoGeneral();
