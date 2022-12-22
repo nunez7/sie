@@ -54,6 +54,11 @@ public class LoginController {
 		return "login";
 	}
 	
+	@GetMapping("/about")
+	public String about() {
+		return "about";
+	}
+	
 	@GetMapping("/forgot-password")
 	public String forgotPassword(Model model, Usuario usuario) {
 		model.addAttribute("usuario", usuario);
